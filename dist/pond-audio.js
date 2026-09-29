@@ -3,14 +3,14 @@
   'use strict';
   class PondAudio{
     constructor(onChange,onError){
-      this.onChange=onChange;this.onError=onError;this.enabled={rain:false,ambient:false,music:false};this.night=false;this.volume=.2;
+      this.onChange=onChange;this.onError=onError;this.enabled={rain:false,ambient:false,music:false};this.volume=.2;
       this.ac=null;this.loads=new Map();this.sources=new Map();this.musicTimer=null;this.suspendTimer=null;this.noteIndex=0;this.hidden=false;
     }
     init(){
       if(this.ac)return;
       const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('Audio is unavailable in this browser.');
       this.ac=new AC();this.gains={};
-      for(const name of ['rain','wind','crickets','music']){const gain=this.ac.createGain();gain.gain.value=0;gain.connect(this.ac.destination);this.gains[name]=gain}
+      for(const name of ['rain','crickets','music']){const gain=this.ac.createGain();gain.gain.value=0;gain.connect(this.ac.destination);this.gains[name]=gain}
     }
     async load(name,file){
       if(this.loads.has(name))return this.loads.get(name);
@@ -22,13 +22,6 @@
       this.loads.set(name,job);
       try{await job}catch(error){this.loads.delete(name);throw error}
     }
-    wind(){
-      if(this.sources.has('wind'))return;
-      const buffer=this.ac.createBuffer(1,this.ac.sampleRate*8,this.ac.sampleRate),data=buffer.getChannelData(0);
-      let smooth=0;for(let i=0;i<data.length;i++){smooth=(smooth+.025*(Math.random()*2-1))/1.025;data[i]=smooth*3}
-      const source=this.ac.createBufferSource(),filter=this.ac.createBiquadFilter();source.buffer=buffer;source.loop=true;
-      filter.type='lowpass';filter.frequency.value=450;source.connect(filter);filter.connect(this.gains.wind);source.start();this.sources.set('wind',source);
-    }
     async toggle(name,on){
       if(!(name in this.enabled))return;
       this.enabled[name]=on;this.onChange({...this.enabled});
@@ -36,19 +29,18 @@
       try{
         this.init();await this.ac.resume();
         if(name==='rain')await this.load('rain','mixkit-light-rain-loop-2393.wav');
-        if(name==='ambient'){this.wind();await this.load('crickets','mixkit-night-crickets-near-the-swamp-1782.wav')}
+        if(name==='ambient')await this.load('crickets','mixkit-night-crickets-near-the-swamp-1782.wav');
         this.sync();
       }catch{
         this.enabled[name]=false;this.sync();this.onChange({...this.enabled});this.onError(`${name==='ambient'?'Nature sounds':name==='music'?'Music':'Rain sound'} could not start. Tap to retry.`);
       }
     }
-    setNight(night){this.night=night;this.sync()}
     setVolume(percent){this.volume=percent/100*.5;this.sync()}
     sync(){
       if(!this.ac)return;
       clearTimeout(this.suspendTimer);
-      const active=!this.hidden,target={rain:active&&this.enabled.rain?this.volume:0,wind:active&&this.enabled.ambient&&!this.night?.10:0,
-        crickets:active&&this.enabled.ambient&&this.night?.055:0,music:active&&this.enabled.music?.07:0};
+      const active=!this.hidden,target={rain:active&&this.enabled.rain?this.volume:0,
+        crickets:active&&this.enabled.ambient?.055:0,music:active&&this.enabled.music?.07:0};
       for(const [key,value] of Object.entries(target))this.gains[key].gain.setTargetAtTime(value,this.ac.currentTime,.65);
       if(active&&this.enabled.music)this.startMusic();else{clearTimeout(this.musicTimer);this.musicTimer=null}
       if(!Object.values(this.enabled).some(Boolean))this.suspendTimer=setTimeout(()=>{if(!Object.values(this.enabled).some(Boolean))this.ac.suspend().catch(()=>{})},2500);

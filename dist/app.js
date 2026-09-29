@@ -36,14 +36,15 @@
   const feedBtn=document.querySelector('#feed'),addBtn=document.querySelector('#add'),removeBtn=document.querySelector('#remove'),pauseBtn=document.querySelector('#pause'),nightBtn=document.querySelector('#night'),speedInput=document.querySelector('#speed'),speedValue=document.querySelector('#speed-value'),status=document.querySelector('#status'),instruction=document.querySelector('#instruction');
   const toggleControlsBtn=document.querySelector('#toggle-controls'),panelContent=document.querySelector('#panel-content'),panel=document.querySelector('.panel');
   let w=0,h=0,dpr=1,t=0,last=0,paused=window.matchMedia('(prefers-reduced-motion: reduce)').matches,night=pond.settings.night,removing=false,pace=pond.settings.pace,fish=[],food=[],ripples=[],glints=[],ambientTimer=2;
-  // Adaptive quality: 0 = full, 1 = lighter, 2 = lightest. Only ever steps down when frames run slow.
+  // Adaptive effects: simplify decorative detail on slow devices without blurring the canvas.
   let quality=0,dirty=true,ema=16.7,qStamp=0;
   let raining=pond.settings.raining,rainMix=raining?1:0,rainDrops=[];
   const SIDES=[-1,1];
   const MAX_FOOD=100;
   const feedingStatus=document.querySelector('#feeding-status');
   let displayedFoodCount=-1;
-  const dprFor=q=>q===0?Math.min(devicePixelRatio||1,1.5):q===1?Math.min(devicePixelRatio||1,1):.75;
+  // Render at up to 2× density for crisp edges while bounding fill cost on 3× phones.
+  const renderDensity=()=>Math.max(1,Math.min(devicePixelRatio||1,2));
   const palette=[
     {base:'#f7eee0',patch:'#df633d',accent:'#a94431',fin:'#ead4bb'},
     {base:'#e9e8d9',patch:'#333d3b',accent:'#697b70',fin:'#ddd9cc'},
@@ -63,7 +64,7 @@
   ];
   const rand=(a,b)=>a+Math.random()*(b-a); const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   function resize(force){
-    const r=canvas.getBoundingClientRect(),nd=dprFor(quality);
+    const r=canvas.getBoundingClientRect(),nd=renderDensity();
     if(!force&&r.width===w&&r.height===h&&nd===dpr)return;
     const oldW=w,oldH=h;w=r.width;h=r.height;dpr=nd;
     canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);mainCtx.setTransform(dpr,0,0,dpr,0,0);
@@ -75,7 +76,7 @@
     plantBodies=PondPlants.resize(plantBodies,LILY_PADS,w,h,oldW||w,oldH||h);
     buildLayers();dirty=true;
   }
-  function setQuality(q,now){quality=q;ema=16.7;qStamp=now;resize(true)}
+  function setQuality(q,now){quality=q;ema=16.7;qStamp=now;dirty=true}
   function buildLayers(){
     bgCanvas.width=canvas.width;bgCanvas.height=canvas.height;
     bgCtx.setTransform(dpr,0,0,dpr,0,0);
@@ -196,7 +197,7 @@
     }
     ctx.restore();
   }
-  // Rasterize detailed leaves and shadows only when size, theme, or quality changes.
+  // Rasterize detailed leaves and shadows only when size, theme, or pixel density changes.
   function makeDecorSprite(width,height,originX,originY,paint){
     const image=document.createElement('canvas');
     image.width=Math.ceil(width*dpr);image.height=Math.ceil(height*dpr);
@@ -418,7 +419,7 @@
     rainFxBtn.querySelector('span').textContent=raining?'Remove rain':'Add rain';
     dirty=true;queueSave();
   };
-  nightBtn.onclick=()=>{night=!night;nightBtn.querySelector('span').textContent=night?'Daylight':'Moonlight';nightBtn.title=night?'Switch to daylight':'Switch to moonlight';nightBtn.setAttribute('aria-pressed',night);document.querySelector('main').dataset.night=night;document.querySelector('#light-label').textContent=night?'Moonlight':'Daylight';buildLayers();audio.setNight(night);queueSave();dirty=true};
+  nightBtn.onclick=()=>{night=!night;nightBtn.querySelector('span').textContent=night?'Daylight':'Moonlight';nightBtn.title=night?'Switch to daylight':'Switch to moonlight';nightBtn.setAttribute('aria-pressed',night);document.querySelector('main').dataset.night=night;document.querySelector('#light-label').textContent=night?'Moonlight':'Daylight';buildLayers();queueSave();dirty=true};
   speedInput.oninput=()=>{pace=Number(speedInput.value);speedValue.textContent=`${pace.toFixed(1)}×`;queueSave()};
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){if(removing)setRemoveMode(false);if(!koiTag.hidden){closeKoiTag();canvas.focus({preventScroll:true})}}
@@ -596,7 +597,7 @@
   nightBtn.setAttribute('aria-pressed',night);nightBtn.querySelector('span').textContent=night?'Daylight':'Moonlight';nightBtn.title=night?'Switch to daylight':'Switch to moonlight';
   document.querySelector('main').dataset.night=night;document.querySelector('#light-label').textContent=night?'Moonlight':'Daylight';
   speedInput.value=pace;speedValue.textContent=`${pace.toFixed(1)}×`;
-  rainVolInput.value=pond.settings.rainVolume;rainVolValue.textContent=`${pond.settings.rainVolume}%`;audio.setVolume(pond.settings.rainVolume);audio.setNight(night);
+  rainVolInput.value=pond.settings.rainVolume;rainVolValue.textContent=`${pond.settings.rainVolume}%`;audio.setVolume(pond.settings.rainVolume);
   resumeAudioBtn.hidden=!Object.values(audioPreferences).some(Boolean);
   if(pond.settings.collapsed)toggleControlsBtn.click();
   if(stored)document.querySelector('.intro .eyebrow').textContent='Welcome back to your pond';

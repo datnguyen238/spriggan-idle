@@ -21,7 +21,7 @@ Then visit http://localhost:8000. Stop the server with Ctrl+C.
 - Pause or resume, switch between daylight and moonlight, and adjust the swimming pace.
 - Soft lily pads and lotus blossoms follow broad, gentle currents; leafy branches gently sway. Plain and flowering pads gently bounce away from one another and the pond edges instead of overlapping. Pause freezes their movement too.
 - Toggle rain visuals with **Add rain**. Use the speaker button for rain sound and the volume slider to adjust it.
-- **Nature sounds** adds quiet wind by day and the included crickets by moonlight. **Gentle music** adds a soft, original generated melody. These layers work alongside rain and start only after a click.
+- **Nature sounds** plays the included cricket recording in both daylight and moonlight. **Gentle music** adds a soft, original generated melody. These layers work alongside rain and start only after a click.
 - Space pauses or resumes when focus is outside the controls.
 - Hide or show the control panel without losing your pond settings.
 
@@ -40,3 +40,5 @@ Import this GitHub repository into Vercel. The included `vercel.json` serves the
 ## Check saved data and growth
 
 With Node.js installed, run `node --test tests/*.test.cjs`.
+
+The canvas renders at up to 2× pixel density. On slower devices, decorative effects simplify while canvas resolution stays sharp.
