@@ -40,6 +40,7 @@
     .range-line label{grid-column:2 / -1}
     .range-line input{grid-column:1 / 3;width:100%;min-width:0;margin:0}
     .range-line output{grid-column:3;grid-row:2}
+    .range-line+.range-line{margin-top:10px;border-top:0;padding-top:0}
     .panel-toggle{width:100%;justify-content:space-between;border-color:transparent;padding:0 8px}
     .panel-toggle svg{transition:transform .2s}
     .panel-toggle[aria-expanded=false] svg{transform:rotate(180deg)}
@@ -82,6 +83,7 @@
         <button class="control" id="rainfx" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 15a3.5 3.5 0 0 1-.4-6.98A5.5 5.5 0 0 1 16.6 7.4 3.8 3.8 0 0 1 17 15Z"/><path d="M8 18v2.5M12 18v2.5M16 18v2.5"/></svg><span>Add rain</span></button>
       </div>
       <div class="range-line"><svg class="pace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c3-5 6 5 9 0s6 5 9 0M3 15c3-5 6 5 9 0s6 5 9 0"/></svg><label for="speed">Swimming pace</label><input id="speed" type="range" min="0.4" max="2" value="1" step="0.1"><output id="speed-value" for="speed">1.0×</output></div>
+      <div class="range-line"><svg class="pace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg><label for="rainvol">Rain volume</label><input id="rainvol" type="range" min="0" max="100" value="40" step="5"><output id="rainvol-value" for="rainvol">40%</output></div>
       </div>
       </div>
     </section>
@@ -445,7 +447,7 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&removing)setRemoveMode(false);if(e.code==='Space'&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='INPUT'){e.preventDefault();pauseBtn.click()}});
   // Rain sound: generated with Web Audio (no audio file to host). Starts only after a click, as browsers require.
   const soundBtn=document.querySelector('#sound');
-  const RAIN_VOLUME=.2,RAIN_DROPS_PER_SEC=5; // volume 0-1, soft drops per second
+  let RAIN_VOLUME=.2;const RAIN_DROPS_PER_SEC=5; // volume 0-1, soft drops per second
   let rain=null,rainOn=false;
   function buildRain(){
     const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
@@ -502,6 +504,8 @@
     soundBtn.querySelector('svg').innerHTML=on?'<path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>':'<path d="M11 5 6 9H3v6h3l5 4Z"/><path d="m16 9 5 6m0-6-5 6"/>';
   }
   soundBtn.onclick=()=>setRain(!rainOn);
+  const rainVolInput=document.querySelector('#rainvol'),rainVolValue=document.querySelector('#rainvol-value');
+  rainVolInput.oninput=()=>{const v=Number(rainVolInput.value);RAIN_VOLUME=v/100*.5;rainVolValue.textContent=`${v}%`;if(rain&&rainOn)rain.gain.gain.setTargetAtTime(RAIN_VOLUME,rain.ac.currentTime,.1)};
   document.addEventListener('visibilitychange',()=>{if(!rain||!rainOn)return;document.hidden?rain.ac.suspend():rain.ac.resume()});
   let resizeRaf=0;
   window.addEventListener('resize',()=>{cancelAnimationFrame(resizeRaf);resizeRaf=requestAnimationFrame(()=>resize())});
