@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a292b">
+  <meta name="description" content="A quiet interactive koi pond. Feed the fish and watch them swim.">
+  <title>Spriggan — Koi Pond</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230a292b'/%3E%3Cpath d='M11 35c13-17 28-16 43-3-15 13-30 14-43-3l6 3-6 3z' fill='%23f6e7c9'/%3E%3Ccircle cx='42' cy='30' r='3' fill='%23ba583c'/%3E%3C/svg%3E">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500&display=swap');
+    :root{font-family:'DM Sans',system-ui,sans-serif;color:#f1eddd;background:#102e2b;font-synthesis:none;color-scheme:dark}
+    *{box-sizing:border-box}html,body{height:100%;margin:0}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.4}
+    main{height:100dvh;min-height:640px;position:relative;overflow:hidden;background:#163e36}
+    #pond{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+    .vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 56% 42%,transparent 25%,rgba(5,25,23,.18) 66%,rgba(4,21,20,.72) 100%)}
+    .frame{position:absolute;inset:18px;border:1px solid #e6ead31a;border-radius:4px;pointer-events:none}
+    header{position:absolute;top:0;left:0;right:0;z-index:2;padding:42px 52px;display:flex;align-items:center;justify-content:space-between;gap:20px;pointer-events:none}
+    .brand{display:flex;align-items:center;gap:13px}.mark{height:42px;width:42px;border:1px solid #ded9bd66;border-radius:50%;display:grid;place-items:center;color:#e8dcb8}.mark svg{width:25px;height:25px}
+    h1{font:500 21px/1 'Fraunces',Georgia,serif;letter-spacing:-.045em;margin:0;color:#f4eee0}.brand small{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.28em;color:#bcc9b9;margin-top:8px}
+    .top-note{display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.07em;color:#d9dfce}.live-dot{width:5px;height:5px;border-radius:50%;background:#c5d5ac;box-shadow:0 0 12px #b6d8a14d}
+    .intro{position:absolute;top:155px;left:54px;pointer-events:none}.eyebrow{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:#bfc9ae;margin:0 0 17px}.intro h2{font:500 clamp(22px,1.8vw,26px)/1.12 'Fraunces',Georgia,serif;letter-spacing:-.045em;margin:0;color:#f3eddb}.intro h2 em{font-weight:500;color:#c8d1b3}.intro p:last-child{font-size:10px;line-height:1.8;color:#bac9b8;margin:18px 0 0}
+    .bottom{position:absolute;z-index:2;left:28px;right:28px;bottom:52px;display:flex;flex-direction:column;align-items:flex-end;gap:17px;pointer-events:none}
+    .instruction{width:min(100%,230px);font-size:10px;line-height:1.6;color:#c6d3c2;text-align:center;text-shadow:0 2px 12px #061c1c;letter-spacing:.03em}.instruction strong{font-weight:500;color:#f7f0dc}.instruction br{display:none}.instruction br::after{content:' '}
+    .panel{pointer-events:auto;width:min(100%,230px);border:1px solid #fff8e6ab;border-radius:20px;background:#efeada;box-shadow:0 18px 60px #001b2466,0 2px 6px #001b2426;padding:17px 20px 14px;color:#294239;color-scheme:light}
+    .panel-heading{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:13px}.panel-heading h3{font-size:9px;font-weight:600;letter-spacing:.19em;text-transform:uppercase;margin:0;color:#6d7764}.status{font-size:10px;color:#62715d;display:flex;align-items:center;gap:7px}.status::before{content:'';width:5px;height:5px;border-radius:50%;background:#7c9563}
+    .controls{display:flex;flex-direction:column;align-items:stretch;gap:7px}.control{display:inline-flex;justify-content:center;align-items:center;gap:7px;border:1px solid #a5ad922e;background:transparent;color:#3b5043;border-radius:10px;padding:11px 12px;min-height:44px;font-size:11px;font-weight:500;white-space:nowrap;transition:background .2s,transform .2s}.control svg{width:16px;height:16px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.control:hover:not(:disabled){background:#dce0cd;transform:translateY(-1px)}.control:focus-visible,input:focus-visible{outline:2px solid #547153;outline-offset:4px}.control.primary{background:#294e3e;color:#f3edda;border-color:#294e3e;}.control.primary:hover:not(:disabled){background:#376149}.control[aria-pressed=true]{background:#d5dec6;border-color:#a6b597}.control.icon-only{padding:10px}.divider{display:none}
+    .range-line{display:flex;align-items:center;gap:13px;border-top:1px solid #a5ad9240;margin-top:13px;padding-top:12px;color:#6d7864;font-size:10px}.range-line label{white-space:nowrap}.range-line input{flex:1;min-width:60px;height:16px;accent-color:#4b6950;cursor:pointer}.range-line output{min-width:28px;text-align:right;color:#42553f;font-variant-numeric:tabular-nums}.pace-icon{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.3}
+    footer{position:absolute;left:53px;right:53px;bottom:25px;display:flex;justify-content:space-between;pointer-events:none;color:#aabca38f;font-size:9px;letter-spacing:.12em}footer kbd{font:inherit;border:1px solid #b5c4a832;border-radius:3px;padding:2px 4px;margin-right:5px}.pause-badge{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);padding:11px 18px;border:1px solid #e7e4c933;background:#163c33cc;border-radius:30px;font-size:11px;letter-spacing:.06em;pointer-events:none}.pause-badge[hidden]{display:none}
+    main[data-night=true] .intro h2 em{color:#b7c9d4}main[data-night=true] .panel{background:#e5e9e5}main[data-night=true] .live-dot{background:#b8d0de}
+    @media(min-width:1500px){.intro{top:180px;left:72px}header{padding:48px 72px}}
+    @media(max-width:720px){main{min-height:600px}.frame{inset:10px}header{padding:29px 27px}.mark{width:35px;height:35px}h1{font-size:19px}.top-note{font-size:9px}.top-note .note-long{display:none}.intro{top:123px;left:30px}.intro h2{font-size:22px}.intro p:last-child{font-size:10px;margin-top:12px}.eyebrow{font-size:8px;margin-bottom:13px}.bottom{left:22px;right:22px;bottom:max(45px,env(safe-area-inset-bottom));gap:13px}.panel{padding:15px;border-radius:17px}.divider{display:none}.control{font-size:11px;padding:10px 8px}.instruction{font-size:10px}.panel-heading{margin-bottom:11px}footer{left:29px;right:29px;bottom:21px;font-size:8px}footer .keyboard-hint{display:none}}
+    @media(max-width:370px){.top-note{display:none}.bottom{left:17px;right:17px}.intro h2{font-size:21px}.instruction{max-width:240px}}
+    @media(max-height:620px) and (min-width:721px){main{min-height:450px}.intro{top:120px}.intro h2{font-size:22px}.intro p:last-child{display:none}.bottom{bottom:40px}.panel{width:min(100%,230px)}header{padding-top:29px}footer{bottom:17px}}
+    .range-line{width:100%;display:grid;grid-template-columns:15px minmax(0,1fr)28px;gap:8px}
+    .range-line label{grid-column:2 / -1}
+    .range-line input{grid-column:1 / 3;width:100%;min-width:0;margin:0}
+    .range-line output{grid-column:3;grid-row:2}
+    .panel-toggle{width:100%;justify-content:space-between;border-color:transparent;padding:0 8px}
+    .panel-toggle svg{transition:transform .2s}
+    .panel-toggle[aria-expanded=false] svg{transform:rotate(180deg)}
+    .panel-content{display:grid;grid-template-rows:1fr;opacity:1;visibility:visible;transition:grid-template-rows .32s cubic-bezier(.22,1,.36,1),opacity .22s ease,visibility 0s}
+    .panel-content-inner{min-height:0;overflow:hidden}
+    .panel-content-inner>.panel-heading{margin-top:13px}
+    .panel.is-collapsed .panel-content{grid-template-rows:0fr;opacity:0;visibility:hidden;transition-delay:0s,0s,.32s}
+    .instruction{transition:opacity .22s ease,visibility 0s}
+    .bottom.controls-collapsed .instruction{opacity:0;visibility:hidden;transition-delay:0s,.22s}
+    @media(prefers-reduced-motion:reduce){.control,.panel-toggle svg,.panel-content,.instruction{transition:none}}
+  </style>
+</head>
+<body>
+<main>
+  <canvas id="pond" aria-label="Animated koi pond. Tap or click the water to drop food for the fish."></canvas>
+  <div class="vignette"></div><div class="frame"></div>
+  <header>
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 17c6-9 15-9 22-2-7 8-16 9-22 2Z"/><path d="m6 17-3-5v9l3-4M12 13l4-5m-4 12 5 3"/><circle cx="23" cy="15" r="1" fill="currentColor"/></svg></span><div><h1>Spriggan</h1><small>Your personal space of peace</small></div></div>
+    <div class="top-note"><span class="live-dot"></span><span id="light-label">Daylight</span><span class="note-long">&nbsp; / &nbsp; No hurry here</span></div>
+  </header>
+  <div class="intro"><p class="eyebrow">A small escape, whenever you need it</p><h2>A little pause.<br><em>A little peace.</em></h2><p>Let the world wait a moment.<br>There’s nowhere else you need to be.</p></div>
+  <div class="pause-badge" id="pause-badge" hidden>The pond is resting</div>
+  <div class="bottom">
+    <div class="instruction" id="instruction"><strong>Touch the water</strong> to feed the koi. Watch them find their way to you.</div>
+    <section class="panel" aria-label="Pond controls">
+      <button class="control panel-toggle" id="toggle-controls" type="button" aria-expanded="true" aria-controls="panel-content"><span>Hide controls</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="panel-content" id="panel-content">
+      <div class="panel-content-inner">
+      <div class="panel-heading"><h3>A moment by the pond</h3><span class="status" id="status" aria-live="polite">5 koi swimming</span></div>
+      <div class="controls">
+        <button class="control primary" id="feed" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c4-5 11-5 16 0-5 5-12 5-16 0Z"/><path d="m4 15-2-3v6l2-3"/><circle cx="16" cy="14" r=".6"/><path d="M10 5v2m5-4v2m-9 3v1"/></svg><span>Feed the koi</span></button>
+        <button class="control" id="add" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add a koi</span></button>
+        <button class="control" id="remove" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg><span>Remove a koi</span></button>
+        <span class="divider" aria-hidden="true"></span>
+        <button class="control icon-only" id="pause" type="button" aria-pressed="false" title="Pause pond"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg><span>Pause</span></button>
+        <button class="control" id="night" type="button" aria-pressed="false" title="Switch to moonlight"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14A8.5 8.5 0 0 1 10 4a8.5 8.5 0 1 0 10 10Z"/></svg><span>Moonlight</span></button>
+      </div>
+      <div class="range-line"><svg class="pace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c3-5 6 5 9 0s6 5 9 0M3 15c3-5 6 5 9 0s6 5 9 0"/></svg><label for="speed">Swimming pace</label><input id="speed" type="range" min="0.4" max="2" value="1" step="0.1"><output id="speed-value" for="speed">1.0×</output></div>
+      </div>
+      </div>
+    </section>
+  </div>
+  <footer><span>AN IDLE APP MADE BY DAT NGUYEN</span><span class="keyboard-hint"><kbd>space</kbd> to pause &nbsp; · &nbsp; <kbd>esc</kbd> to cancel</span></footer>
+</main>
+<script>
+(()=>{
+  const canvas=document.querySelector('#pond'),ctx=canvas.getContext('2d');
+  const feedBtn=document.querySelector('#feed'),addBtn=document.querySelector('#add'),removeBtn=document.querySelector('#remove'),pauseBtn=document.querySelector('#pause'),nightBtn=document.querySelector('#night'),speedInput=document.querySelector('#speed'),speedValue=document.querySelector('#speed-value'),status=document.querySelector('#status'),instruction=document.querySelector('#instruction');
+  const toggleControlsBtn=document.querySelector('#toggle-controls'),panelContent=document.querySelector('#panel-content'),panel=document.querySelector('.panel');
+  let w=0,h=0,dpr=1,t=0,last=0,paused=window.matchMedia('(prefers-reduced-motion: reduce)').matches,night=false,removing=false,pace=1,fish=[],food=[],ripples=[],glints=[],ambientTimer=2;
+  const palette=[
+    {base:'#f7eee0',patch:'#df633d',accent:'#a94431',fin:'#ead4bb'},
+    {base:'#e9e8d9',patch:'#333d3b',accent:'#697b70',fin:'#ddd9cc'},
+    {base:'#e8bd84',patch:'#c75432',accent:'#8d3827',fin:'#d9a670'},
+    {base:'#f1e9d7',patch:'#d16c3e',accent:'#374c47',fin:'#e6d9c4'},
+    {base:'#ecd7bb',patch:'#44534b',accent:'#b95b3c',fin:'#dac4aa'},
+    {base:'#f7f1e4',patch:'#bb4b32',accent:'#cc7544',fin:'#e9d7bf'}
+  ];
+  const rand=(a,b)=>a+Math.random()*(b-a); const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function resize(){
+    const oldW=w,oldH=h,r=canvas.getBoundingClientRect();w=r.width;h=r.height;dpr=Math.min(devicePixelRatio||1,2);
+    canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+    glints=Array.from({length:38},()=>({x:Math.random()*w,y:Math.random()*h,r:rand(1,3),phase:rand(0,7)}));
+    for(const f of fish){
+      f.x=clamp(f.x*w/(oldW||w),30,w-30);f.y=clamp(f.y*h/(oldH||h),30,h-30);
+      f.tx=f.tx*w/(oldW||w);f.ty=f.ty*h/(oldH||h);f.size=f.baseSize*(w<=720?.72:1);
+    }
+  }
+  function spawn(x=rand(w*(w<=720?.2:.34),w*.83),y=rand(h*.39,h*.64)){
+    const i=fish.length,baseSize=rand(49,70),size=baseSize*(w<=720?.72:1);
+    fish.push({x,y,a:rand(-Math.PI,Math.PI),v:rand(.53,.88),size,baseSize,phase:rand(0,7),
+      tx:rand(w*.12,w*.88),ty:rand(h*.36,h*.68),wander:rand(1,5),
+      burst:0,turnRate:rand(.75,1.45),color:palette[i%palette.length],pattern:i%6});
+    updateStatus();
+  }
+  function updateStatus(){status.textContent=`${fish.length} koi ${paused?'resting':'swimming'}`;addBtn.disabled=fish.length>=12;removeBtn.disabled=!fish.length&&!removing}
+  function setRemoveMode(value){
+    removing=value;removeBtn.setAttribute('aria-pressed',value);
+    removeBtn.querySelector('span').textContent=value?'Cancel removal':'Remove a koi';
+    canvas.style.cursor=value?'pointer':'crosshair';
+    instruction.innerHTML=value?'<strong>Choose a koi</strong> to remove. Select Cancel removal or press Escape to finish.':'<strong>Touch the water</strong> to feed the koi. Watch them find their way to you.';
+  }
+  function drop(x,y,count=5){ripples.push({x,y,r:2,life:1});for(let i=0;i<count;i++)food.push({x:x+rand(-15,15),y:y+rand(-15,15),life:1.0,r:rand(2,3.5)});if(food.length>55)food.splice(0,food.length-55)}
+  function drawWater(){
+    let g=ctx.createRadialGradient(w*.46,h*.44,10,w*.5,h*.5,Math.max(w,h)*.8);
+    if(night){g.addColorStop(0,'#204045');g.addColorStop(.55,'#103037');g.addColorStop(1,'#09232a')}
+    else{g.addColorStop(0,'#3c7862');g.addColorStop(.55,'#23584b');g.addColorStop(1,'#112f2d')}
+    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+    if(!night){
+      const light=ctx.createRadialGradient(w*.67,h*.25,0,w*.67,h*.25,w*.48);
+      light.addColorStop(0,'rgba(185,191,121,.14)');light.addColorStop(1,'rgba(155,180,130,0)');ctx.fillStyle=light;ctx.fillRect(0,0,w,h);
+    }
+    // Wide, barely visible bands suggest slow currents below the surface.
+    ctx.save();ctx.globalAlpha=night?.035:.045;
+    for(let j=0;j<7;j++){
+      const yy=h*(j+.5)/7+Math.sin(t*.22+j)*16;
+      ctx.beginPath();
+      for(let x=-40;x<=w+40;x+=14){
+        const y=yy+Math.sin(x*.012+t*.42+j)*9+Math.sin(x*.026-t*.28+j)*4;
+        if(x===-40)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle=j%2?'#b3d2b7':'#082f32';ctx.lineWidth=12+j%3*4;ctx.stroke();
+    }
+    ctx.restore();
+    // An uneven mesh of refracted light drifts across the pond.
+    const spacing=110,cols=Math.ceil(w/spacing)+1,rows=Math.ceil(h/spacing)+1;
+    ctx.save();ctx.lineCap='round';
+    for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+      const seed=row*2.19+col*1.73;
+      const x=col*spacing-45+Math.sin(t*.31+seed)*13;
+      const y=row*spacing-35+Math.cos(t*.27+seed)*15;
+      const sway=Math.sin(t*.58+seed)*11;
+      const light=(.5+.5*Math.sin(t*.67+seed*2))*(night?.035:.065);
+      ctx.strokeStyle=`rgba(205,236,213,${light})`;ctx.lineWidth=1.3+Math.sin(seed)*.4;
+      ctx.beginPath();ctx.moveTo(x-38,y+sway*.3);
+      ctx.bezierCurveTo(x-17,y-18+sway,x+13,y-12-sway,x+32,y+9);
+      ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+30,y+8);
+      ctx.quadraticCurveTo(x+43,y+26+sway*.5,x+72,y+24);
+      ctx.stroke();
+    }
+    ctx.restore();
+    for(const gl of glints){
+      const gx=gl.x+Math.sin(t*.3+gl.phase)*12;
+      const a=Math.max(0,Math.sin(t*.8+gl.phase))*(night?.08:.18);
+      ctx.fillStyle=`rgba(224,240,211,${a})`;
+      ctx.beginPath();ctx.ellipse(gx,gl.y,gl.r*4,gl.r*.55,-.35,0,Math.PI*2);ctx.fill();
+    }
+    if(night){let mx=w*.79,my=h*.22;let halo=ctx.createRadialGradient(mx,my,0,mx,my,Math.min(w,h)*.39);halo.addColorStop(0,'rgba(223,229,205,.16)');halo.addColorStop(1,'rgba(223,229,205,0)');ctx.fillStyle=halo;ctx.fillRect(0,0,w,h)}
+  }
+  function drawLilypad(x,y,r,angle,flower=false){
+    ctx.save();ctx.translate(x+Math.sin(t*.23+angle)*2,y+Math.cos(t*.2+angle)*2);ctx.rotate(angle+Math.sin(t*.15)*.025);
+    ctx.shadowColor='rgba(3,25,21,.4)';ctx.shadowBlur=12;ctx.shadowOffsetY=8;
+    const leaf=ctx.createLinearGradient(-r,-r,r,r);leaf.addColorStop(0,night?'#426a5b':'#849a61');leaf.addColorStop(.5,night?'#294f43':'#577d50');leaf.addColorStop(1,night?'#1f423a':'#345d42');ctx.fillStyle=leaf;
+    ctx.beginPath();ctx.moveTo(-r*.07,0);
+    for(let i=0;i<=56;i++){const a=.22+(Math.PI*2-.44)*i/56,rr=r*(1+Math.sin(a*7)*.024);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr*.9)}
+    ctx.closePath();ctx.fill();ctx.shadowColor='transparent';ctx.strokeStyle='rgba(214,225,158,.22)';ctx.lineWidth=.8;ctx.stroke();
+    for(let i=0;i<10;i++){let a=.4+i*(Math.PI*2-.8)/10;ctx.beginPath();ctx.moveTo(-r*.07,0);ctx.quadraticCurveTo(Math.cos(a+.14)*r*.45,Math.sin(a+.14)*r*.4,Math.cos(a)*r*.88,Math.sin(a)*r*.78);ctx.stroke()}
+    if(flower){
+      ctx.save();ctx.translate(-r*.16,-r*.1);ctx.shadowColor='#102c2544';ctx.shadowBlur=5;ctx.shadowOffsetY=3;
+      for(let layer=0;layer<2;layer++)for(let i=0;i<8;i++){const a=i*Math.PI/4+layer*.4,reach=layer?5:9;ctx.fillStyle=layer?'#f5ebdc':'#d8c9c0';ctx.beginPath();ctx.ellipse(Math.cos(a)*reach,Math.sin(a)*reach,layer?8:11,layer?3.7:4.8,a,0,Math.PI*2);ctx.fill()}
+      ctx.shadowColor='transparent';ctx.fillStyle='#d8ba70';ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
+    ctx.restore();
+  }
+  function drawBranch(x,y,angle,scale){
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle+Math.sin(t*.19)*.018);ctx.scale(scale,scale);
+    ctx.strokeStyle=night?'#0b2628':'#143d31';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(70,30,135,0);ctx.stroke();
+    for(let i=0;i<7;i++)for(const side of [-1,1]){
+      const x=18+i*16,y=Math.sin(x/135*Math.PI)*13;
+      ctx.save();ctx.translate(x,y);ctx.rotate(side*.65-.1);ctx.fillStyle=night?'#123633':'#244e39';ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(5,-9,23,-10,34,-2);ctx.bezierCurveTo(23,6,9,8,0,0);ctx.fill();ctx.restore();
+    }
+    ctx.restore();
+  }
+  function drawDecor(){
+    const s=Math.min(w,h);
+    drawLilypad(w*.89,h*.28,s*.060,-.6,true);drawLilypad(w*.96,h*.34,s*.048,.8);drawLilypad(w*.95,h*.20,s*.038,2.1);
+    drawLilypad(w*.08,h*.64,s*.048,.3);drawLilypad(w*.035,h*.72,s*.063,1.6);drawLilypad(w*.14,h*.73,s*.033,-.6,true);
+    drawLilypad(w*.69,h*.065,s*.032,2.2);
+    drawBranch(w+8,h*.55,2.9,1.25);drawBranch(w+8,h*.58,2.1,.9);drawBranch(-20,h*.87,-.55,1.05);
+  }
+  function koiBodyPath(S,bend){
+    ctx.beginPath();ctx.moveTo(S*.62,-S*.055);
+    ctx.bezierCurveTo(S*.47,-S*.16,S*.20,-S*.28,-S*.12,-S*.25);
+    ctx.bezierCurveTo(-S*.36,-S*.22,-S*.52,-S*.10+bend*.45,-S*.66,bend);
+    ctx.bezierCurveTo(-S*.52,S*.10+bend*.45,-S*.36,S*.22,-S*.12,S*.25);
+    ctx.bezierCurveTo(S*.20,S*.28,S*.47,S*.16,S*.62,S*.055);
+    ctx.quadraticCurveTo(S*.69,0,S*.62,-S*.055);ctx.closePath();
+  }
+  function koiMark(x,y,rx,ry,angle){
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.beginPath();
+    ctx.moveTo(rx,0);
+    ctx.bezierCurveTo(rx*.9,-ry*.72,rx*.22,-ry*1.17,-rx*.28,-ry*.84);
+    ctx.bezierCurveTo(-rx*.94,-ry*.95,-rx*1.12,-ry*.17,-rx*.83,ry*.35);
+    ctx.bezierCurveTo(-rx*.58,ry*1.15,rx*.28,ry*.96,rx*.76,ry*.56);
+    ctx.quadraticCurveTo(rx*1.11,ry*.23,rx,0);ctx.fill();ctx.restore();
+  }
+  function drawKoi(f){
+    const S=f.size,beat=t*(4.4+f.v*2)+f.phase,bend=Math.sin(beat)*S*.115;
+    ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.a+Math.sin(beat*.5)*.024);
+    // The tail and paired fins move independently of the body.
+    ctx.save();ctx.translate(-S*.61,bend);ctx.rotate(Math.sin(beat)*.23);
+    ctx.fillStyle=f.color.fin;ctx.globalAlpha=.93;ctx.shadowColor='rgba(0,20,22,.3)';ctx.shadowBlur=10;ctx.shadowOffsetY=5;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(-S*.17,-S*.10,-S*.26,-S*.34,-S*.49,-S*.36);
+    ctx.quadraticCurveTo(-S*.38,-S*.12,-S*.35,0);
+    ctx.quadraticCurveTo(-S*.38,S*.12,-S*.49,S*.36);
+    ctx.bezierCurveTo(-S*.26,S*.34,-S*.17,S*.10,0,0);ctx.fill();
+    ctx.shadowColor='transparent';ctx.strokeStyle='rgba(255,249,225,.32)';ctx.lineWidth=.8;
+    for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(-S*.06,0);ctx.quadraticCurveTo(-S*.29,side*S*.16,-S*.44,side*S*.32);ctx.stroke()}
+    ctx.restore();
+    for(const side of [-1,1]){
+      ctx.save();ctx.translate(S*.08,side*S*.19);ctx.rotate(side*(Math.sin(beat+side)*.16));
+      ctx.fillStyle=f.color.fin;ctx.globalAlpha=.83;
+      ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(-S*.04,side*S*.24,-S*.25,side*S*.29);
+      ctx.quadraticCurveTo(-S*.32,side*S*.18,-S*.16,side*S*.03);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='rgba(255,249,228,.38)';ctx.lineWidth=.75;
+      for(let i=1;i<=3;i++){ctx.beginPath();ctx.moveTo(-S*.02,side*S*.025);ctx.lineTo(-S*(.13+i*.03),side*S*(.08+i*.05));ctx.stroke()}
+      ctx.restore();
+    }
+    ctx.shadowColor='rgba(0,17,20,.43)';ctx.shadowBlur=16;ctx.shadowOffsetY=10;
+    let body=ctx.createLinearGradient(0,-S*.28,0,S*.28);
+    body.addColorStop(0,f.color.fin);body.addColorStop(.31,f.color.base);body.addColorStop(.64,f.color.base);body.addColorStop(1,f.color.fin);
+    ctx.fillStyle=body;koiBodyPath(S,bend);ctx.fill();ctx.shadowColor='transparent';
+    ctx.save();koiBodyPath(S,bend);ctx.clip();
+    // Offset organic markings give each koi its own identifiable pattern.
+    const patterns=[
+      [[-.31,-.055,.19,.19,.3],[.05,.105,.16,.14,-.5],[.43,-.015,.14,.16,.3]],
+      [[-.39,.01,.23,.20,-.2],[.01,-.13,.13,.16,.3],[.28,.14,.13,.12,-.4]],
+      [[-.25,-.11,.16,.18,.1],[.03,.115,.22,.13,-.4],[.38,-.05,.12,.15,.6]],
+      [[-.37,-.05,.14,.13,.2],[-.08,.10,.15,.17,-.7],[.25,-.08,.20,.17,.2]],
+      [[-.29,.095,.21,.15,.5],[.13,-.12,.18,.14,-.3],[.43,.08,.10,.12,.2]],
+      [[-.46,0,.14,.14,0],[-.12,-.08,.19,.19,.2],[.18,.12,.16,.13,-.4],[.48,-.02,.10,.12,0]]
+    ];
+    patterns[f.pattern].forEach((p,i)=>{ctx.fillStyle=i===1&&f.pattern%2?f.color.accent:f.color.patch;koiMark(p[0]*S,p[1]*S,p[2]*S,p[3]*S,p[4])});
+    // Keep every body detail clipped to the silhouette so no lines protrude.
+    // A narrow highlight and faint scale rows keep the fish legible in dark water.
+    ctx.strokeStyle='rgba(255,255,241,.4)';ctx.lineWidth=S*.026;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(S*.48,-S*.07);ctx.bezierCurveTo(S*.23,-S*.22,-S*.09,-S*.19,-S*.33,-S*.09);ctx.stroke();
+    ctx.strokeStyle='rgba(43,60,55,.15)';ctx.lineWidth=.7;
+    for(let row of [-1,1])for(let i=0;i<5;i++){let x=-S*.35+i*S*.15;ctx.beginPath();ctx.arc(x,row*S*.14,S*.065,-.9,.8);ctx.stroke()}
+    // A smooth face with eyes only; no whiskers or projecting gill strokes.
+    ctx.fillStyle='#26352f';for(const side of [-1,1]){ctx.beginPath();ctx.arc(S*.49,side*S*.086,S*.023,0,Math.PI*2);ctx.fill()}
+    ctx.restore();
+    ctx.restore();
+  }
+  function drawSurface(){for(const r of ripples){ctx.strokeStyle=`rgba(211,236,217,${r.life*(r.ambient?.13:.32)})`;ctx.lineWidth=r.ambient?1:1.5;for(let i=0;i<2;i++){ctx.beginPath();ctx.ellipse(r.x,r.y,r.r+i*13,(r.r+i*13)*.42,0,0,7);ctx.stroke()}}for(const p of food){ctx.fillStyle=`rgba(222,196,139,${Math.min(1,p.life*1.8)})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}}
+  function update(dt){
+    t+=dt;
+    ambientTimer-=dt;
+    if(ambientTimer<=0){ripples.push({x:rand(w*.12,w*.88),y:rand(h*.14,h*.82),r:2,life:.8,ambient:true});ambientTimer=rand(1.5,3.7)}
+    for(const r of ripples){r.r+=dt*62;r.life-=dt*.7}ripples=ripples.filter(r=>r.life>0);
+    for(const p of food){p.life-=dt*.055;p.y+=dt*1.5}food=food.filter(p=>p.life>0);
+    for(const f of fish){
+      f.wander-=dt;f.burst=Math.max(0,f.burst-dt);
+      if(f.wander<=0||Math.hypot(f.tx-f.x,f.ty-f.y)<f.size*.8){
+        const margin=Math.min(90,Math.min(w,h)*.16);
+        f.tx=rand(margin,Math.max(margin+1,w-margin));
+        f.ty=w<=720?rand(h*.36,h*.65):rand(margin,Math.max(margin+1,h-margin));
+        f.wander=rand(3,8);
+        if(Math.random()<.28)f.burst=rand(.7,1.7);
+      }
+      let target=null,best=Infinity;
+      for(const p of food){let d=(f.x-p.x)**2+(f.y-p.y)**2;if(d<best){best=d;target=p}}
+      const hungry=target&&best<Math.max(w,h)**2*.38;
+      let dx=(hungry?target.x:f.tx)-f.x,dy=(hungry?target.y:f.ty)-f.y;
+      // A gentle repulsion prevents the koi from stacking on top of one another.
+      for(const other of fish){
+        if(other===f)continue;
+        const ox=f.x-other.x,oy=f.y-other.y,d2=ox*ox+oy*oy,space=f.size*1.65;
+        if(d2>1&&d2<space*space){const force=(space-Math.sqrt(d2))/space;dx+=ox*force*2.4;dy+=oy*force*2.4}
+      }
+      const edge=Math.min(65,Math.min(w,h)*.13);
+      if(f.x<edge)dx+=(edge-f.x)*2;
+      if(f.x>w-edge)dx-=(f.x-(w-edge))*2;
+      if(f.y<edge)dy+=(edge-f.y)*2;
+      if(f.y>h-edge)dy-=(f.y-(h-edge))*2;
+      const desired=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(desired-f.a),Math.cos(desired-f.a));
+      f.a+=clamp(diff,-dt*f.turnRate,dt*f.turnRate);
+      const glide=.86+Math.sin(t*1.25+f.phase)*.16;
+      const speed=(hungry?1.05:f.v)*(f.burst>0?1.55:glide)*pace*dt*54;
+      f.x=clamp(f.x+Math.cos(f.a)*speed,18,w-18);
+      f.y=clamp(f.y+Math.sin(f.a)*speed,18,h-18);
+      if(hungry&&best<(f.size*.31)**2){
+        food.splice(food.indexOf(target),1);
+        ripples.push({x:f.x+Math.cos(f.a)*f.size*.5,y:f.y+Math.sin(f.a)*f.size*.5,r:2,life:.5});
+        f.burst=rand(.4,.9);
+      }
+    }
+  }
+  function frame(now){let dt=Math.min((now-last)/1000||0,.05);last=now;if(!paused)update(dt);drawWater();for(const f of fish)drawKoi(f);drawDecor();drawSurface();requestAnimationFrame(frame)}
+  canvas.addEventListener('pointerdown',e=>{
+    let r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+    if(removing){
+      let chosen=-1,distance=Infinity;
+      fish.forEach((f,i)=>{let d=Math.hypot(f.x-x,f.y-y);if(d<distance&&d<f.size*.9){chosen=i;distance=d}});
+      if(chosen>=0){fish.splice(chosen,1);setRemoveMode(false);updateStatus()}
+    }else drop(x,y);
+  });
+  toggleControlsBtn.onclick=()=>{
+    const collapsed=toggleControlsBtn.getAttribute('aria-expanded')==='true';
+    if(collapsed&&removing){setRemoveMode(false);updateStatus()}
+    panelContent.inert=collapsed;
+    panelContent.setAttribute('aria-hidden',String(collapsed));
+    instruction.setAttribute('aria-hidden',String(collapsed));
+    panel.classList.toggle('is-collapsed',collapsed);
+    panel.closest('.bottom').classList.toggle('controls-collapsed',collapsed);
+    toggleControlsBtn.setAttribute('aria-expanded',String(!collapsed));
+    toggleControlsBtn.querySelector('span').textContent=collapsed?'Show controls':'Hide controls';
+  };
+  feedBtn.onclick=()=>drop(rand(w*.3,w*.7),rand(h*.3,h*.65),8);
+  addBtn.onclick=()=>{if(fish.length<12){spawn();if(removing)setRemoveMode(false)}else status.textContent='The pond is full (12 koi)'};
+  removeBtn.onclick=()=>{if(fish.length||removing)setRemoveMode(!removing);else status.textContent='No koi to remove'};
+  function syncPause(){pauseBtn.querySelector('span').textContent=paused?'Resume':'Pause';pauseBtn.querySelector('svg').innerHTML=paused?'<path d="m8 5 11 7-11 7Z"/>':'<path d="M9 5v14M15 5v14"/>';pauseBtn.title=paused?'Resume pond':'Pause pond';pauseBtn.setAttribute('aria-pressed',paused);document.querySelector('#pause-badge').hidden=!paused;updateStatus()}
+  pauseBtn.onclick=()=>{paused=!paused;syncPause()};
+  nightBtn.onclick=()=>{night=!night;nightBtn.querySelector('span').textContent=night?'Daylight':'Moonlight';nightBtn.title=night?'Switch to daylight':'Switch to moonlight';nightBtn.setAttribute('aria-pressed',night);document.querySelector('main').dataset.night=night;document.querySelector('#light-label').textContent=night?'Moonlight':'Daylight'};
+  speedInput.oninput=()=>{pace=Number(speedInput.value);speedValue.textContent=`${pace.toFixed(1)}×`};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&removing)setRemoveMode(false);if(e.code==='Space'&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='INPUT'){e.preventDefault();pauseBtn.click()}});
+  window.addEventListener('resize',resize);resize();for(let i=0;i<5;i++)spawn();syncPause();requestAnimationFrame(frame);
+  if(document.modelContext?.registerTool){
+    const register=tool=>{try{Promise.resolve(document.modelContext.registerTool(tool)).catch(()=>{})}catch{}};
+    register({name:'feed_koi',title:'Feed the koi',description:'Drop food into the pond at a position given as percentages of its width and height.',inputSchema:{type:'object',properties:{x:{type:'number',minimum:0,maximum:100},y:{type:'number',minimum:0,maximum:100}},required:['x','y'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){if(!input||!Number.isFinite(input.x)||!Number.isFinite(input.y)||input.x<0||input.x>100||input.y<0||input.y>100)throw Error('x and y must be numbers from 0 to 100');drop(w*input.x/100,h*input.y/100);return{foodPieces:food.length}}});
+    register({name:'add_koi',title:'Add a koi',description:'Add one koi to the pond, up to a maximum of twelve.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:false},execute(){if(fish.length>=12)throw Error('The pond is full');spawn();return{koiCount:fish.length}}});
+    register({name:'remove_koi',title:'Remove a koi',description:'Remove a koi by its position in the pond, counting from one.',inputSchema:{type:'object',properties:{number:{type:'integer',minimum:1,maximum:12}},required:['number'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){if(!input||!Number.isInteger(input.number)||input.number<1||input.number>fish.length)throw Error('Choose a koi number currently in the pond');fish.splice(input.number-1,1);if(removing)setRemoveMode(false);updateStatus();return{koiCount:fish.length}}});
+  }
+})();
+</script>
+</body>
+</html>
