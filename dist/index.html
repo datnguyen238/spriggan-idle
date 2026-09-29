@@ -415,7 +415,7 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&removing)setRemoveMode(false);if(e.code==='Space'&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='INPUT'){e.preventDefault();pauseBtn.click()}});
   // Rain sound: generated with Web Audio (no audio file to host). Starts only after a click, as browsers require.
   const soundBtn=document.querySelector('#sound');
-  const RAIN_VOLUME=.3,RAIN_DROPS_PER_SEC=5; // volume 0-1, soft drops per second
+  const RAIN_VOLUME=.2,RAIN_DROPS_PER_SEC=4; // volume 0-1, soft drops per second
   let rain=null,rainOn=false;
   function buildRain(){
     const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
@@ -426,7 +426,7 @@
     }
     // Everything feeds one master gain -> soft low-pass -> speakers.
     const master=ac.createGain();master.gain.value=0;
-    const soft=ac.createBiquadFilter();soft.type='lowpass';soft.frequency.value=4500;
+    const soft=ac.createBiquadFilter();soft.type='lowpass';soft.frequency.value=3500;
     master.connect(soft);soft.connect(ac.destination);
     // Three noise layers with slow volume drift so the rain "breathes".
     const layer=(type,freq,q,level,lfoRate)=>{
