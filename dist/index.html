@@ -415,6 +415,7 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&removing)setRemoveMode(false);if(e.code==='Space'&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='INPUT'){e.preventDefault();pauseBtn.click()}});
   // Rain sound: generated with Web Audio (no audio file to host). Starts only after a click, as browsers require.
   const soundBtn=document.querySelector('#sound');
+  const RAIN_VOLUME=.3,RAIN_DROPS_PER_SEC=5; // volume 0-1, soft drops per second
   let rain=null,rainOn=false;
   function buildRain(){
     const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
@@ -423,21 +424,48 @@
       const d=buf.getChannelData(c);let b0=0,b1=0,b2=0;
       for(let i=0;i<len;i++){const x=Math.random()*2-1;b0=.99765*b0+x*.099;b1=.963*b1+x*.2965;b2=.57*b2+x*1.05;d[i]=(b0+b1+b2+x*.18)*.16}
     }
-    const src=ac.createBufferSource();src.buffer=buf;src.loop=true;
-    const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=350;
-    const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=6500;
-    const gain=ac.createGain();gain.gain.value=0;
-    src.connect(hp);hp.connect(lp);lp.connect(gain);gain.connect(ac.destination);src.start();
-    return{ac,gain};
+    // Everything feeds one master gain -> soft low-pass -> speakers.
+    const master=ac.createGain();master.gain.value=0;
+    const soft=ac.createBiquadFilter();soft.type='lowpass';soft.frequency.value=4500;
+    master.connect(soft);soft.connect(ac.destination);
+    // Three noise layers with slow volume drift so the rain "breathes".
+    const layer=(type,freq,q,level,lfoRate)=>{
+      const src=ac.createBufferSource();src.buffer=buf;src.loop=true;
+      const f=ac.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;
+      const g=ac.createGain();g.gain.value=level;
+      src.connect(f);f.connect(g);g.connect(master);
+      const lfo=ac.createOscillator(),depth=ac.createGain();
+      lfo.frequency.value=lfoRate;depth.gain.value=level*.25;lfo.connect(depth);depth.connect(g.gain);lfo.start();
+      src.start(0,Math.random()*5);
+    };
+    layer('bandpass',1800,.4,.5,.08);
+    layer('bandpass',800,.4,.3,.05);
+    layer('lowpass',300,.7,.35,.03);
+    // Random soft water drops.
+    const drop=at=>{
+      const o=ac.createOscillator(),g=ac.createGain(),f=1200+Math.random()*2200,dur=.05+Math.random()*.08,peak=.015+Math.random()*.03;
+      o.type='sine';o.frequency.setValueAtTime(f,at);o.frequency.exponentialRampToValueAtTime(f*1.6,at+.05);
+      g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(peak,at+.004);g.gain.exponentialRampToValueAtTime(.0001,at+dur);
+      o.connect(g);
+      if(ac.createStereoPanner){const p=ac.createStereoPanner();p.pan.value=Math.random()*2-1;g.connect(p);p.connect(master)}else g.connect(master);
+      o.start(at);o.stop(at+dur+.02);
+    };
+    let timer=0,next=0;
+    const tick=()=>{
+      if(ac.state!=='running')return;
+      const now=ac.currentTime;if(next<now)next=now;
+      while(next<now+.3){drop(next);next+=-Math.log(1-Math.random())/RAIN_DROPS_PER_SEC}
+    };
+    return{ac,gain:master,start(){if(!timer)timer=setInterval(tick,150)},stop(){clearInterval(timer);timer=0}};
   }
   function setRain(on){
     if(on&&!rain)rain=buildRain();
     if(!rain){on=false}
     rainOn=on;
     if(rain){
-      if(on)rain.ac.resume();
-      rain.gain.gain.setTargetAtTime(on?.35:0,rain.ac.currentTime,.6); // .35 = volume, raise or lower to taste
-      if(!on)setTimeout(()=>{if(!rainOn)rain.ac.suspend()},2500);
+      if(on){rain.ac.resume();rain.start()}else rain.stop();
+      rain.gain.gain.setTargetAtTime(on?RAIN_VOLUME:0,rain.ac.currentTime,.8);
+      if(!on)setTimeout(()=>{if(!rainOn)rain.ac.suspend()},3500);
     }
     soundBtn.setAttribute('aria-pressed',on);
     soundBtn.setAttribute('aria-label',on?'Turn off rain sound':'Turn on rain sound');
