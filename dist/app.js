@@ -6,7 +6,7 @@
   const memoryLine=document.querySelector('#pond-memory'),momentLine=document.querySelector('#pond-moment');
   const koiPicker=document.querySelector('#koi-picker'),koiTag=document.querySelector('#koi-tag'),nameInput=document.querySelector('#koi-name'),renameForm=document.querySelector('#rename-koi'),renameBtn=document.querySelector('#start-rename');
   const koiLink=document.querySelector('#koi-link'),koiLinkLine=document.querySelector('#koi-link-line'),koiLinkHalo=document.querySelector('#koi-link-halo'),koiLinkDot=document.querySelector('#koi-link-dot');
-  let tagPosition=null,tagSide=-1,tagHovered=false,tagPressed=false;
+  let tagPosition=null,tagSide=-1,tagPressed=false;
   let selectedKoi=null,saveTimer=null,momentTimer=null,sceneEvent=null,surpriseIn=45+Math.random()*45;
   const canvas=document.querySelector('#pond');
   // Opaque canvas: the browser can skip alpha blending against the page.
@@ -353,6 +353,7 @@
       f.y=clamp(f.y+Math.sin(f.a)*speed,18,h-18);
       if(hungry&&best<(f.size*.31)**2){
         food.splice(food.indexOf(target),1);Life.feed(f);queueSave();
+        if(f.id===selectedKoi)document.querySelector('#koi-tag-detail').textContent=`${f.meals} meals shared`;
         ripples.push({x:f.x+Math.cos(f.a)*f.size*.5,y:f.y+Math.sin(f.a)*f.size*.5,r:2,life:.5});
         f.burst=rand(.4,.9);
       }
@@ -443,7 +444,7 @@
   function showKoi(f){
     tagPosition=null;selectedKoi=f.id;koiTag.hidden=false;koiLink.removeAttribute('hidden');renameForm.hidden=true;renameBtn.hidden=false;
     document.querySelector('#koi-tag-title').textContent=f.name+(f.golden?' · golden koi':'');
-    document.querySelector('#koi-tag-detail').textContent=f.meals?`${f.meals} meals shared · growing at their own pace`:'A new friend. A little food helps them grow.';
+    document.querySelector('#koi-tag-detail').textContent=f.meals?`${f.meals} meals shared`:'A new friend. A little food helps them grow.';
     nameInput.value=f.name;nameInput.setCustomValidity('');koiPicker.value=f.id;
     tagSide=-1;positionKoiTag();dirty=true;
   }
@@ -456,8 +457,8 @@
     const right=Math.max(left,Math.min(w,(viewport?.offsetLeft||0)+(viewport?.width||innerWidth)-rect.left)-width-12);
     const bottom=Math.max(top,Math.min(h,(viewport?.offsetTop||0)+(viewport?.height||innerHeight)-rect.top)-height-12);
     const gap=f.size*.45+24;
-    // Keep the card reachable while hovering, pressing a button, or editing a name.
-    const held=tagHovered||tagPressed||!renameForm.hidden||koiTag.contains(document.activeElement);
+    // Only an active press or name edit pins the card; passive hover/focus must not stop tracking.
+    const held=tagPressed||!renameForm.hidden;
     if(!held||!tagPosition){
       if(tagSide===-1&&f.y-gap-height<top&&f.y+gap<bottom)tagSide=1;
       else if(tagSide===1&&f.y+gap>bottom&&f.y-gap-height>top)tagSide=-1;
@@ -475,7 +476,7 @@
     koiLinkLine.setAttribute('d',`M ${ax} ${ay} Q ${(ax+f.x)/2+bend} ${(ay+f.y)/2} ${f.x} ${f.y}`);
     for(const dot of [koiLinkHalo,koiLinkDot]){dot.setAttribute('cx',f.x);dot.setAttribute('cy',f.y)}
   }
-  function closeKoiTag(){selectedKoi=null;tagPosition=null;tagHovered=false;tagPressed=false;koiTag.hidden=true;koiLink.setAttribute('hidden','');renameForm.hidden=true;renameBtn.hidden=false;koiPicker.value='';dirty=true}
+  function closeKoiTag(){selectedKoi=null;tagPosition=null;tagPressed=false;koiTag.hidden=true;koiLink.setAttribute('hidden','');renameForm.hidden=true;renameBtn.hidden=false;koiPicker.value='';dirty=true}
   function nearestKoi(x,y){
     let chosen=null,best=Infinity;
     for(const f of fish){const dx=x-f.x,dy=y-f.y,c=Math.cos(f.a),s=Math.sin(f.a),along=dx*c+dy*s,across=-dx*s+dy*c;
@@ -571,11 +572,10 @@
   koiPicker.onchange=()=>{const f=fish.find(f=>f.id===koiPicker.value);if(f)showKoi(f)};
   document.querySelector('#close-koi-tag').onclick=()=>{closeKoiTag();canvas.focus({preventScroll:true})};
   renameBtn.onclick=()=>{renameForm.hidden=false;renameBtn.hidden=true;nameInput.focus();nameInput.select()};
-  koiTag.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')tagHovered=true});
-  koiTag.addEventListener('pointerleave',()=>{tagHovered=false;dirty=true});
   koiTag.addEventListener('pointerdown',()=>{tagPressed=true});
   document.addEventListener('pointerup',()=>{tagPressed=false;dirty=true});
   document.addEventListener('pointercancel',()=>{tagPressed=false;dirty=true});
+  window.addEventListener('blur',()=>{tagPressed=false;dirty=true});
   koiTag.addEventListener('focusout',()=>{dirty=true});
   new ResizeObserver(()=>positionKoiTag()).observe(koiTag);
   window.visualViewport?.addEventListener('resize',()=>positionKoiTag());
