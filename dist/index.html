@@ -79,6 +79,7 @@
         <span class="divider" aria-hidden="true"></span>
         <button class="control icon-only" id="pause" type="button" aria-pressed="false" title="Pause pond"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg><span>Pause</span></button>
         <button class="control" id="night" type="button" aria-pressed="false" title="Switch to moonlight"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14A8.5 8.5 0 0 1 10 4a8.5 8.5 0 1 0 10 10Z"/></svg><span>Moonlight</span></button>
+        <button class="control" id="rainfx" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 15a3.5 3.5 0 0 1-.4-6.98A5.5 5.5 0 0 1 16.6 7.4 3.8 3.8 0 0 1 17 15Z"/><path d="M8 18v2.5M12 18v2.5M16 18v2.5"/></svg><span>Add rain</span></button>
       </div>
       <div class="range-line"><svg class="pace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c3-5 6 5 9 0s6 5 9 0M3 15c3-5 6 5 9 0s6 5 9 0"/></svg><label for="speed">Swimming pace</label><input id="speed" type="range" min="0.4" max="2" value="1" step="0.1"><output id="speed-value" for="speed">1.0×</output></div>
       </div>
@@ -101,6 +102,7 @@
   let w=0,h=0,dpr=1,t=0,last=0,paused=window.matchMedia('(prefers-reduced-motion: reduce)').matches,night=false,removing=false,pace=1,fish=[],food=[],ripples=[],glints=[],ambientTimer=2;
   // Adaptive quality: 0 = full, 1 = lighter, 2 = lightest. Only ever steps down when frames run slow.
   let quality=0,dirty=true,ema=16.7,qStamp=0;
+  let raining=false,rainMix=0,rainDrops=[];
   const SIDES=[-1,1];
   const dprFor=q=>q===0?Math.min(devicePixelRatio||1,1.5):q===1?Math.min(devicePixelRatio||1,1):.75;
   const palette=[
@@ -316,12 +318,30 @@
     ctx.restore();
     ctx.restore();
   }
-  function drawSurface(){for(const r of ripples){ctx.strokeStyle=`rgba(211,236,217,${r.life*(r.ambient?.13:.32)})`;ctx.lineWidth=r.ambient?1:1.5;for(let i=0;i<2;i++){ctx.beginPath();ctx.ellipse(r.x,r.y,r.r+i*13,(r.r+i*13)*.42,0,0,7);ctx.stroke()}}for(const p of food){ctx.fillStyle=`rgba(222,196,139,${Math.min(1,p.life*1.8)})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}}
+  function drawSurface(){for(const r of ripples){const gap=r.rain?5:13;ctx.strokeStyle=`rgba(211,236,217,${r.life*(r.rain?.22:r.ambient?.13:.32)})`;ctx.lineWidth=r.ambient?1:1.5;for(let i=0;i<2;i++){ctx.beginPath();ctx.ellipse(r.x,r.y,r.r+i*gap,(r.r+i*gap)*.42,0,0,7);ctx.stroke()}}for(const p of food){ctx.fillStyle=`rgba(222,196,139,${Math.min(1,p.life*1.8)})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}}
+  function rainFall(d){d.x=rand(0,w);d.ly=rand(h*.05,h);d.y=d.ly-rand(140,260);d.v=rand(850,1250);d.fall=true}
+  function updateRain(dt){
+    rainMix+=((raining?1:0)-rainMix)*Math.min(1,dt*1.5);
+    if(!raining&&rainMix<.01){rainMix=0;return}
+    for(const d of rainDrops){
+      if(!d.fall){d.wait-=dt;if(d.wait<=0&&raining)rainFall(d);continue}
+      d.y+=d.v*dt;
+      if(d.y>=d.ly){d.fall=false;d.wait=rand(.5,2.5);ripples.push({x:d.x,y:d.ly,r:1,life:.8,s:40,f:1.7,rain:true})}
+    }
+  }
+  function drawRain(){
+    if(rainMix<.01)return;
+    ctx.fillStyle=`rgba(6,28,30,${.14*rainMix})`;ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle=`rgba(214,236,228,${.35*rainMix})`;ctx.lineWidth=1;ctx.lineCap='round';
+    ctx.beginPath();
+    for(const d of rainDrops)if(d.fall){ctx.moveTo(d.x-1.5,d.y-22);ctx.lineTo(d.x,d.y)}
+    ctx.stroke();
+  }
   function update(dt){
-    t+=dt;
+    t+=dt;updateRain(dt);
     ambientTimer-=dt;
     if(ambientTimer<=0){ripples.push({x:rand(w*.12,w*.88),y:rand(h*.14,h*.82),r:2,life:.8,ambient:true});ambientTimer=rand(1.5,3.7)}
-    for(const r of ripples){r.r+=dt*62;r.life-=dt*.7}ripples=ripples.filter(r=>r.life>0);
+    for(const r of ripples){r.r+=dt*(r.s||62);r.life-=dt*(r.f||.7)}ripples=ripples.filter(r=>r.life>0);
     for(const p of food){p.life-=dt*.055;p.y+=dt*1.5}food=food.filter(p=>p.life>0);
     for(const f of fish){
       f.wander-=dt;f.burst=Math.max(0,f.burst-dt);
@@ -366,6 +386,7 @@
     for(const f of fish)drawKoi(f);
     ctx.drawImage(decorCanvas,0,0,w,h);
     drawSurface();
+    drawRain();
   }
   function frame(now){
     requestAnimationFrame(frame);
@@ -410,12 +431,21 @@
   removeBtn.onclick=()=>{if(fish.length||removing)setRemoveMode(!removing);else status.textContent='No koi to remove'};
   function syncPause(){pauseBtn.querySelector('span').textContent=paused?'Resume':'Pause';pauseBtn.querySelector('svg').innerHTML=paused?'<path d="m8 5 11 7-11 7Z"/>':'<path d="M9 5v14M15 5v14"/>';pauseBtn.title=paused?'Resume pond':'Pause pond';pauseBtn.setAttribute('aria-pressed',paused);document.querySelector('#pause-badge').hidden=!paused;updateStatus()}
   pauseBtn.onclick=()=>{paused=!paused;syncPause()};
+  const rainFxBtn=document.querySelector('#rainfx');
+  rainFxBtn.onclick=()=>{
+    raining=!raining;
+    if(raining&&!rainDrops.length)rainDrops=Array.from({length:36},()=>({x:0,ly:0,y:0,v:0,fall:false,wait:rand(0,2)}));
+    rainFxBtn.setAttribute('aria-pressed',raining);
+    rainFxBtn.querySelector('span').textContent=raining?'Remove rain':'Add rain';
+    // setRain(raining); // optional: uncomment to turn the rain sound on and off with this button
+    dirty=true;
+  };
   nightBtn.onclick=()=>{night=!night;nightBtn.querySelector('span').textContent=night?'Daylight':'Moonlight';nightBtn.title=night?'Switch to daylight':'Switch to moonlight';nightBtn.setAttribute('aria-pressed',night);document.querySelector('main').dataset.night=night;document.querySelector('#light-label').textContent=night?'Moonlight':'Daylight';buildLayers();dirty=true};
   speedInput.oninput=()=>{pace=Number(speedInput.value);speedValue.textContent=`${pace.toFixed(1)}×`};
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&removing)setRemoveMode(false);if(e.code==='Space'&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='INPUT'){e.preventDefault();pauseBtn.click()}});
   // Rain sound: generated with Web Audio (no audio file to host). Starts only after a click, as browsers require.
   const soundBtn=document.querySelector('#sound');
-  const RAIN_VOLUME=.2,RAIN_DROPS_PER_SEC=4; // volume 0-1, soft drops per second
+  const RAIN_VOLUME=.2,RAIN_DROPS_PER_SEC=5; // volume 0-1, soft drops per second
   let rain=null,rainOn=false;
   function buildRain(){
     const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
