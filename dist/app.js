@@ -562,12 +562,28 @@
     ambientBtn.setAttribute('aria-pressed',enabled.ambient);musicBtn.setAttribute('aria-pressed',enabled.music);
     ambientBtn.querySelector('span').textContent=enabled.ambient?'Nature sounds on':'Nature sounds';
     musicBtn.querySelector('span').textContent=enabled.music?'Music on':'Gentle music';
-    resumeAudioBtn.hidden=true;queueSave();
-  },message=>{document.querySelector('#audio-status').textContent=message});
+    syncAudioRecovery();queueSave();
+  },message=>{document.querySelector('#audio-status').textContent=message},()=>syncAudioRecovery());
+  function syncAudioRecovery(){
+    const needsTap=Object.values(audioPreferences).some(Boolean)&&audio.ac?.state!=='running';
+    resumeAudioBtn.hidden=!needsTap;
+    const message=document.querySelector('#audio-status');
+    if(needsTap)message.textContent='Tap the pond to resume your sounds.';
+    else if(message.textContent==='Tap the pond to resume your sounds.')message.textContent='';
+  }
+  function resumeSavedAudio(){
+    if(document.hidden)return;
+    const wanted={...audioPreferences};
+    for(const name of Object.keys(wanted))if(wanted[name])audio.toggle(name,true);
+  }
   soundBtn.onclick=()=>audio.toggle('rain',!audio.enabled.rain);
   ambientBtn.onclick=()=>audio.toggle('ambient',!audio.enabled.ambient);
   musicBtn.onclick=()=>audio.toggle('music',!audio.enabled.music);
-  resumeAudioBtn.onclick=()=>{const wanted={...audioPreferences};for(const name of Object.keys(wanted))if(wanted[name])audio.toggle(name,true)};
+  resumeAudioBtn.onclick=resumeSavedAudio;
+  document.addEventListener('click',e=>{
+    if(e.target.closest?.('#sound,#ambient,#music,#resume-audio'))return;
+    if(Object.values(audioPreferences).some(Boolean)&&audio.ac?.state!=='running')resumeSavedAudio();
+  });
   rainVolInput.oninput=()=>{const value=Number(rainVolInput.value);rainVolValue.textContent=`${value}%`;audio.setVolume(value);queueSave()};
   koiPicker.onchange=()=>{const f=fish.find(f=>f.id===koiPicker.value);if(f)showKoi(f)};
   document.querySelector('#close-koi-tag').onclick=()=>{closeKoiTag();canvas.focus({preventScroll:true})};
@@ -587,7 +603,8 @@
     f.name=Life.cleanName(name,f.name);refreshKoiPicker();showKoi(f);renameBtn.focus();savePond();
   };
   document.addEventListener('visibilitychange',()=>{savePond();audio.visibility(document.hidden);if(!document.hidden){last=performance.now();checkGrowthAndVisitors()}});
-  window.addEventListener('pagehide',savePond);
+  window.addEventListener('pagehide',()=>{savePond();audio.visibility(true)});
+  window.addEventListener('pageshow',()=>{audio.visibility(document.hidden);syncAudioRecovery()});
   let resizeRaf=0;
   window.addEventListener('resize',()=>{cancelAnimationFrame(resizeRaf);resizeRaf=requestAnimationFrame(()=>resize())});
   resize();
@@ -598,7 +615,7 @@
   document.querySelector('main').dataset.night=night;document.querySelector('#light-label').textContent=night?'Moonlight':'Daylight';
   speedInput.value=pace;speedValue.textContent=`${pace.toFixed(1)}×`;
   rainVolInput.value=pond.settings.rainVolume;rainVolValue.textContent=`${pond.settings.rainVolume}%`;audio.setVolume(pond.settings.rainVolume);
-  resumeAudioBtn.hidden=!Object.values(audioPreferences).some(Boolean);
+  syncAudioRecovery();
   if(pond.settings.collapsed)toggleControlsBtn.click();
   if(stored)document.querySelector('.intro .eyebrow').textContent='Welcome back to your pond';
   syncPause();syncFeedingStatus();checkGrowthAndVisitors();setInterval(checkGrowthAndVisitors,30000);requestAnimationFrame(frame);

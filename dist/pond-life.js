@@ -1,7 +1,7 @@
 /* Persistent pond data and slow growth, independent of rendering. */
 (()=>{
   'use strict';
-  const DAY=86400000,KEY='spriggan.pond.v1',MAX_KOI=12;
+  const DAY=86400000,KEY='spriggan.pond.v1',MAX_KOI=12,GROWTH_PER_DAY=.12,MAX_GROWTH=.75;
   const NAMES=['Mochi','Sumi','Yuzu','Miso','Hana','Nori','Kumo','Ume','Momo','Taro','Aki','Hoshi'];
   const finite=(v,fallback,min,max)=>Number.isFinite(v)?Math.max(min,Math.min(max,v)):fallback;
   const cleanName=(name,fallback)=>typeof name==='string'&&name.trim()?name.trim().slice(0,24):fallback;
@@ -11,7 +11,7 @@
   }
   function settleGrowth(f,now=Date.now()){
     const days=Math.max(0,now-f.lastGrowthAt)/DAY,used=Math.min(days,f.nutrition);
-    f.growth=Math.min(.35,f.growth+used*.025);f.nutrition=Math.max(0,f.nutrition-used);
+    f.growth=Math.min(MAX_GROWTH,f.growth+used*GROWTH_PER_DAY);f.nutrition=Math.max(0,f.nutrition-used);
     f.lastGrowthAt=Math.max(now,f.lastGrowthAt);
     return f.growth;
   }
@@ -31,7 +31,7 @@
         if(!f||typeof f!=='object')throw Error('Invalid koi');
         const seed=makeFish(i,now),id=typeof f.id==='string'&&f.id.length<100&&!ids.has(f.id)?f.id:seed.id;ids.add(id);
         const result={id,name:cleanName(f.name,seed.name),golden:f.golden===true,baseSize:finite(f.baseSize,seed.baseSize,49,70),pattern:Math.round(finite(f.pattern,i%6,0,5)),
-          createdAt:finite(f.createdAt,now,0,now),lastGrowthAt:finite(f.lastGrowthAt,now,0,now),growth:finite(f.growth,0,0,.35),nutrition:finite(f.nutrition,0,0,3),
+          createdAt:finite(f.createdAt,now,0,now),lastGrowthAt:finite(f.lastGrowthAt,now,0,now),growth:finite(f.growth,0,0,MAX_GROWTH),nutrition:finite(f.nutrition,0,0,3),
           meals:Math.round(finite(f.meals,0,0,1000000)),x:finite(f.x,.5,0,1),y:finite(f.y,.5,0,1)};
         settleGrowth(result,now);return result;
       });

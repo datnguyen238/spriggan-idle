@@ -25,9 +25,9 @@ Then visit http://localhost:8000. Stop the server with Ctrl+C.
 - Space pauses or resumes when focus is outside the controls.
 - Hide or show the control panel without losing your pond settings.
 
-Your koi, names, feeding progress, and pond settings are saved automatically in this browser. Returning shows a welcome message; saved sounds wait for **Resume saved sounds**. Clearing browser data resets the pond, and saves do not sync across devices. If storage is unavailable, the pond still works for the current visit.
+Your koi, names, feeding progress, and pond settings are saved automatically in this browser. Returning shows a welcome message; saved sounds resume on your first tap, or with **Resume saved sounds**. Returning from the background attempts to resume automatically; if the browser requires a gesture, tap the pond. Clearing browser data resets the pond, and saves do not sync across devices. If storage is unavailable, the pond still works for the current visit.
 
-Fed koi gradually grow with elapsed time, including time away. Ten eaten food pieces support roughly one day of growth; each koi stores up to three days of nourishment and can grow up to 35% larger. A golden koi has an 18% chance to join on a daily check after your first day, provided the pond has space. Reloading does not grant extra attempts, and only one golden koi lives in a pond at a time.
+Fed koi gradually grow with elapsed time, including time away. Ten eaten food pieces support roughly one day of growth; each koi stores up to three days of nourishment, grows by 12% of its original size per fed day, and can grow up to 75% larger. A golden koi has an 18% chance to join on a daily check after your first day, provided the pond has space. Reloading does not grant extra attempts, and only one golden koi lives in a pond at a time.
 
 Occasionally a dragonfly or frog visits a lily pad, or a leaf or petals drift past. Only one event appears at a time, with quiet gaps between visits. Pause freezes these animations too.
 
@@ -42,3 +42,9 @@ Import this GitHub repository into Vercel. The included `vercel.json` serves the
 With Node.js installed, run `node --test tests/*.test.cjs`.
 
 The canvas renders at up to 2× pixel density. On slower devices, decorative effects simplify while canvas resolution stays sharp.
+
+## Visitor analytics
+
+Vercel Web Analytics is included in `dist/index.html` using the plain HTML integration; no npm package or React component is needed. Enable **Analytics** for this project in Vercel, push and deploy, then visit the live site. Visitor and page-view counts appear in the project's Analytics dashboard after collection begins.
+
+The `/_vercel/insights/script.js` endpoint is provided by Vercel. A simple local server does not provide that endpoint; its local 404 does not affect the pond. Live collection must be verified after deployment; content blockers may prevent tracking.
