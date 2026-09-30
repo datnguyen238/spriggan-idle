@@ -31,7 +31,7 @@ Fed koi gradually grow with elapsed time, including time away. Ten eaten food pi
 
 Occasional groups visit for about a minute: four frogs, six dragonflies (daylight only), twelve drifting leaves, or thirty-two sakura petals. Frogs and dragonflies take individually randomized routes between lily pads, resting and hopping or flying onward. Leaves and petals follow varied curved paths. One group visits at a time, with quiet gaps between visits. Pause freezes these animations too. Golden koi remain permanent, with at most one in the pond.
 
-Page markup and styles are in `dist/index.html`; animation and controls are in `dist/app.js`, saved data and growth in `dist/pond-life.js`, ambient audio in `dist/pond-audio.js`, plant collisions in `dist/pond-plants.js`, and visitor routes in `dist/pond-surprises.js`. Edit these files and refresh the page to see your changes. Keep the entire `dist` folder, including both WAV files, together when deploying. The font loads from Google Fonts when online; a system font is used offline.
+Page markup and styles are in `dist/index.html`; animation and controls are in `dist/app.js`, saved data and growth in `dist/pond-life.js`, ambient audio in `dist/pond-audio.js`, plant collisions in `dist/pond-plants.js`, and visitor routes in `dist/pond-surprises.js`. Edit these files and refresh the page to see your changes. Keep the entire `dist` folder, including all WAV files, together when deploying. The font loads from Google Fonts when online; a system font is used offline.
 
 ## Publish with Vercel
 
@@ -50,3 +50,5 @@ Vercel Web Analytics is included in `dist/index.html` using the plain HTML integ
 The `/_vercel/insights/script.js` endpoint is provided by Vercel. A simple local server does not provide that endpoint; its local 404 does not affect the pond. Live collection must be verified after deployment; content blockers may prevent tracking.
 
 Rain and cricket recordings use persistent native audio players, which are paused in the background and restarted on return. A rejected restart shows the resume control; browser autoplay policy may still require a tap. Generated music continues to use Web Audio.
+
+Rain uses two native players with overlapping 1.2-second fades to cover end-of-file restart gaps. `dist/rain-crossfade.wav` is derived from the original included rain recording with complementary sine/cosine fades; keep it and `pond-rain-loop.js` in the deployed folder.

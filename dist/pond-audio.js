@@ -1,7 +1,7 @@
 /* Recorded ambience uses persistent native audio players; Web Audio is only for music. */
 (()=>{
   'use strict';
-  const FILES={rain:'mixkit-light-rain-loop-2393.wav',ambient:'mixkit-night-crickets-near-the-swamp-1782.wav'};
+  const FILES={rain:'rain-crossfade.wav',ambient:'mixkit-night-crickets-near-the-swamp-1782.wav'};
   class PondAudio{
     constructor(onChange,onError,onPlayback=()=>{}){
       this.onChange=onChange;this.onError=onError;this.onPlayback=onPlayback;
@@ -23,7 +23,7 @@
     }
     player(name){
       if(this.players.has(name))return this.players.get(name);
-      const player=new Audio();player.preload='none';player.loop=true;player.setAttribute('playsinline','');player.src=FILES[name];
+      const player=name==='rain'?new PondRainLoop():new Audio();player.preload='none';player.loop=true;player.setAttribute('playsinline','');player.src=FILES[name];
       player.volume=name==='rain'?this.volume:.18;this.players.set(name,player);
       player.addEventListener('playing',()=>{
         if(this.hidden||!this.enabled[name]){player.pause();return}
