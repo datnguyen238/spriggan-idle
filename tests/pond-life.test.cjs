@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const Life=require(process.env.POND_LIFE_PATH||'../dist/pond-life.js');
+const Life=require(process.env.POND_LIFE_PATH||'../dist/pond/pond-life.js');
 const now=1800000000000;
 test('roundtrip preserves names, IDs, empty ponds, and settings',()=>{
  const p=Life.create(now);p.fish[0].name='Mochi the brave';p.settings.night=true;p.settings.raining=true;p.settings.pace=1.6;p.settings.audio.music=true;

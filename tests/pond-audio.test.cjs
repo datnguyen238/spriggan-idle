@@ -17,7 +17,7 @@ function setup(){
   pause(){if(!this.paused){this.paused=true;this.emit('pause')}}
  }
  const sandbox={Audio:Player,PondRainLoop:Player,navigator:{audioSession:session},window:{AudioContext:class{constructor(){assert.fail('Recordings must not create a Web Audio context')}}},setTimeout:fn=>{timers.set(++timer,fn);return timer},clearTimeout:id=>timers.delete(id)};
- vm.createContext(sandbox);vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist/pond-audio.js'),'utf8'),sandbox);
+ vm.createContext(sandbox);vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist/pond/pond-audio.js'),'utf8'),sandbox);
  const audio=new sandbox.PondAudio(()=>{},message=>errors.push(message),playing=>states.push(playing));
  return{audio,players,errors,states,session,timers};
 }
