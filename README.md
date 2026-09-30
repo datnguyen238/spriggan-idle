@@ -29,9 +29,9 @@ Your koi, names, feeding progress, and pond settings are saved automatically in 
 
 Fed koi gradually grow with elapsed time, including time away. Ten eaten food pieces support roughly one day of growth; each koi stores up to three days of nourishment, grows by 12% of its original size per fed day, and can grow up to 75% larger. A golden koi has an 18% chance to join on a daily check after your first day, provided the pond has space. Reloading does not grant extra attempts, and only one golden koi lives in a pond at a time.
 
-Occasionally a dragonfly or frog visits a lily pad, or a leaf or petals drift past. Only one event appears at a time, with quiet gaps between visits. Pause freezes these animations too.
+Occasional groups visit for about a minute: four frogs, six dragonflies (daylight only), twelve drifting leaves, or thirty-two sakura petals. Frogs and dragonflies take individually randomized routes between lily pads, resting and hopping or flying onward. Leaves and petals follow varied curved paths. One group visits at a time, with quiet gaps between visits. Pause freezes these animations too. Golden koi remain permanent, with at most one in the pond.
 
-Page markup and styles are in `dist/index.html`; animation and controls are in `dist/app.js`, saved data and growth in `dist/pond-life.js`, ambient audio in `dist/pond-audio.js`, and plant collisions in `dist/pond-plants.js`. Edit these files and refresh the page to see your changes. Keep the entire `dist` folder, including both WAV files, together when deploying. The font loads from Google Fonts when online; a system font is used offline.
+Page markup and styles are in `dist/index.html`; animation and controls are in `dist/app.js`, saved data and growth in `dist/pond-life.js`, ambient audio in `dist/pond-audio.js`, plant collisions in `dist/pond-plants.js`, and visitor routes in `dist/pond-surprises.js`. Edit these files and refresh the page to see your changes. Keep the entire `dist` folder, including both WAV files, together when deploying. The font loads from Google Fonts when online; a system font is used offline.
 
 ## Publish with Vercel
 

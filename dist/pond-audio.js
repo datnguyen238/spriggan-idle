@@ -4,7 +4,15 @@
   class PondAudio{
     constructor(onChange,onError,onPlayback=()=>{}){
       this.onPlayback=onPlayback;this.onChange=onChange;this.onError=onError;this.enabled={rain:false,ambient:false,music:false};this.volume=.2;
-      this.ac=null;this.loads=new Map();this.sources=new Map();this.musicTimer=null;this.suspendTimer=null;this.noteIndex=0;this.hidden=false;
+      this.ac=null;this.loading=new Set();this.loads=new Map();this.sources=new Map();this.musicTimer=null;this.suspendTimer=null;this.noteIndex=0;this.hidden=false;
+    }
+    configureSession(playback){
+      // Safari's default Web Audio category may obey the phone's silent switch.
+      // Request media playback only while the user wants pond audio.
+      try{
+        const session=globalThis.navigator?.audioSession,type=playback?'playback':'auto';
+        if(session&&session.type!==type)session.type=type;
+      }catch{} // Older browsers can continue using ordinary Web Audio.
     }
     init(){
       if(this.ac&&this.ac.state!=='closed')return;
@@ -16,20 +24,21 @@
     }
     async load(name,file){
       if(this.loads.has(name))return this.loads.get(name);
+      this.loading.add(name);this.sync();
       const job=(async()=>{
         const response=await fetch(file);if(!response.ok)throw Error(`Unable to load ${name}`);
         const buffer=await this.ac.decodeAudioData(await response.arrayBuffer());
         const source=this.ac.createBufferSource();source.buffer=buffer;source.loop=true;source.connect(this.gains[name]);source.start();this.sources.set(name,source);
       })();
       this.loads.set(name,job);
-      try{await job}catch(error){this.loads.delete(name);throw error}
+      try{await job}catch(error){this.loads.delete(name);throw error}finally{this.loading.delete(name);this.sync()}
     }
     async toggle(name,on){
       if(!(name in this.enabled))return;
       this.enabled[name]=on;this.onChange({...this.enabled});
       if(!on){this.sync();return}
       try{
-        this.init();this.resume();
+        this.configureSession(true);this.init();this.resume();
         if(name==='rain')await this.load('rain','mixkit-light-rain-loop-2393.wav');
         if(name==='ambient')await this.load('crickets','mixkit-night-crickets-near-the-swamp-1782.wav');
         this.sync();
@@ -41,6 +50,7 @@
       if(!this.ac||this.hidden||!Object.values(this.enabled).some(Boolean))return;
       // A mobile browser may leave resume() pending until the next user gesture.
       // Keep loading the selected layers and display a retry instead of waiting forever.
+      this.configureSession(true);
       this.ac.resume().then(()=>this.sync()).catch(()=>this.sync());
       this.sync();
     }
@@ -48,8 +58,9 @@
     sync(){
       if(!this.ac)return;
       clearTimeout(this.suspendTimer);
+      if(this.hidden||!Object.values(this.enabled).some(Boolean))this.configureSession(false);
       const active=!this.hidden&&this.ac.state==='running',target={rain:active&&this.enabled.rain?this.volume:0,
-        crickets:active&&this.enabled.ambient?.055:0,music:active&&this.enabled.music?.07:0};
+        crickets:active&&this.enabled.ambient?.18:0,music:active&&this.enabled.music?.07:0};
       this.onPlayback(active);
       for(const [key,value] of Object.entries(target))this.gains[key].gain.setTargetAtTime(value,this.ac.currentTime,.65);
       if(active&&this.enabled.music)this.startMusic();else{clearTimeout(this.musicTimer);this.musicTimer=null}

@@ -508,49 +508,39 @@
   function beginSurprise(kind){
     const kinds=night?['frog','leaf','petals']:['dragonfly','frog','leaf','petals'];
     kind=kind||kinds[Math.floor(Math.random()*kinds.length)];
-    const candidates=decorSprites.slice(0,LILY_PADS.length).map((p,i)=>({p,i})).filter(({p})=>p.x>.06&&p.x<.8&&p.y>.25&&p.y<.8);
-    sceneEvent={kind,age:0,duration:kind==='dragonfly'?20:kind==='frog'?16:26,pad:candidates[Math.floor(Math.random()*candidates.length)].i,phase:rand(0,6)};
-    if(kind==='dragonfly')announce('A dragonfly stopped for a moment.');
-    if(kind==='frog')announce('A little visitor on the lily pads.');
+    sceneEvent=PondSurprises.create(kind,LILY_PADS);
+    if(kind==='dragonfly')announce('Dragonflies are exploring the pond.');
+    if(kind==='frog')announce('A few little visitors on the lily pads.');
   }
+
   function updateSurprises(dt){
     if(sceneEvent){sceneEvent.age+=dt;if(sceneEvent.age>=sceneEvent.duration){sceneEvent=null;surpriseIn=rand(90,210)}}
     else{surpriseIn-=dt;if(surpriseIn<=0)beginSurprise()}
   }
   function drawSurprise(){
     if(!sceneEvent)return;
-    const e=sceneEvent,age=e.age,progress=age/e.duration,fade=Math.min(1,age/2,(e.duration-age)/2);
-    ctx.save();ctx.globalAlpha=fade*.85;
-    if(e.kind==='leaf'||e.kind==='petals'){
-      const count=e.kind==='petals'?5:1;
-      for(let i=0;i<count;i++){
-        const p=clamp(progress-i*.025,0,1),x=w*(.12+p*.68)+Math.sin(age*.3+i)*18,y=-25+p*(h+60)-i*14;
-        ctx.save();ctx.translate(x,y);ctx.rotate(age*.12+i);
-        ctx.fillStyle=e.kind==='leaf'?'#b9ad6c':'#e7c6c8';ctx.beginPath();
-        if(e.kind==='leaf'){ctx.moveTo(-13,0);ctx.quadraticCurveTo(0,-12,15,0);ctx.quadraticCurveTo(0,12,-13,0)}else ctx.ellipse(0,0,5,3,.4,0,Math.PI*2);
-        ctx.fill();if(e.kind==='leaf'){ctx.strokeStyle='#65734c';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(11,0);ctx.stroke()}ctx.restore();
-      }
-    }else{
-      const pose=decorPose(decorSprites[e.pad]);
-      const arrival=clamp(age/3,0,1),departure=clamp((age-e.duration+3)/3,0,1);
-      const smooth=arrival*arrival*(3-2*arrival);
-      let x=pose.x,y=pose.y;
-      if(arrival<1){x=-30+(pose.x+30)*smooth;y=pose.y-70*(1-smooth)-Math.sin(arrival*Math.PI)*30}
-      if(departure>0){x=pose.x+(w+30-pose.x)*departure;y=pose.y-Math.sin(departure*Math.PI)*50}
-      ctx.translate(x,y);
-      if(e.kind==='dragonfly'){
-        ctx.rotate(.35);const flying=arrival<1||departure>0,wing=flying?Math.sin(age*65)*.5:.08;
+    const e=sceneEvent,pads=decorSprites.slice(0,LILY_PADS.length).map(decorPose);
+    for(const actor of e.actors){
+      const pose=PondSurprises.pose(e,actor,pads,w,h);if(!pose)continue;
+      ctx.save();ctx.globalAlpha=pose.fade*.85;ctx.translate(pose.x,pose.y);ctx.rotate(pose.angle);ctx.scale(actor.scale,actor.scale);
+      if(e.kind==='leaf'||e.kind==='petals'){
+        ctx.fillStyle=e.kind==='leaf'?'#b9ad6c':'#e7b7c8';ctx.beginPath();
+        if(e.kind==='leaf'){ctx.moveTo(-13,0);ctx.quadraticCurveTo(0,-12,15,0);ctx.quadraticCurveTo(0,12,-13,0)}
+        else{ctx.moveTo(0,6);ctx.bezierCurveTo(-9,0,-6,-7,-2,-6);ctx.lineTo(0,-3);ctx.lineTo(2,-6);ctx.bezierCurveTo(6,-7,9,0,0,6)}
+        ctx.fill();if(e.kind==='leaf'){ctx.strokeStyle='#65734c';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(11,0);ctx.stroke()}
+      }else if(e.kind==='dragonfly'){
+        const wing=pose.flying?Math.sin((e.age-actor.delay)*65+actor.phase)*.5:.08;
         ctx.fillStyle='rgba(221,237,222,.65)';
         for(const side of SIDES)for(const back of [-1,1]){ctx.beginPath();ctx.ellipse(side*8,back*4,10,2.5,side*(wing+back*.35),0,Math.PI*2);ctx.fill()}
         ctx.strokeStyle='#77a5a0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(0,15);ctx.stroke();ctx.fillStyle='#bdcda6';ctx.beginPath();ctx.arc(0,-9,3,0,7);ctx.fill();
       }else{
-        ctx.rotate(-.3);ctx.fillStyle='#73915a';
-        for(const side of SIDES){ctx.beginPath();ctx.ellipse(side*8,6,5,3,side*.5,0,7);ctx.fill()}
+        ctx.fillStyle='#73915a';
+        for(const side of SIDES){ctx.beginPath();ctx.ellipse(side*8,pose.flying?10:6,5,3,side*.5,0,7);ctx.fill()}
         ctx.beginPath();ctx.ellipse(0,0,9,11,0,0,7);ctx.fill();
         for(const side of SIDES){ctx.fillStyle='#9ead70';ctx.beginPath();ctx.arc(side*5,-8,4,0,7);ctx.fill();ctx.fillStyle='#233c2d';ctx.beginPath();ctx.arc(side*5,-9,1.5,0,7);ctx.fill()}
       }
+      ctx.restore();
     }
-    ctx.restore();
   }
   const soundBtn=document.querySelector('#sound'),ambientBtn=document.querySelector('#ambient'),musicBtn=document.querySelector('#music');
   const rainVolInput=document.querySelector('#rainvol'),rainVolValue=document.querySelector('#rainvol-value'),resumeAudioBtn=document.querySelector('#resume-audio');
@@ -569,16 +559,21 @@
     resumeAudioBtn.hidden=!needsTap;
     const message=document.querySelector('#audio-status');
     if(needsTap)message.textContent='Tap the pond to resume your sounds.';
-    else if(message.textContent==='Tap the pond to resume your sounds.')message.textContent='';
+    else if(audio.loading.size)message.textContent='Loading sounds…';
+    else if(['Tap the pond to resume your sounds.','Loading sounds…'].includes(message.textContent))message.textContent='';
   }
   function resumeSavedAudio(){
     if(document.hidden)return;
     const wanted={...audioPreferences};
     for(const name of Object.keys(wanted))if(wanted[name])audio.toggle(name,true);
   }
-  soundBtn.onclick=()=>audio.toggle('rain',!audio.enabled.rain);
-  ambientBtn.onclick=()=>audio.toggle('ambient',!audio.enabled.ambient);
-  musicBtn.onclick=()=>audio.toggle('music',!audio.enabled.music);
+  function toggleSound(name){
+    const interrupted=audio.enabled[name]&&audio.ac?.state!=='running';
+    audio.toggle(name,interrupted||!audio.enabled[name]);
+  }
+  soundBtn.onclick=()=>toggleSound('rain');
+  ambientBtn.onclick=()=>toggleSound('ambient');
+  musicBtn.onclick=()=>toggleSound('music');
   resumeAudioBtn.onclick=resumeSavedAudio;
   document.addEventListener('click',e=>{
     if(e.target.closest?.('#sound,#ambient,#music,#resume-audio'))return;
