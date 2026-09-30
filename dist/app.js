@@ -555,7 +555,7 @@
     syncAudioRecovery();queueSave();
   },message=>{document.querySelector('#audio-status').textContent=message},()=>syncAudioRecovery());
   function syncAudioRecovery(){
-    const needsTap=Object.values(audioPreferences).some(Boolean)&&audio.ac?.state!=='running';
+    const needsTap=Object.values(audioPreferences).some(Boolean)&&(!Object.values(audio.enabled).some(Boolean)||audio.needsResume);
     resumeAudioBtn.hidden=!needsTap;
     const message=document.querySelector('#audio-status');
     if(needsTap)message.textContent='Tap the pond to resume your sounds.';
@@ -568,7 +568,7 @@
     for(const name of Object.keys(wanted))if(wanted[name])audio.toggle(name,true);
   }
   function toggleSound(name){
-    const interrupted=audio.enabled[name]&&audio.ac?.state!=='running';
+    const interrupted=audio.enabled[name]&&!audio.loading.has(name)&&!audio.isPlaying(name);
     audio.toggle(name,interrupted||!audio.enabled[name]);
   }
   soundBtn.onclick=()=>toggleSound('rain');
@@ -577,7 +577,7 @@
   resumeAudioBtn.onclick=resumeSavedAudio;
   document.addEventListener('click',e=>{
     if(e.target.closest?.('#sound,#ambient,#music,#resume-audio'))return;
-    if(Object.values(audioPreferences).some(Boolean)&&audio.ac?.state!=='running')resumeSavedAudio();
+    if(Object.values(audioPreferences).some(Boolean)&&(!Object.values(audio.enabled).some(Boolean)||audio.needsResume))resumeSavedAudio();
   });
   rainVolInput.oninput=()=>{const value=Number(rainVolInput.value);rainVolValue.textContent=`${value}%`;audio.setVolume(value);queueSave()};
   koiPicker.onchange=()=>{const f=fish.find(f=>f.id===koiPicker.value);if(f)showKoi(f)};
@@ -600,6 +600,7 @@
   document.addEventListener('visibilitychange',()=>{savePond();audio.visibility(document.hidden);if(!document.hidden){last=performance.now();checkGrowthAndVisitors()}});
   window.addEventListener('pagehide',()=>{savePond();audio.visibility(true)});
   window.addEventListener('pageshow',()=>{audio.visibility(document.hidden);syncAudioRecovery()});
+  window.addEventListener('focus',()=>{if(!document.hidden)audio.visibility(false)});
   let resizeRaf=0;
   window.addEventListener('resize',()=>{cancelAnimationFrame(resizeRaf);resizeRaf=requestAnimationFrame(()=>resize())});
   resize();

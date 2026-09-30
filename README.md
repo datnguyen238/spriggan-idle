@@ -48,3 +48,5 @@ The canvas renders at up to 2× pixel density. On slower devices, decorative eff
 Vercel Web Analytics is included in `dist/index.html` using the plain HTML integration; no npm package or React component is needed. Enable **Analytics** for this project in Vercel, push and deploy, then visit the live site. Visitor and page-view counts appear in the project's Analytics dashboard after collection begins.
 
 The `/_vercel/insights/script.js` endpoint is provided by Vercel. A simple local server does not provide that endpoint; its local 404 does not affect the pond. Live collection must be verified after deployment; content blockers may prevent tracking.
+
+Rain and cricket recordings use persistent native audio players, which are paused in the background and restarted on return. A rejected restart shows the resume control; browser autoplay policy may still require a tap. Generated music continues to use Web Audio.

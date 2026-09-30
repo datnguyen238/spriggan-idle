@@ -1,70 +1,110 @@
-/* Quiet, opt-in audio layers. No audio context or downloads before a gesture. */
+/* Recorded ambience uses persistent native audio players; Web Audio is only for music. */
 (()=>{
   'use strict';
+  const FILES={rain:'mixkit-light-rain-loop-2393.wav',ambient:'mixkit-night-crickets-near-the-swamp-1782.wav'};
   class PondAudio{
     constructor(onChange,onError,onPlayback=()=>{}){
-      this.onPlayback=onPlayback;this.onChange=onChange;this.onError=onError;this.enabled={rain:false,ambient:false,music:false};this.volume=.2;
-      this.ac=null;this.loading=new Set();this.loads=new Map();this.sources=new Map();this.musicTimer=null;this.suspendTimer=null;this.noteIndex=0;this.hidden=false;
+      this.onChange=onChange;this.onError=onError;this.onPlayback=onPlayback;
+      this.enabled={rain:false,ambient:false,music:false};this.volume=.2;this.hidden=false;
+      this.players=new Map();this.pending=new Map();this.loading=new Set();this.blocked=new Set();
+      this.ac=null;this.musicTimer=null;this.noteIndex=0;this.returnTimer=null;
     }
     configureSession(playback){
-      // Safari's default Web Audio category may obey the phone's silent switch.
-      // Request media playback only while the user wants pond audio.
-      try{
-        const session=globalThis.navigator?.audioSession,type=playback?'playback':'auto';
-        if(session&&session.type!==type)session.type=type;
-      }catch{} // Older browsers can continue using ordinary Web Audio.
+      try{const session=globalThis.navigator?.audioSession,type=playback?'playback':'auto';if(session&&session.type!==type)session.type=type}catch{}
     }
-    init(){
+    isPlaying(name){
+      if(this.hidden||!this.enabled[name])return false;
+      if(name==='music')return this.ac?.state==='running';
+      const player=this.players.get(name);
+      return !!player&&!player.paused&&!player.ended&&player.readyState>=2&&!this.blocked.has(name);
+    }
+    get needsResume(){
+      return !this.hidden&&Object.keys(this.enabled).some(name=>this.enabled[name]&&!this.isPlaying(name)&&!this.loading.has(name));
+    }
+    player(name){
+      if(this.players.has(name))return this.players.get(name);
+      const player=new Audio();player.preload='none';player.loop=true;player.setAttribute('playsinline','');player.src=FILES[name];
+      player.volume=name==='rain'?this.volume:.18;this.players.set(name,player);
+      player.addEventListener('playing',()=>{
+        if(this.hidden||!this.enabled[name]){player.pause();return}
+        this.loading.delete(name);this.blocked.delete(name);this.notify();
+      });
+      player.addEventListener('pause',()=>{if(!this.hidden&&this.enabled[name]&&!this.pending.has(name))this.blocked.add(name);this.notify()});
+      player.addEventListener('waiting',()=>{if(!this.hidden&&this.enabled[name])this.loading.add(name);this.notify()});
+      player.addEventListener('error',()=>{if(!this.hidden&&this.enabled[name])this.fail(name)});
+      return player;
+    }
+    notify(){this.onPlayback(Object.keys(this.enabled).some(name=>this.isPlaying(name)))}
+    fail(name){
+      this.pending.delete(name);this.loading.delete(name);this.blocked.add(name);this.notify();
+      this.onError(`${name==='ambient'?'Nature sounds':name==='music'?'Music':'Rain sound'} could not start. Tap its button to retry.`);
+    }
+    startRecording(name){
+      if(this.hidden||!this.enabled[name])return Promise.resolve();
+      if(this.pending.has(name))return this.pending.get(name).promise;
+      const player=this.player(name),request={};
+      this.pending.set(name,request);this.loading.add(name);this.blocked.delete(name);this.notify();
+      // Call play() directly inside the tap handler, before any asynchronous work.
+      let playback;try{playback=player.play()}catch(error){playback=Promise.reject(error)}
+      request.promise=Promise.resolve(playback).then(()=>{
+        if(this.pending.get(name)!==request)return;
+        if(this.hidden||!this.enabled[name])player.pause();
+        else this.blocked.delete(name);
+      }).catch(error=>{
+        if(this.pending.get(name)!==request||this.hidden||!this.enabled[name])return;
+        this.blocked.add(name);
+        if(error.name!=='NotAllowedError'&&error.name!=='AbortError')this.onError(`${name==='ambient'?'Nature sounds':'Rain sound'} could not load. Tap its button to retry.`);
+      }).finally(()=>{
+        if(this.pending.get(name)!==request)return;
+        this.pending.delete(name);this.loading.delete(name);this.notify();
+      });
+      return request.promise;
+    }
+    initMusic(){
       if(this.ac&&this.ac.state!=='closed')return;
-      this.loads.clear();this.sources.clear();
-      const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('Audio is unavailable in this browser.');
-      this.ac=new AC();this.gains={};
-      this.ac.onstatechange=()=>this.sync();
-      for(const name of ['rain','crickets','music']){const gain=this.ac.createGain();gain.gain.value=0;gain.connect(this.ac.destination);this.gains[name]=gain}
+      const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('Audio is unavailable.');
+      this.ac=new AC();const gain=this.ac.createGain();gain.gain.value=0;gain.connect(this.ac.destination);this.gains={music:gain};
+      this.ac.onstatechange=()=>this.syncMusic();
     }
-    async load(name,file){
-      if(this.loads.has(name))return this.loads.get(name);
-      this.loading.add(name);this.sync();
-      const job=(async()=>{
-        const response=await fetch(file);if(!response.ok)throw Error(`Unable to load ${name}`);
-        const buffer=await this.ac.decodeAudioData(await response.arrayBuffer());
-        const source=this.ac.createBufferSource();source.buffer=buffer;source.loop=true;source.connect(this.gains[name]);source.start();this.sources.set(name,source);
-      })();
-      this.loads.set(name,job);
-      try{await job}catch(error){this.loads.delete(name);throw error}finally{this.loading.delete(name);this.sync()}
+    startMusicPlayback(){
+      try{
+        this.initMusic();this.ac.resume().then(()=>this.syncMusic()).catch(()=>{this.blocked.add('music');this.notify()});this.syncMusic();
+      }catch{this.fail('music')}
     }
     async toggle(name,on){
       if(!(name in this.enabled))return;
       this.enabled[name]=on;this.onChange({...this.enabled});
-      if(!on){this.sync();return}
-      try{
-        this.configureSession(true);this.init();this.resume();
-        if(name==='rain')await this.load('rain','mixkit-light-rain-loop-2393.wav');
-        if(name==='ambient')await this.load('crickets','mixkit-night-crickets-near-the-swamp-1782.wav');
-        this.sync();
-      }catch{
-        this.enabled[name]=false;this.sync();this.onChange({...this.enabled});this.onError(`${name==='ambient'?'Nature sounds':name==='music'?'Music':'Rain sound'} could not start. Tap to retry.`);
-      }
-    }
-    resume(){
-      if(!this.ac||this.hidden||!Object.values(this.enabled).some(Boolean))return;
-      // A mobile browser may leave resume() pending until the next user gesture.
-      // Keep loading the selected layers and display a retry instead of waiting forever.
+      if(!on){this.stop(name);this.syncSession();return}
+      if(this.hidden){this.notify();return}
       this.configureSession(true);
-      this.ac.resume().then(()=>this.sync()).catch(()=>this.sync());
-      this.sync();
+      if(name==='music')this.startMusicPlayback();else await this.startRecording(name);
     }
-    setVolume(percent){this.volume=percent/100*.5;this.sync()}
-    sync(){
+    stop(name){
+      this.pending.delete(name);this.loading.delete(name);this.blocked.delete(name);
+      if(name==='music'){this.syncMusic();if(this.ac)this.ac.suspend().catch(()=>{})}
+      else this.players.get(name)?.pause();
+      this.notify();
+    }
+    syncSession(){
+      // Keep the authorized playback category over app switches; release it on mute.
+      this.configureSession(Object.values(this.enabled).some(Boolean));
+    }
+    setVolume(percent){this.volume=percent/100*.5;const rain=this.players.get('rain');if(rain)rain.volume=this.volume}
+    resume(){
+      if(this.hidden)return;
+      this.syncSession();
+      const jobs=[];
+      for(const name of Object.keys(this.enabled))if(this.enabled[name]){
+        if(name==='music')this.startMusicPlayback();else jobs.push(this.startRecording(name));
+      }
+      return Promise.all(jobs);
+    }
+    syncMusic(){
       if(!this.ac)return;
-      clearTimeout(this.suspendTimer);
-      if(this.hidden||!Object.values(this.enabled).some(Boolean))this.configureSession(false);
-      const active=!this.hidden&&this.ac.state==='running',target={rain:active&&this.enabled.rain?this.volume:0,
-        crickets:active&&this.enabled.ambient?.18:0,music:active&&this.enabled.music?.07:0};
-      this.onPlayback(active);
-      for(const [key,value] of Object.entries(target))this.gains[key].gain.setTargetAtTime(value,this.ac.currentTime,.65);
-      if(active&&this.enabled.music)this.startMusic();else{clearTimeout(this.musicTimer);this.musicTimer=null}
-      if(!Object.values(this.enabled).some(Boolean))this.suspendTimer=setTimeout(()=>{if(!Object.values(this.enabled).some(Boolean))this.ac.suspend().catch(()=>{})},2500);
+      const active=!this.hidden&&this.enabled.music&&this.ac.state==='running';
+      this.gains.music.gain.setTargetAtTime(active?.07:0,this.ac.currentTime,.65);
+      if(active){this.blocked.delete('music');this.startMusic()}else{clearTimeout(this.musicTimer);this.musicTimer=null}
+      this.notify();
     }
     startMusic(){
       if(this.musicTimer!==null)return;
@@ -79,9 +119,14 @@
         this.musicTimer=setTimeout(play,6500);
       };play();
     }
-    async visibility(hidden){
-      this.hidden=hidden;this.sync();if(!this.ac)return;
-      try{if(hidden)await this.ac.suspend();else this.resume()}catch{this.sync()}
+    visibility(hidden){
+      const returning=this.hidden&&!hidden;this.hidden=hidden;clearTimeout(this.returnTimer);
+      if(hidden){for(const name of Object.keys(this.enabled))this.stop(name);return Promise.resolve()}
+      const result=this.resume();
+      // WebKit may deliver pageshow/visibilitychange before its media session is ready.
+      // One bounded retry handles that transition without an endless autoplay loop.
+      if(returning)this.returnTimer=setTimeout(()=>{if(!this.hidden&&this.needsResume)this.resume()},450);
+      return result;
     }
   }
   globalThis.PondAudio=PondAudio;
