@@ -3,8 +3,8 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const root=process.env.POND_PROJECT||path.join(__dirname,'..');
-const Plants=require(path.join(root,'dist/pond-plants.js'));
-const app=fs.readFileSync(path.join(root,'dist/app.js'),'utf8');
+const Plants=require(path.join(root,'dist/pond/pond-plants.js'));
+const app=fs.readFileSync(path.join(root,'dist/pond/app.js'),'utf8');
 const definitions=Function('return '+app.match(/const LILY_PADS=(\[[\s\S]*?\n  \]);/)[1])();
 function check(bodies,w,h){
  for(const b of bodies){assert(b.x>=b.radius+2.99&&b.x<=w-b.radius-2.99);assert(b.y>=b.radius+2.99&&b.y<=h-b.radius-2.99)}

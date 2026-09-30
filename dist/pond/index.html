@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a292b">
+  <meta name="description" content="A quiet interactive koi pond. Feed the fish and watch them swim.">
+  <title>Spriggan — Koi Pond</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230a292b'/%3E%3Cpath d='M11 35c13-17 28-16 43-3-15 13-30 14-43-3l6 3-6 3z' fill='%23f6e7c9'/%3E%3Ccircle cx='42' cy='30' r='3' fill='%23ba583c'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500&display=swap">
+  <style>
+    :root{font-family:'DM Sans',system-ui,sans-serif;color:#f1eddd;background:#102e2b;font-synthesis:none;color-scheme:dark}
+    *{box-sizing:border-box}html,body{height:100%;margin:0}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.4}
+    main{height:100dvh;min-height:640px;position:relative;overflow:hidden;background:#163e36}
+    #pond{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+    .vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 56% 42%,transparent 25%,rgba(5,25,23,.18) 66%,rgba(4,21,20,.72) 100%)}
+    .frame{position:absolute;inset:18px;border:1px solid #e6ead31a;border-radius:4px;pointer-events:none}
+    header{position:absolute;top:0;left:0;right:0;z-index:2;padding:42px 52px;display:flex;align-items:center;justify-content:space-between;gap:20px;pointer-events:none}
+    .brand{display:flex;align-items:center;gap:13px}.mark{height:42px;width:42px;border:1px solid #ded9bd66;border-radius:50%;display:grid;place-items:center;color:#e8dcb8}.mark svg{width:25px;height:25px}
+    h1{font:500 21px/1 'Fraunces',Georgia,serif;letter-spacing:-.045em;margin:0;color:#f4eee0}.brand small{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.28em;color:#bcc9b9;margin-top:8px}
+    .top-note{display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.07em;color:#d9dfce}.live-dot{width:5px;height:5px;border-radius:50%;background:#c5d5ac;box-shadow:0 0 12px #b6d8a14d}
+    .header-right{display:flex;align-items:center;gap:14px}
+    .sound-btn{pointer-events:auto;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #ded9bd66;border-radius:50%;background:transparent;color:#e8dcb8;transition:background .2s}.sound-btn:hover{background:#ffffff14}.sound-btn[aria-pressed=true]{background:#ffffff1f}.sound-btn:focus-visible{outline:2px solid #c5d5ac;outline-offset:3px}.sound-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+    .intro{position:absolute;top:155px;left:54px;pointer-events:none}.eyebrow{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:#bfc9ae;margin:0 0 17px}.intro h2{font:500 clamp(22px,1.8vw,26px)/1.12 'Fraunces',Georgia,serif;letter-spacing:-.045em;margin:0;color:#f3eddb}.intro h2 em{font-weight:500;color:#c8d1b3}.intro .intro-copy{font-size:10px;line-height:1.8;color:#bac9b8;margin:18px 0 0}
+    .bottom{position:absolute;z-index:2;left:28px;right:28px;bottom:52px;display:flex;flex-direction:column;align-items:flex-end;gap:17px;pointer-events:none}
+    .instruction{width:min(100%,230px);font-size:10px;line-height:1.6;color:#c6d3c2;text-align:center;text-shadow:0 2px 12px #061c1c;letter-spacing:.03em}.instruction strong{font-weight:500;color:#f7f0dc}.instruction br{display:none}.instruction br::after{content:' '}
+    .panel{pointer-events:auto;width:min(100%,230px);border:1px solid #fff8e6ab;border-radius:20px;background:#efeada;box-shadow:0 18px 60px #001b2466,0 2px 6px #001b2426;padding:17px 20px 14px;color:#294239;color-scheme:light}
+    .panel-heading{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:13px}.panel-heading h3{font-size:9px;font-weight:600;letter-spacing:.19em;text-transform:uppercase;margin:0;color:#6d7764}.status{font-size:10px;color:#62715d;display:flex;align-items:center;gap:7px}.status::before{content:'';width:5px;height:5px;border-radius:50%;background:#7c9563}
+    .controls{display:flex;flex-direction:column;align-items:stretch;gap:7px}.control{display:inline-flex;justify-content:center;align-items:center;gap:7px;border:1px solid #a5ad922e;background:transparent;color:#3b5043;border-radius:10px;padding:11px 12px;min-height:44px;font-size:11px;font-weight:500;white-space:nowrap;transition:background .2s,transform .2s}.control svg{width:16px;height:16px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.control:hover:not(:disabled){background:#dce0cd;transform:translateY(-1px)}.control:focus-visible,input:focus-visible{outline:2px solid #547153;outline-offset:4px}.control.primary{background:#294e3e;color:#f3edda;border-color:#294e3e;}.control.primary:hover:not(:disabled){background:#376149}.control[aria-pressed=true]{background:#d5dec6;border-color:#a6b597}.control.icon-only{padding:10px}.divider{display:none}
+    .range-line{display:flex;align-items:center;gap:13px;border-top:1px solid #a5ad9240;margin-top:13px;padding-top:12px;color:#6d7864;font-size:10px}.range-line label{white-space:nowrap}.range-line input{flex:1;min-width:60px;height:16px;accent-color:#4b6950;cursor:pointer}.range-line output{min-width:28px;text-align:right;color:#42553f;font-variant-numeric:tabular-nums}.pace-icon{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.3}
+    footer{position:absolute;left:53px;right:53px;bottom:25px;display:flex;justify-content:space-between;pointer-events:none;color:#aabca38f;font-size:9px;letter-spacing:.12em}footer kbd{font:inherit;border:1px solid #b5c4a832;border-radius:3px;padding:2px 4px;margin-right:5px}.pause-badge{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);padding:11px 18px;border:1px solid #e7e4c933;background:#163c33cc;border-radius:30px;font-size:11px;letter-spacing:.06em;pointer-events:none}.pause-badge[hidden]{display:none}
+    main[data-night=true] .intro h2 em{color:#b7c9d4}main[data-night=true] .panel{background:#e5e9e5}main[data-night=true] .live-dot{background:#b8d0de}
+    @media(min-width:1500px){.intro{top:180px;left:72px}header{padding:48px 72px}}
+    @media(max-width:720px){main{min-height:600px}.frame{inset:10px}header{padding:29px 27px}.mark{width:35px;height:35px}h1{font-size:19px}.top-note{font-size:9px}.top-note .note-long{display:none}.intro{top:123px;left:30px}.intro h2{font-size:22px}.intro .intro-copy{font-size:10px;margin-top:12px}.eyebrow{font-size:8px;margin-bottom:13px}.bottom{left:22px;right:22px;bottom:max(45px,env(safe-area-inset-bottom));gap:13px}.panel{padding:15px;border-radius:17px}.divider{display:none}.control{font-size:11px;padding:10px 8px}.instruction{font-size:10px}.panel-heading{margin-bottom:11px}footer{left:29px;right:29px;bottom:21px;font-size:8px}footer .keyboard-hint{display:none}}
+    @media(max-width:370px){.top-note{display:none}.bottom{left:17px;right:17px}.intro h2{font-size:21px}.instruction{max-width:240px}}
+    @media(max-height:620px) and (min-width:721px){main{min-height:450px}.intro{top:120px}.intro h2{font-size:22px}.intro .intro-copy{display:none}.bottom{bottom:40px}.panel{width:min(100%,230px)}header{padding-top:29px}footer{bottom:17px}}
+    .range-line{width:100%;display:grid;grid-template-columns:15px minmax(0,1fr)28px;gap:8px}
+    .range-line label{grid-column:2 / -1}
+    .range-line input{grid-column:1 / 3;width:100%;min-width:0;margin:0}
+    .range-line output{grid-column:3;grid-row:2}
+    .feeding-status{margin:10px 0 0;color:#62715d;font-size:10px;line-height:1.5}
+    .range-line+.range-line{margin-top:10px;border-top:0;padding-top:0}
+    .panel-toggle{width:100%;justify-content:space-between;border-color:transparent;padding:0 8px}
+    .panel-toggle svg{transition:transform .2s}
+    .panel-toggle[aria-expanded=false] svg{transform:rotate(180deg)}
+    .panel-content{display:grid;grid-template-rows:1fr;opacity:1;visibility:visible;transition:grid-template-rows .32s cubic-bezier(.22,1,.36,1),opacity .22s ease,visibility 0s}
+    .panel-content-inner{min-height:0;overflow:hidden}
+    .panel-content-inner>.panel-heading{margin-top:13px}
+    .panel.is-collapsed .panel-content{grid-template-rows:0fr;opacity:0;visibility:hidden;transition-delay:0s,0s,.32s}
+    .instruction{transition:opacity .22s ease,visibility 0s}
+    .bottom.controls-collapsed .instruction{opacity:0;visibility:hidden;transition-delay:0s,.22s}
+    @media(prefers-reduced-motion:reduce){.control,.panel-toggle svg,.panel-content,.instruction{transition:none}}
+    .instruction{width:100%;margin:8px 0 12px;color:#62715d;text-shadow:none;text-align:left}.instruction strong{color:#294239}
+    .panel-content-inner{max-height:55dvh;overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain}
+    .panel-content-inner::-webkit-scrollbar{display:none;width:0;height:0}
+    .koi-picker-label{font-size:10px;color:#62715d;margin-top:4px}.koi-picker{width:100%;min-height:36px;border:1px solid #a5ad9266;border-radius:8px;background:#f7f2e4;color:#294239;font:inherit;font-size:11px;padding:6px}
+    .intro .memory-line{font-size:9px;color:#bbcab6;margin-top:12px;max-width:250px}
+    .audio-status{font-size:10px;color:#62715d;line-height:1.5;margin:8px 0 0}.audio-status:empty{display:none}
+    .koi-tag{position:absolute;left:0;top:0;will-change:transform;z-index:5;width:220px;padding:15px;border:1px solid #fff8e6ab;border-radius:16px;background:#efeada;color:#294239;box-shadow:0 12px 40px #06272055;font-size:11px;color-scheme:light}
+    .koi-link{position:absolute;inset:0;width:100%;height:100%;z-index:4;overflow:visible;pointer-events:none;color:#eee2b9}
+    .koi-link path{fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;opacity:.7}
+    .koi-link .halo{fill:none;stroke:currentColor;stroke-width:1;opacity:.4}.koi-link .dot{fill:currentColor;opacity:.9}
+    .koi-tag h3{overflow-wrap:anywhere;font:500 20px/1.2 'Fraunces',Georgia,serif;margin:0 25px 8px 0}.koi-tag p{font-size:10px;line-height:1.6;color:#62715d;margin:0 0 10px}.koi-tag .control{min-height:36px;font-size:10px}.tag-close{position:absolute;right:8px;top:8px;width:32px;height:32px;border:0;background:transparent;color:#294239;font-size:20px;cursor:pointer}
+    .koi-tag label{display:block;margin:8px 0}.koi-tag input{width:100%;border:1px solid #a5ad92;border-radius:6px;padding:8px;margin-bottom:8px;color:#294239;background:#fffaf0}.koi-tag input:focus-visible,.tag-close:focus-visible,.koi-picker:focus-visible{outline:2px solid #547153;outline-offset:2px}
+    .pond-moment{position:absolute;left:54px;bottom:70px;max-width:260px;color:#eee4c8;font-size:12px;line-height:1.6;opacity:0;transition:opacity .8s;pointer-events:none}.pond-moment.visible{opacity:1}
+    [hidden]{display:none!important}
+    @media(max-width:720px){.pond-moment{left:28px;bottom:auto;top:280px;max-width:160px;font-size:10px}.intro .intro-copy{margin-top:8px}.intro .memory-line{font-size:9px;max-width:210px;margin-top:6px}}
+    @media(prefers-reduced-motion:reduce){.pond-moment{transition:none}}
+  </style>
+  <link rel="stylesheet" href="./pond-timer.css">
+</head>
+<body>
+<main>
+  <canvas id="pond" tabindex="0" aria-label="Animated koi pond. Tap water to feed, or tap a koi to see its name. Use the Meet a koi menu for keyboard access."></canvas>
+  <div class="vignette"></div><div class="frame"></div>
+  <header>
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 17c6-9 15-9 22-2-7 8-16 9-22 2Z"/><path d="m6 17-3-5v9l3-4M12 13l4-5m-4 12 5 3"/><circle cx="23" cy="15" r="1" fill="currentColor"/></svg></span><div><h1>Spriggan</h1><small>Your personal space of peace</small></div></div>
+    <div class="header-right">
+      <div class="top-note"><span class="live-dot"></span><span id="light-label">Daylight</span><span class="note-long">&nbsp; / &nbsp; No hurry here</span></div>
+      <button class="sound-btn" id="sound" type="button" aria-pressed="false" aria-label="Turn on rain sound" title="Rain sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path d="m16 9 5 6m0-6-5 6"/></svg></button>
+    </div>
+  </header>
+  <div class="intro"><p class="eyebrow">A small escape, whenever you need it</p><h2>A little pause.<br><em>A little peace.</em></h2><p class="intro-copy">Let the world wait a moment.<br>There’s nowhere else you need to be.</p><p class="memory-line" id="pond-memory">Your pond is saved on this device.</p></div>
+  <div class="pause-badge" id="pause-badge" hidden>The pond is resting</div>
+  <div class="bottom">
+    <section class="panel" aria-label="Pond controls">
+      <button class="control panel-toggle" id="toggle-controls" type="button" aria-expanded="true" aria-controls="panel-content"><span>Hide controls</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="panel-content" id="panel-content">
+      <div class="panel-content-inner">
+    <div class="instruction" id="instruction"><strong>Touch the water</strong> to feed. Tap a koi to meet them.</div>
+
+      <div class="panel-heading"><h3>A moment by the pond</h3><span class="status" id="status" aria-live="polite">5 koi swimming</span><label class="koi-picker-label" for="koi-picker">Your koi</label><select class="koi-picker" id="koi-picker"><option value="">Meet a koi…</option></select></div>
+      <div class="controls">
+        <button class="control primary" id="feed" type="button" aria-describedby="feeding-status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c4-5 11-5 16 0-5 5-12 5-16 0Z"/><path d="m4 15-2-3v6l2-3"/><circle cx="16" cy="14" r=".6"/><path d="M10 5v2m5-4v2m-9 3v1"/></svg><span>Feed the koi</span></button>
+        <button class="control" id="add" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add a koi</span></button>
+        <button class="control" id="remove" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg><span>Remove a koi</span></button>
+        <span class="divider" aria-hidden="true"></span>
+        <button class="control icon-only" id="pause" type="button" aria-pressed="false" title="Pause pond"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg><span>Pause</span></button>
+        <button class="control" id="night" type="button" aria-pressed="false" title="Switch to moonlight"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14A8.5 8.5 0 0 1 10 4a8.5 8.5 0 1 0 10 10Z"/></svg><span>Moonlight</span></button>
+        <button class="control" id="rainfx" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 15a3.5 3.5 0 0 1-.4-6.98A5.5 5.5 0 0 1 16.6 7.4 3.8 3.8 0 0 1 17 15Z"/><path d="M8 18v2.5M12 18v2.5M16 18v2.5"/></svg><span>Add rain</span></button>
+        <button class="control" id="ambient" type="button" aria-pressed="false"><span>Nature sounds</span></button>
+        <button class="control" id="music" type="button" aria-pressed="false"><span>Gentle music</span></button>
+        <button class="control" id="resume-audio" type="button" hidden>Resume saved sounds</button>
+      </div>
+      <p class="audio-status" id="audio-status" role="status"></p>
+      <p class="feeding-status" id="feeding-status">Food in pond: 0 / 100</p>
+      <div class="range-line"><svg class="pace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c3-5 6 5 9 0s6 5 9 0M3 15c3-5 6 5 9 0s6 5 9 0"/></svg><label for="speed">Swimming pace</label><input id="speed" type="range" min="0.4" max="2" value="1" step="0.1"><output id="speed-value" for="speed">1.0×</output></div>
+      <div class="range-line"><svg class="pace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg><label for="rainvol">Rain volume</label><input id="rainvol" type="range" min="0" max="100" value="40" step="5"><output id="rainvol-value" for="rainvol">40%</output></div>
+      </div>
+      </div>
+    </section>
+  </div>
+  <section class="pomodoro" id="pomodoro" aria-label="Pomodoro timer" data-mode="focus">
+    <div class="timer-top"><h2 class="timer-heading">Time by the pond</h2><span class="timer-sessions" id="timer-sessions" role="img" aria-label="0 of 4 focus sessions complete"><i class="timer-dot"></i><i class="timer-dot"></i><i class="timer-dot"></i><i class="timer-dot"></i></span><span id="timer-summary"></span><button class="timer-icon" id="timer-collapse" type="button" aria-label="Minimize Pomodoro timer" aria-expanded="true" aria-controls="timer-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button></div>
+    <div id="timer-body">
+      <div class="timer-modes" role="group" aria-label="Timer session"><button type="button" data-timer-mode="focus" aria-pressed="true">Focus · 25m</button><button type="button" data-timer-mode="short" aria-pressed="false">Rest · 5m</button><button type="button" data-timer-mode="long" aria-pressed="false">Unwind · 15m</button></div>
+      <div class="timer-main"><div class="timer-orbit" aria-hidden="true"><svg viewBox="0 0 58 58"><circle class="timer-track" cx="29" cy="29" r="26"/><circle id="timer-progress" cx="29" cy="29" r="26"/></svg><span class="timer-leaf"><svg viewBox="0 0 28 28"><path d="M7 21C3 10 11 5 23 5c0 11-4 18-13 16M6 24 19 10m-8 9 0-6m4 2h5"/></svg></span></div><div class="timer-reading"><span id="timer-time" role="timer" aria-live="off">25:00</span><span id="timer-label">Focus softly</span></div><div class="timer-actions"><button class="timer-action" id="timer-action" type="button" aria-label="Start focus timer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z"/></svg><span>Begin</span></button><button class="timer-icon" id="timer-reset" type="button" aria-label="Reset current timer" title="Reset timer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></svg></button></div></div>
+      <p id="timer-status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+  <svg class="koi-link" id="koi-link" aria-hidden="true" hidden><path id="koi-link-line"/><circle class="halo" id="koi-link-halo" r="7"/><circle class="dot" id="koi-link-dot" r="2.5"/></svg>
+  <aside class="koi-tag" id="koi-tag" role="dialog" aria-labelledby="koi-tag-title" hidden>
+    <button class="tag-close" id="close-koi-tag" type="button" aria-label="Close koi name tag">×</button>
+    <h3 id="koi-tag-title"></h3><p id="koi-tag-detail"></p>
+    <button class="control" id="start-rename" type="button">Give a name</button>
+    <form id="rename-koi" hidden><label for="koi-name">Koi name</label><input id="koi-name" maxlength="24" autocomplete="off" required><button class="control primary" type="submit">Save name</button></form>
+  </aside>
+  <p class="pond-moment" id="pond-moment" role="status"></p>
+  <footer><span>AN IDLE APP MADE BY DAT NGUYEN</span><span class="keyboard-hint"><kbd>space</kbd> to pause &nbsp; · &nbsp; <kbd>esc</kbd> to cancel</span></footer>
+</main>
+<script src="./pond-life.js" defer></script>
+<script src="./pond-rain-loop.js" defer></script>
+<script src="./pond-audio.js" defer></script>
+<script src="./pond-plants.js" defer></script>
+<script src="./pond-surprises.js" defer></script>
+<script src="./app.js" defer></script>
+<script src="./pond-timer.js" defer></script>
+<!-- Vercel Web Analytics: served by Vercel after Analytics is enabled. -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

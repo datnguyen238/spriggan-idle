@@ -10,7 +10,7 @@ function setup(){
   createBufferSource(){const source={connect(){},start(){this.started=true},stop(){this.stopped=true},disconnect(){}};this.sources.push(source);return source}
  }
  const sandbox={window:{AudioContext:Context},fetch:async()=>{fetches++;return{ok:true,arrayBuffer:async()=>new ArrayBuffer(1)}}};
- vm.createContext(sandbox);vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist/pond-rain-loop.js'),'utf8'),sandbox);
+ vm.createContext(sandbox);vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist/pond/pond-rain-loop.js'),'utf8'),sandbox);
  return{loop:new sandbox.PondRainLoop(),contexts,fetches:()=>fetches,block:value=>{blocked=value}};
 }
 test('one buffer source loops continuously without timers, seeking, or second-player starts',async()=>{

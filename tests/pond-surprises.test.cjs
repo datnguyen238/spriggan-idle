@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict');
-const Events=require('../dist/pond-surprises.js');
+const Events=require('../dist/pond/pond-surprises.js');
 const pads=Array.from({length:10},(_,i)=>({x:.15+i%5*.17,y:.3+Math.floor(i/5)*.4}));
 function seeded(seed){return()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}}
 test('groups have requested counts, staggered arrivals, finite poses, and longer bounded lifetimes',()=>{
