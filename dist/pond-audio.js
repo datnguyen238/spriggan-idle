@@ -1,7 +1,7 @@
-/* Recorded ambience uses persistent native audio players; Web Audio is only for music. */
+/* Rain uses a continuous decoded loop; crickets use native audio; music is synthesized. */
 (()=>{
   'use strict';
-  const FILES={rain:'rain-crossfade.wav',ambient:'mixkit-night-crickets-near-the-swamp-1782.wav'};
+  const FILES={rain:'rain-seamless.wav',ambient:'mixkit-night-crickets-near-the-swamp-1782.wav'};
   class PondAudio{
     constructor(onChange,onError,onPlayback=()=>{}){
       this.onChange=onChange;this.onError=onError;this.onPlayback=onPlayback;

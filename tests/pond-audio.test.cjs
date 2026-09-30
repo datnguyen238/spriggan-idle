@@ -21,7 +21,7 @@ function setup(){
  const audio=new sandbox.PondAudio(()=>{},message=>errors.push(message),playing=>states.push(playing));
  return{audio,players,errors,states,session,timers};
 }
-test('rain and crickets start synchronously on tap, using native players and no AudioContext',async()=>{
+test('recording adapters start on tap without initializing the separate music context',async()=>{
  const {audio,players}=setup();const rain=audio.toggle('rain',true);assert.equal(players[0].calls,1);await rain;await audio.toggle('ambient',true);
  assert.equal(players.length,2);assert.equal(audio.isPlaying('rain'),true);assert.equal(audio.isPlaying('ambient'),true);assert.equal(audio.needsResume,false);assert.equal(audio.ac,null);
  assert(players.every(p=>p.loop));assert(players[0].src.includes('rain'));assert(players[1].src.includes('crickets'));

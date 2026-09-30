@@ -1,63 +1,60 @@
-/* Two authorized native players overlap the baked 1.2-second rain fades.
-   Baked fades also work on iOS, where script volume changes may be ignored. */
+/* One decoded rain buffer loops on the audio engine, without JS/media handoffs. */
 (()=>{
   class PondRainLoop{
     constructor(){
-      this.tracks=[new Audio(),new Audio()];this.active=0;this.listeners={};this.timer=null;this.generation=0;this.stopped=true;this.primed=false;this.switching=false;this.overlap=1.2;
-      for(const [index,track] of this.tracks.entries()){
-        track.loop=false;
-        track.addEventListener('playing',()=>{if(this.stopped){track.pause();return}if(index===this.active)this.emit('playing')});
-        track.addEventListener('waiting',()=>{if(index===this.active&&!this.stopped)this.emit('waiting')});
-        track.addEventListener('pause',()=>{if(index===this.active&&!this.stopped&&!this.switching){this.stopped=true;this.stopClock();this.emit('pause')}});
-        track.addEventListener('error',()=>{if(!this.stopped)this.emit('error')});
-        track.addEventListener('timeupdate',()=>this.tick());track.addEventListener('ended',()=>this.tick());
-      }
+      this.listeners={};this.context=null;this.gain=null;this.source=null;this.buffer=null;this.loading=null;
+      this.wanted=false;this.generation=0;this.level=.2;this.url='';
     }
-    set src(value){for(const t of this.tracks)t.src=value}
-    set preload(value){for(const t of this.tracks)t.preload=value}
-    set volume(value){for(const t of this.tracks)t.volume=value}
-    get volume(){return this.tracks[0].volume}
-    set loop(value){} // The overlap scheduler replaces native end-of-file looping.
-    get paused(){return this.stopped||this.tracks[this.active].paused}
-    get ended(){return this.stopped&&this.tracks[this.active].ended}
-    get readyState(){return this.tracks[this.active].readyState}
-    get currentTime(){return this.tracks[this.active].currentTime}
-    setAttribute(name,value){for(const t of this.tracks)t.setAttribute(name,value)}
+    set src(value){this.url=value}
+    set preload(value){}
+    set loop(value){}
+    setAttribute(){}
+    set volume(value){this.level=value;if(this.gain)this.gain.gain.setTargetAtTime(value,this.context.currentTime,.05)}
+    get volume(){return this.level}
+    get paused(){return !this.wanted||!this.source||this.context?.state!=='running'}
+    get ended(){return false}
+    get readyState(){return this.buffer?4:0}
+    get currentTime(){return this.context&&this.buffer?this.context.currentTime%this.buffer.duration:0}
     addEventListener(name,fn){(this.listeners[name]||=[]).push(fn)}
     emit(name){for(const fn of this.listeners[name]||[])fn()}
-    stopClock(){clearInterval(this.timer);this.timer=null}
-    play(){
-      if(!this.paused)return Promise.resolve();
-      const generation=++this.generation;this.stopped=false;
-      const current=this.tracks[this.active],standby=this.tracks[1-this.active];
-      // Resume from the beginning if the app left during the outgoing fade.
-      if(current.ended||current.currentTime>=current.duration-this.overlap)current.currentTime=0;
-      let priming=Promise.resolve();
-      // Both play calls occur in the original tap, authorizing both native players.
-      if(!this.primed){
-        standby.muted=true;
-        priming=Promise.resolve(standby.play()).then(()=>{if(generation!==this.generation)return;standby.pause();standby.currentTime=0;standby.muted=false;this.primed=true});
-      }
-      const playing=current.play();
-      return Promise.all([playing,priming]).then(()=>{
-        if(this.stopped||generation!==this.generation)return;
-        this.stopClock();this.timer=setInterval(()=>this.tick(),40);this.emit('playing');
-      }).catch(error=>{if(generation===this.generation)this.pause();throw error});
+    init(){
+      if(this.context&&this.context.state!=='closed')return;
+      const AC=window.AudioContext||window.webkitAudioContext;
+      this.context=new AC();this.gain=this.context.createGain();this.gain.gain.value=this.level;this.gain.connect(this.context.destination);
+      const context=this.context;
+      context.onstatechange=()=>{
+        if(context!==this.context||!this.wanted)return;
+        if(context.state==='running'&&this.source)this.emit('playing');
+        else if(context.state!=='running')this.emit('pause');
+      };
     }
-    tick(){
-      if(this.stopped||this.switching||!this.primed)return;
-      const outgoing=this.tracks[this.active],start=outgoing.duration-this.overlap;
-      if(!Number.isFinite(start)||start<=0||outgoing.currentTime<start)return;
-      const next=1-this.active,incoming=this.tracks[next],generation=this.generation;
-      this.switching=true;incoming.currentTime=Math.max(0,outgoing.currentTime-start);incoming.muted=false;
-      Promise.resolve(incoming.play()).then(()=>{
-        if(this.stopped||generation!==this.generation)return;
-        this.active=next;this.emit('playing');
-      }).catch(()=>{if(generation===this.generation){this.pause();this.emit('error')}}).finally(()=>{if(generation===this.generation)this.switching=false});
+    play(){
+      this.wanted=true;const generation=++this.generation;
+      this.init();const context=this.context;
+      // Resume inside the user's gesture; do not wait on a possibly blocked promise.
+      context.resume().then(()=>{if(context===this.context&&this.wanted&&this.source&&context.state==='running')this.emit('playing')}).catch(()=>{if(context===this.context&&this.wanted)this.emit('pause')});
+      if(!this.loading&&!this.buffer){
+        const url=this.url;
+        this.loading=fetch(url).then(response=>{if(!response.ok)throw Error('Rain could not load');return response.arrayBuffer()})
+          .then(bytes=>context.decodeAudioData(bytes)).then(buffer=>{this.buffer=buffer}).finally(()=>{this.loading=null});
+      }
+      return Promise.resolve(this.loading).then(()=>{
+        if(!this.wanted||generation!==this.generation||context!==this.context)return;
+        if(!this.source){
+          this.source=context.createBufferSource();this.source.buffer=this.buffer;this.source.loop=true;
+          this.source.loopStart=0;this.source.loopEnd=this.buffer.duration;this.source.connect(this.gain);this.source.start();
+        }
+        this.emit(context.state==='running'?'playing':'pause');
+      });
     }
     pause(){
-      this.stopped=true;this.generation++;this.switching=false;this.stopClock();
-      for(const track of this.tracks)track.pause();this.emit('pause');
+      this.wanted=false;this.generation++;
+      if(this.source){this.source.stop();this.source.disconnect();this.source=null}
+      // Retain decoded PCM, but discard Safari's interrupted playback context.
+      // Reopening builds a fresh context instead of trusting a stale running state.
+      const context=this.context;this.context=null;this.gain=null;
+      if(context){context.onstatechange=null;context.close().catch(()=>{})}
+      this.emit('pause');
     }
   }
   globalThis.PondRainLoop=PondRainLoop;

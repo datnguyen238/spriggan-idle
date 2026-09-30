@@ -49,6 +49,6 @@ Vercel Web Analytics is included in `dist/index.html` using the plain HTML integ
 
 The `/_vercel/insights/script.js` endpoint is provided by Vercel. A simple local server does not provide that endpoint; its local 404 does not affect the pond. Live collection must be verified after deployment; content blockers may prevent tracking.
 
-Rain and cricket recordings use persistent native audio players, which are paused in the background and restarted on return. A rejected restart shows the resume control; browser autoplay policy may still require a tap. Generated music continues to use Web Audio.
+Crickets use a persistent native audio player. Rain uses a decoded continuous loop. Both pause in the background and restart on return. A rejected restart shows the resume control; browser autoplay policy may still require a tap. Generated music continues to use Web Audio.
 
-Rain uses two native players with overlapping 1.2-second fades to cover end-of-file restart gaps. `dist/rain-crossfade.wav` is derived from the original included rain recording with complementary sine/cosine fades; keep it and `pond-rain-loop.js` in the deployed folder.
+Rain uses one continuously looping AudioBufferSource, with no JavaScript timers or media-player handoffs at loop boundaries. `dist/rain-seamless.wav` blends the original recording’s tail into its head with a 1.2-second equal-power overlap, producing a 13.8-second cyclic recording without fade-to-silence. Its decoded buffer is retained across background pauses; its playback context is recreated on return. Keep this file and `pond-rain-loop.js` in the deployed folder.
