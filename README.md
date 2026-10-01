@@ -63,9 +63,23 @@ The bottom-center timer offers 25-minute focus, 5-minute rest, and 15-minute lon
 dist/
 ├── index.html    # Temporary redirect to the pond; future map selection page
 ├── pond/         # Current koi pond, including its Pomodoro timer and audio
-└── pixel/        # Reserved for a future pixel map (.gitkeep only)
+└── pixel/        # Sunny Side pixel chicken farm
 ```
 
-The pond is available at `/pond/`. The homepage redirects there until a map selection page is built. No pixel map or landing page is implemented yet. Put the future pixel map entry point at `dist/pixel/index.html`. Keep map-specific scripts and assets inside their map folder and use relative asset URLs.
+The pond is available at `/pond/`. The homepage redirects there until a map selection page is built. The pixel farm is available at `/pixel/`; the map selection landing page is not implemented yet. Keep map-specific scripts and assets inside their map folder and use relative asset URLs.
 
 Vercel's output directory remains `dist`; no deployment setting changes are needed. Browser saves use the same origin and storage keys, so moving the pond to `/pond/` preserves existing pond and timer data on the same domain.
+
+## Sunny Side pixel farm
+
+Visit `/pixel/` (locally, `http://localhost:8000/pixel/`) for the chicken farm. It starts with Clover the hen and Bramble the rooster. Tap the yard or use Scatter feed to drop grain. Tap birds and eggs to inspect their progress. Each hen needs 100 eaten grains (meals) and an adult rooster to lay an egg. Her laying progress resets after each egg. Eggs hatch after three minutes; chicks become adults after 200 meals, without an additional age requirement. The flock is capped at 16 birds and eggs combined. New adult hens can lay too.
+
+Farm state saves separately from the pond in `spriggan.farm.v1`. Egg timers continue while away; chicks need their meals to grow, and food is only eaten while the farm is open and moving. Pausing animation stops wandering and eating but keeps egg timers running. Clearing browser storage clears this farm. Map artwork and interaction are in `dist/pixel/farm.js`; lifecycle and storage validation are in `farm-life.js`.
+
+The farm fills the viewport, with a collapsible control panel and expandable growth guide. Pixel artwork renders on an integer grid at up to 2× screen density for crisp edges on desktop and mobile.
+
+Farm saves migrate automatically to the meal-based lifecycle, preserving existing birds and feeding progress. Existing eggs use the three-minute incubation measured from their original laying time. The farm has no direct pond link; map navigation is reserved for the future landing page.
+
+To remove a chicken or chick, tap it or choose it under Your flock, then choose Remove from farm and confirm. Eggs stay in the farm. An empty farm stays empty after reload; once there are no birds or eggs, Start a new flock adds a fresh hen and rooster.
+
+Chickens and chicks follow independent random routes with gentle turns, varied walking speeds, and occasional brief pauses, with small steps, blinks, and pecking motions. Eggs stay in their nests and hatch independently while parents roam.
