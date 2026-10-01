@@ -1,13 +1,23 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="0; url=./pond/">
-  <title>Spriggan</title>
-  <script>location.replace('./pond/' + location.search + location.hash);</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142f2b"><meta name="description" content="Choose a little world to slow down in. Feed koi in Stillwater Pond or raise a chicken family at Sunny Side Farm.">
+<title>Spriggan — Choose your little world</title>
+<link rel="stylesheet" href="./landing.css">
 </head>
 <body>
-  <p><a href="./pond/">Enter the koi pond</a></p>
-</body>
-</html>
+<div class="page-frame" aria-hidden="true"></div>
+<header><a class="brand" href="./" aria-label="Spriggan home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27V12m0 8C5 21 4 9 5 5c9 0 13 5 11 15Zm0-4c0-7 4-11 12-11 0 7-4 12-12 11Z"/></svg><span>Spriggan<small>LITTLE WORLDS, SLOW DAYS</small></span></a><span class="header-note"><i></i> A little room to breathe</span></header>
+<main>
+<section class="intro"><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1>Somewhere quiet.<br><em>Something yours.</em></h1><p>Choose a little world. Settle in. Let the rest wait.</p></section>
+<section class="worlds" aria-label="Choose your map">
+<a class="world" href="./pond/" aria-label="Enter Stillwater Pond"><div class="preview pond"><img src="./previews/pond.png" width="600" height="600" alt="Koi swimming among floating lily pads in a green pond" fetchpriority="high"><span class="world-tag">01 / WATER &amp; WONDER</span><span class="enter">Enter pond <span aria-hidden="true">↗</span></span></div><div class="world-caption"><h2>Stillwater Pond</h2><span class="map-type">KOI POND</span></div><p>Soft rain, drifting lilies, and a few familiar fins.</p></a>
+<a class="world" href="./pixel/" aria-label="Enter Sunny Side Farm"><div class="preview farm"><img src="./previews/farm.png" width="600" height="600" alt="A pixel-art chicken farm with a wooden coop, hens, chicks, and a fenced garden"><span class="world-tag">02 / FEATHERS &amp; SUNSHINE</span><span class="enter">Enter farm <span aria-hidden="true">↗</span></span></div><div class="world-caption"><h2>Sunny Side Farm</h2><span class="map-type">PIXEL FARM</span></div><p>Little peeps, warm eggs, and room to grow.</p></a>
+<article class="world upcoming" aria-label="Incoming map, not yet available"><div class="preview incoming"><span class="world-tag">03 / A LITTLE MYSTERY</span><div class="seed-art" aria-hidden="true"><svg viewBox="0 0 100 100"><ellipse cx="50" cy="79" rx="26" ry="6"/><path d="M50 77V45M50 61C26 63 23 42 25 28c20 0 31 14 25 33ZM51 49c0-20 11-28 28-28 1 19-11 30-28 28Z"/><path class="spark" d="M19 16v8m-4-4h8M83 58v6m-3-3h6"/></svg><span>Still growing</span></div><span class="coming-badge">COMING SOON</span></div><div class="world-caption"><h2>Incoming</h2><span class="map-type">STAY CURIOUS</span></div><p>Another little world is taking root.</p></article>
+</section>
+<p class="save-note"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 6 3v5c0 4-6 7-6 7s-6-3-6-7V5Z"/><path d="m7 9 2 2 4-4"/></svg>Your worlds are saved in this browser. Come back whenever.</p>
+</main>
+<footer><span>A SMALL ESCAPE BY SPRIGGAN</span><span>No rush. You’re right on time.</span></footer>
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script><script defer src="/_vercel/insights/script.js"></script>
+</body></html>

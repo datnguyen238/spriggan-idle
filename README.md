@@ -61,12 +61,12 @@ The bottom-center timer offers 25-minute focus, 5-minute rest, and 15-minute lon
 
 ```text
 dist/
-├── index.html    # Temporary redirect to the pond; future map selection page
+├── index.html    # Map selection landing page
 ├── pond/         # Current koi pond, including its Pomodoro timer and audio
 └── pixel/        # Sunny Side pixel chicken farm
 ```
 
-The pond is available at `/pond/`. The homepage redirects there until a map selection page is built. The pixel farm is available at `/pixel/`; the map selection landing page is not implemented yet. Keep map-specific scripts and assets inside their map folder and use relative asset URLs.
+The homepage at `/` lets visitors choose Stillwater Pond at `/pond/` or Sunny Side Farm at `/pixel/`, with an inactive Incoming tile for a future world. Both maps have a Choose map link back to the homepage. Keep map-specific scripts and assets inside their map folder and use relative asset URLs.
 
 Vercel's output directory remains `dist`; no deployment setting changes are needed. Browser saves use the same origin and storage keys, so moving the pond to `/pond/` preserves existing pond and timer data on the same domain.
 
@@ -78,8 +78,12 @@ Farm state saves separately from the pond in `spriggan.farm.v1`. Egg timers cont
 
 The farm fills the viewport, with a collapsible control panel and expandable growth guide. Pixel artwork renders on an integer grid at up to 2× screen density for crisp edges on desktop and mobile.
 
-Farm saves migrate automatically to the meal-based lifecycle, preserving existing birds and feeding progress. Existing eggs use the three-minute incubation measured from their original laying time. The farm has no direct pond link; map navigation is reserved for the future landing page.
+Farm saves migrate automatically to the meal-based lifecycle, preserving existing birds and feeding progress. Existing eggs use the three-minute incubation measured from their original laying time. The farm links back to the map-selection landing page.
 
 To remove a chicken or chick, tap it or choose it under Your flock, then choose Remove from farm and confirm. Eggs stay in the farm. An empty farm stays empty after reload; once there are no birds or eggs, Start a new flock adds a fresh hen and rooster.
 
 Chickens and chicks follow independent random routes with gentle turns, varied walking speeds, and occasional brief pauses, with small steps, blinks, and pecking motions. Eggs stay in their nests and hatch independently while parents roam.
+
+## Map selection page
+
+The homepage is `dist/index.html`, styled by `dist/landing.css`. Square previews in `dist/previews/` are static captures of the real map canvases, so choosing a map does not start simulations or load audio in the background. The Incoming tile is not interactive. Map saves remain separate and keep their existing browser storage keys. Vercel continues serving `dist` with no build step.
