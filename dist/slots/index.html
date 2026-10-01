@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#17382c">
+  <meta name="description" content="A little luck, a growing garden, and a golden koi waiting to come home. A free Spriggan slot game.">
+  <title>Golden Seed — Spriggan</title>
+  <link rel="stylesheet" href="./slots.css">
+  <script defer src="../pond/pond-life.js"></script>
+  <script defer src="./slots-life.js"></script>
+  <script defer src="./slots-art.js"></script>
+  <script defer src="./slots.js"></script>
+</head>
+<body>
+  <div class="page-frame" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="../"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27V12m0 8C5 21 4 9 5 5c9 0 13 5 11 15Zm0-4c0-7 4-11 12-11 0 7-4 12-12 11Z"/></svg><span>Spriggan<small>LITTLE WORLDS, SLOW DAYS</small></span></a>
+    <a class="map-link" href="../">Choose map <span aria-hidden="true">↗</span></a>
+  </header>
+  <main>
+    <div class="preview-banner" id="preview-banner" hidden>Final garden preview · your saves are untouched. <a href="./">Back to the game ↗</a></div>
+    <section class="intro">
+      <div><p class="eyebrow">03 / A LITTLE LUCK &amp; LIFE <span class="test-badge">TEST GARDEN</span></p><h1>Golden Seed<span>A little luck. Something grows.</span></h1><p class="intro-copy">Turn the reels. Tend a little world. Maybe meet a familiar golden fin.</p></div>
+      <div class="seed-purse"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 22C5 10 16 6 24 7c1 10-4 21-14 15Z"/><path d="m10 23 10-12"/></svg><div><strong id="balance">200</strong><span>YOUR SEEDS</span></div></div>
+    </section>
+    <section class="garden-stage" aria-label="Golden Seed garden and slot machine">
+      <canvas id="garden" aria-hidden="true"></canvas>
+      <div class="stage-top"><span><i></i> THE LUCKY LITTLE GARDEN</span><div class="settings"><button id="sound" type="button" aria-pressed="false">Sound off</button><button id="motion" type="button" aria-pressed="true">Motion on</button></div></div>
+      <div class="machine" id="machine">
+        <i class="pin pin-tl" aria-hidden="true"></i><i class="pin pin-tr" aria-hidden="true"></i><i class="pin pin-bl" aria-hidden="true"></i><i class="pin pin-br" aria-hidden="true"></i>
+        <div class="machine-crest"><span aria-hidden="true">✦</span><p>GOLDEN SEED<small>A GARDEN OF SMALL WONDERS</small></p><span aria-hidden="true">✦</span></div>
+        <div class="reel-frame" id="reels" role="group" aria-label="Three reels: leaf, flower, egg">
+          <div class="reel"><canvas width="192" height="224" aria-hidden="true"></canvas><span class="symbol-name">LEAF</span></div>
+          <div class="reel"><canvas width="192" height="224" aria-hidden="true"></canvas><span class="symbol-name">FLOWER</span></div>
+          <div class="reel"><canvas width="192" height="224" aria-hidden="true"></canvas><span class="symbol-name">EGG</span></div>
+        </div>
+        <div class="machine-rule"><span aria-hidden="true">— ✧ —</span> THREE REELS. LITTLE POSSIBILITIES. <span aria-hidden="true">— ✧ —</span></div>
+        <button id="spin" class="spin-button" type="button"><span class="spin-icon" aria-hidden="true">↻</span><span id="spin-label">Spin the garden<small>10 seeds / one gentle turn</small></span><span aria-hidden="true">↗</span></button>
+        <button id="refill" class="refill-button" type="button" hidden>Gather 100 free seeds <span aria-hidden="true">✦</span></button>
+      </div>
+      <div class="result-strip" id="result" role="status" aria-live="polite" aria-atomic="true"><span id="result-mark" aria-hidden="true">✧</span><div><strong id="result-title">Small beginnings. Lovely possibilities.</strong><span id="result-detail">Every spin helps your garden grow.</span></div></div>
+      <div class="stage-bottom"><span>FREE PLAY · SEEDS HAVE NO CASH VALUE</span><span id="save-status">Saved in this browser</span></div>
+    </section>
+    <div class="below-garden">
+      <section class="journal" aria-labelledby="journal-title">
+        <div class="section-label"><span>YOUR LITTLE WORLD</span><span id="spin-count">0 TURNS</span></div>
+        <h2 id="journal-title">A garden, one turn at a time.</h2>
+        <p id="growth-copy">Eight turns until your first flowers. Every result counts.</p>
+        <div class="growth-track" id="growth-track" role="progressbar" aria-label="Garden growth" aria-valuemin="0" aria-valuemax="60" aria-valuenow="0"><div id="growth-fill"></div></div>
+        <ol class="milestones" id="milestones">
+          <li data-at="8"><span class="milestone-icon" aria-hidden="true">✿</span><strong>Flowers</strong><small>8 turns</small></li>
+          <li data-at="20"><span class="milestone-icon" aria-hidden="true">◈</span><strong>Lanterns</strong><small>20 turns</small></li>
+          <li data-at="35"><span class="milestone-icon" aria-hidden="true">❋</span><strong>Lotus pond</strong><small>35 turns</small></li>
+          <li data-at="60"><span class="milestone-icon" aria-hidden="true">✦</span><strong>Golden koi</strong><small>60 turns</small></li>
+        </ol>
+        <p class="quiet-note">No rush. Your garden will be here when you return.</p>
+      </section>
+      <section class="koi-card" aria-labelledby="koi-title">
+        <div class="koi-art"><canvas id="koi-pond" aria-hidden="true"></canvas><span id="koi-badge">THE FINAL LITTLE WONDER</span></div>
+        <div class="koi-copy"><p class="eyebrow">FROM STILLWATER POND</p><h2 id="koi-title">Kin, the golden koi.</h2><p id="koi-description">A rare visitor, a permanent friend. Find three golden seeds, or grow your garden through 60 turns.</p><button id="claim" type="button" disabled>Waiting for a golden fin <span aria-hidden="true">↗</span></button><p id="claim-status" role="status" aria-live="polite"></p><a id="visit-pond" href="../pond/" hidden>Visit Kin in Stillwater Pond ↗</a></div>
+      </section>
+    </div>
+    <details class="field-notes"><summary><span>Notes from the garden</span><span>Symbols, seed returns &amp; how to play <span aria-hidden="true">＋</span></span></summary><div class="notes-grid"><section><h3>One line. Six little symbols.</h3><p>Match any two to return your 10 seeds. Three of a kind returns the amount below. Three different symbols return 0. The spin cost is always 10.</p><div class="payout-table" id="payout-table"></div><p class="odds-note" id="odds-note"></p></section><section><h3>A little world you can keep.</h3><p>Start with 200 seeds. When fewer than 10 remain, gather 100 more for free. Every spin grows the garden, including spins that return no seeds.</p><p>Three golden seeds unlock Kin early: a 1 in 8,000 chance per spin. Kin also arrives at 60 turns. This is the same golden koi you can feed, name, and grow in Stillwater Pond.</p><p>Use the Spin button with a mouse, touch, Enter, or Space. Sound starts only when enabled. Turn motion off for a quiet, immediate reveal.</p><p>Your progress stays in this browser. If your pond is full, make room for Kin there, then return to invite them.</p><a class="preview-link" href="./?preview=golden">Preview the final garden ↗</a></section></div></details>
+  </main>
+  <footer><span>A SMALL ESCAPE BY SPRIGGAN</span><span>No rush. You’re right on time.</span></footer>
+</body>
+</html>
