@@ -20,9 +20,12 @@ function sync(){
  $('#spin-label').textContent=animation?'Turning…':'Turn the reels';
  mapSelect.disabled=busy||!!animation;mapSelect.value=map;
  $('#claim').disabled=busy||!!animation||!unlocked||claimed;
- $('#claim').textContent=claimed?'Already at home':unlocked?`Welcome ${friend(map)} home`:`Match three to welcome ${friend(map)}`;
+ $('#claim').textContent=claimed?'Already at home':unlocked?`Claim ${friend(map)} here`:`Match three to welcome ${friend(map)}`;
  $('#reward-art').innerHTML=Art.icon(destination.art);$('.reward').dataset.map=map;
- $('#reward-badge').textContent=unlocked?'YOUR REWARD':`A FRIEND FOR YOUR ${destination.shortName.toUpperCase()}`;
+ $('#claim-hint').hidden=!unlocked||claimed||busy||!!animation;
+ $('#claim-hint').textContent=`Claim ${friend(map)} here ↓`;
+ $('.reward').dataset.ready=String(unlocked&&!claimed);
+ $('#reward-badge').textContent=claimed?'ALREADY AT HOME':unlocked?'READY TO CLAIM ↓':`A FRIEND FOR YOUR ${destination.shortName.toUpperCase()}`;
  $('#reward-name').textContent=destination.title;
  $('#reward-description').textContent=destination.description;
  $('#claim-status').textContent=claimMessage;
@@ -49,6 +52,7 @@ async function start(){if(animation||busy)return;await transaction(()=>{
 $('#spin').onclick=$('#lever').onclick=start;
 for(const button of [$('#spin'),$('#lever')])button.addEventListener('keydown',e=>{if(e.repeat&&(e.key===' '||e.key==='Enter'))e.preventDefault()});
 mapSelect.onchange=()=>{if(animation||busy)return;const selected=mapSelect.value;transaction(()=>{state.selectedMap=Life.destination(selected).id;claimMessage='';save();paint(['leaf','moon','friend']);message(`Playing for ${Life.destination(state.selectedMap).name}.`,`Any three matching symbols unlock ${friend(state.selectedMap)}.`)})};
+$('#claim-hint').onclick=()=>{if($('#claim').disabled)return;$('#reward').scrollIntoView({behavior:motion()?'smooth':'instant',block:'center'});$('#claim').focus({preventScroll:true})};
 $('#claim').onclick=()=>transaction(()=>{
  const handlers={claimCow:()=>Life.claimCow(state,localStorage,FarmLife),claimGolden:()=>Life.claimGolden(state,localStorage,PondLife)};
  const result=handlers[Life.destination(state.selectedMap).claim]();
