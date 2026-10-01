@@ -87,16 +87,6 @@ Chickens and chicks follow independent random routes with gentle turns, varied w
 
 ## Map selection page
 
-The homepage is `dist/index.html`, styled by `dist/landing.css`. Square previews in `dist/previews/` are static captures of the real maps, so choosing a map does not start simulations or load audio in the background. Map saves remain separate and keep their existing browser storage keys. Vercel continues serving `dist` with no build step.
+The homepage is `dist/index.html`, styled by `dist/landing.css`. Square previews in `dist/previews/` are static captures of the real map canvases, so choosing a map does not start simulations or load audio in the background. The Incoming tile is not interactive. Map saves remain separate and keep their existing browser storage keys. Vercel continues serving `dist` with no build step.
 
-## Golden Seed test garden
-
-Visit `/slots/` (locally, `http://localhost:8000/slots/`) to play a free, three-reel pixel slot machine in a growing garden. Start with 200 seeds; a turn costs 10. A pair returns the cost, a triple returns its displayed award, and three different symbols return nothing. The result reports cost, return, and net change. When fewer than 10 seeds remain, Gather seeds restores the balance to 100 for free. Seeds have no cash value.
-
-Each reel independently chooses leaf / flower / egg / chicken / koi / golden seed with weights 30 / 25 / 20 / 12 / 8 / 5 percent. Triple awards are 40 / 60 / 100 / 200 / 400 / 1,000 seeds. Exact expected return is 83.772%; a pair refund occurs on 48.843% of spins and a positive net win on 5.299%. The Notes from the garden panel lists the actual probabilities and awards. Animation never changes the result or the odds.
-
-Every turn grows the garden: flowers at 8, lanterns at 20, lotus at 35, and **Kin, the rare golden koi from Stillwater Pond**, at 60. Three golden seeds can welcome Kin early (1 in 8,000 per spin). The 60-turn guarantee keeps the test version's final collectible reachable. Once earned, choose **Welcome Kin to your pond** to invite the real golden koi into your existing pond. Existing fish and settings are preserved; full ponds keep the invitation available, and a pond with a golden koi already fulfills the reward. An open pond tab also receives Kin without overwriting the invitation on its next save.
-
-Reels settle in 2.1 seconds with identical timing for every outcome. Sound is opt in; motion can be disabled and system reduced-motion preferences are respected. Each turn requires a separate button activation; there is no autoplay. Progress saves separately under `spriggan.slots.v1`. The outcome is settled and saved before the animation, so reloading cannot cancel a loss or repeat a reward. If storage is unavailable, the game works for the current visit, while pond invitations require successful saving.
-
-Use `/slots/?preview=golden` to inspect the grown garden and Kin. Preview play stays in memory and cannot invite fish or change saved progress. Rules and save validation live in `slots-life.js`, artwork in `slots-art.js`, and UI/audio in `slots.js`. The research and the choices it informed are documented in [docs/slot-design-notes.md](docs/slot-design-notes.md). Run `node --test tests/*.test.cjs` for the game rules and pond synchronization checks.
+Both maps open with compact controls: a round launcher for the pond and a square launcher for the farm. Click to expand, tap outside or press Escape to close. The full-size panels animate above their buttons, keep their scrollable controls, and exclude hidden controls from keyboard focus. Shared styling and dismissal behavior live in `dist/shared/map-controls.css` and `map-controls.js`.

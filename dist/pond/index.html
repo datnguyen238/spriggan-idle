@@ -70,6 +70,7 @@
     @media(prefers-reduced-motion:reduce){.pond-moment{transition:none}}
   </style>
   <link rel="stylesheet" href="./pond-timer.css">
+<link rel="stylesheet" href="../shared/map-controls.css">
 </head>
 <body>
 <main>
@@ -86,7 +87,7 @@
   <div class="pause-badge" id="pause-badge" hidden>The pond is resting</div>
   <div class="bottom">
     <section class="panel" aria-label="Pond controls">
-      <button class="control panel-toggle" id="toggle-controls" type="button" aria-expanded="true" aria-controls="panel-content"><span>Hide controls</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="control panel-toggle" id="toggle-controls" type="button" aria-expanded="true" aria-controls="panel-content"><span>Hide controls</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h5m4 0h7M4 17h9m4 0h3"/><circle cx="11" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg></button>
       <div class="panel-content" id="panel-content">
       <div class="panel-content-inner">
     <div class="instruction" id="instruction"><strong>Touch the water</strong> to feed. Tap a koi to meet them.</div>
@@ -128,7 +129,7 @@
     <form id="rename-koi" hidden><label for="koi-name">Koi name</label><input id="koi-name" maxlength="24" autocomplete="off" required><button class="control primary" type="submit">Save name</button></form>
   </aside>
   <p class="pond-moment" id="pond-moment" role="status"></p>
-  <footer><span>AN IDLE APP MADE BY DAT NGUYEN <a href="../" style="color:inherit;margin-left:12px;text-underline-offset:3px">Choose map ↗</a></span><span class="keyboard-hint"><kbd>space</kbd> to pause &nbsp; · &nbsp; <kbd>esc</kbd> to cancel</span></footer>
+  <footer><span>AN IDLE APP MADE BY DAT NGUYEN</span><span class="keyboard-hint"><kbd>space</kbd> to pause &nbsp; · &nbsp; <kbd>esc</kbd> to cancel</span></footer>
 </main>
 <script src="./pond-life.js" defer></script>
 <script src="./pond-rain-loop.js" defer></script>
@@ -142,5 +143,6 @@
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
+<script src="../shared/map-controls.js" defer></script>
 </body>
 </html>
