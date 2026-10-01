@@ -14,13 +14,27 @@ const whole=n=>Number.isSafeInteger(n)&&n>=0;
 const timestamp=n=>Number.isFinite(n)&&n>=0?Math.floor(n):Date.now();
 function day(now){const d=new Date(now);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function tomorrow(now){const d=new Date(now);d.setHours(24,0,0,0);return d.getTime()}
-function create(now=Date.now()){return{version:3,balance:START,spins:0,selectedMap:'pond',lastResult:null,...Object.fromEntries(DESTINATIONS.flatMap(map=>[[map.unlocked,false],[map.claimed,false]])),refillAt:null,lastRefillDay:null,settings:{sound:false,motion:true},savedAt:timestamp(now)}}
+function create(now=Date.now()){return{version:3,balance:START,spins:0,selectedMap:'pond',lastResult:null,rewards:Object.fromEntries(DESTINATIONS.map(map=>[map.id,{won:0,claimed:0}])),...Object.fromEntries(DESTINATIONS.flatMap(map=>[[map.unlocked,false],[map.claimed,false]])),refillAt:null,lastRefillDay:null,settings:{sound:false,motion:true},savedAt:timestamp(now)}}
+// Counts retain every win, including prizes waiting to be claimed after a later visit.
+function reward(s,id){
+ const map=destination(id),r=s.rewards?.[map.id];
+ const claimed=Math.max(r?.claimed||0,s[map.claimed]?1:0);
+ return{won:Math.max(r?.won||0,s[map.unlocked]?1:0,claimed),claimed};
+}
+function setReward(s,id,r){
+ const map=destination(id);s.rewards||={};s.rewards[map.id]={...r};
+ s[map.unlocked]=r.won>0;s[map.claimed]=r.won>0&&r.claimed===r.won;
+}
 function evaluate(symbols){const [a,b,c]=symbols;if(a===b&&b===c)return{kind:'triple',payout:0};if(a===b||a===c||b===c)return{kind:'pair',payout:PAIR_PAYOUT};return{kind:'miss',payout:0}}
 function decode(raw,now=Date.now()){
  try{const s=JSON.parse(raw);if(!s||![1,2,3].includes(s.version)||!whole(s.balance)||!whole(s.spins))return null;
  const n=create(now);n.balance=s.version<3?Math.max(START,s.balance):s.balance;n.spins=s.spins;n.selectedMap=destination(s.selectedMap).id;
  for(const key of DESTINATIONS.flatMap(map=>[map.unlocked,map.claimed]))n[key]=s[key]===true;
- for(const map of DESTINATIONS)n[map.unlocked] ||= n[map.claimed];
+ for(const map of DESTINATIONS){
+  const r=s.rewards?.[map.id];
+  if(r&&(!whole(r.won)||!whole(r.claimed)||r.claimed>r.won))return null;
+  setReward(n,map.id,reward(s,map.id));
+ }
  n.settings={sound:s.settings?.sound===true,motion:s.settings?.motion!==false};n.savedAt=timestamp(s.savedAt??now);
  n.lastRefillDay=typeof s.lastRefillDay==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s.lastRefillDay)?s.lastRefillDay:null;
  n.refillAt=s.refillAt!==null&&Number.isFinite(s.refillAt)&&s.refillAt>=0?s.refillAt:null;
@@ -43,63 +57,42 @@ function refill(s,now=Date.now()){
 function spin(s,random=Math.random,now=Date.now()){
  refill(s,now);if(s.balance<COST)return null;
  const symbols=Array.from({length:3},()=>{const r=random();if(!Number.isFinite(r)||r<0||r>1)throw RangeError('Random value must be between 0 and 1');return SYMBOLS[Math.min(SYMBOLS.length-1,Math.floor(r*SYMBOLS.length))].id});
- const outcome=evaluate(symbols),map=destination(s.selectedMap).id,key=destination(map).unlocked;
- const result={symbols,...outcome,net:outcome.payout-COST,map,newReward:outcome.kind==='triple'&&!s[key]};
- if(outcome.kind==='triple')s[key]=true;
+ const outcome=evaluate(symbols),map=destination(s.selectedMap).id;
+ const result={symbols,...outcome,net:outcome.payout-COST,map,newReward:outcome.kind==='triple'};
+ if(outcome.kind==='triple'){const r=reward(s,map);r.won++;setReward(s,map,r)}
  s.balance+=result.net;s.spins++;s.lastResult=result;s.savedAt=timestamp(now);
  if(s.balance<COST)s.refillAt=tomorrow(now);
  return result;
 }
-  function claimGolden(state, storage, PondLife, now = Date.now()) {
-    if (!state.goldenUnlocked) return { status: 'locked' };
-    if (!PondLife || typeof PondLife.decode !== 'function' ||
-        typeof PondLife.create !== 'function' || typeof PondLife.makeFish !== 'function') {
-      return { status: 'invalid' };
-    }
-    const time = timestamp(now);
-    try {
-      // Read again at the moment of claiming so we never replace a stale pond snapshot.
-      const raw = storage.getItem(PondLife.KEY);
-      const pond = raw === null || raw === undefined ? PondLife.create(time) : PondLife.decode(raw, time);
-      if (!pond || !Array.isArray(pond.fish)) return { status: 'invalid' };
-      let fish = pond.fish.find(item => item.golden);
-      if (!fish) fish = pond.fish.find(item => item.id === GOLDEN_FISH_ID);
-      const existing = Boolean(fish);
-      if (!fish) {
-        if (pond.fish.length >= Math.min(12, PondLife.MAX_KOI || 12)) return { status: 'full' };
-        fish = PondLife.makeFish(pond.fish.length, time, true);
-        fish.id = GOLDEN_FISH_ID;
-        fish.name = 'Kin';
-        pond.fish.push(fish);
-      }
-      fish.golden = true;
-      pond.savedAt = time;
-
-      // Pond first, then claim receipt. The stable ID makes a partial-write retry safe.
-      storage.setItem(PondLife.KEY, JSON.stringify(pond));
-      const claimed = { ...state, goldenClaimed: true, savedAt: time };
-      storage.setItem(KEY, JSON.stringify(claimed));
-      state.goldenClaimed = true;
-      state.savedAt = time;
-      return { status: existing ? 'existing' : 'claimed', fish };
-    } catch {
-      return { status: 'storage-error' };
-    }
-  }
-
-
-function claimCow(state,storage,FarmLife,now=Date.now()){
- if(!state.cowUnlocked)return{status:'locked'};
+function claimPrize(state,storage,MapLife,map,now=Date.now()){
+ const counts=reward(state,map);
+ if(counts.claimed>=counts.won)return{status:counts.won?'existing':'locked'};
+ const number=counts.claimed+1,base=map==='pond'?GOLDEN_FISH_ID:COW_ID;
+ const prizeId=number===1?base:`${base}-${number}`,time=timestamp(now);
+ if(!MapLife||typeof MapLife.decode!=='function'||typeof MapLife.create!=='function')return{status:'invalid'};
  try{
-  const raw=storage.getItem(FarmLife.KEY),farm=raw==null?FarmLife.create(now):FarmLife.decode(raw,now);
-  if(!farm)return{status:'invalid'};
-  const existing=!!farm.cow;
-  if(!farm.cow)farm.cow=FarmLife.makeCow(now);
-  farm.savedAt=now;storage.setItem(FarmLife.KEY,JSON.stringify(farm));
-  const claimed={...state,cowClaimed:true,savedAt:timestamp(now)};storage.setItem(KEY,JSON.stringify(claimed));Object.assign(state,claimed);
-  return{status:existing?'existing':'claimed',cow:farm.cow};
+  const raw=storage.getItem(MapLife.KEY),world=raw==null?MapLife.create(time):MapLife.decode(raw,time);
+  if(!world)return{status:'invalid'};
+  const animals=map==='pond'?world.fish:world.cows;
+  if(!Array.isArray(animals))return{status:'invalid'};
+  let animal=animals.find(a=>a.id===prizeId);const existing=!!animal;
+  if(!animal){
+   if(map==='pond'&&animals.length>=MapLife.MAX_KOI)return{status:'full'};
+   animal=map==='pond'?MapLife.makeFish(animals.length,time,true):MapLife.makeCow(time);
+   animal.id=prizeId;animal.name=(map==='pond'?'Kin':'Buttercup')+(number>1?` ${number}`:'');
+   animals.push(animal);
+  }
+  world.savedAt=time;
+  // Animal first, receipt second: retries use the same per-win ID, never another animal.
+  storage.setItem(MapLife.KEY,JSON.stringify(world));
+  const receipt={...state,rewards:{...state.rewards},savedAt:time};
+  setReward(receipt,map,{...counts,claimed:number});
+  storage.setItem(KEY,JSON.stringify(receipt));Object.assign(state,receipt);
+  return{status:existing?'existing':'claimed',[map==='pond'?'fish':'cow']:animal};
  }catch{return{status:'storage-error'}}
 }
-const api={KEY,COST,START,REFILL,PAIR_PAYOUT,GOLDEN_FISH_ID,COW_ID,SYMBOLS,DESTINATIONS,destination,create,decode,evaluate,spin,refill,day,tomorrow,claimGolden,claimCow};
+function claimGolden(state,storage,PondLife,now=Date.now()){return claimPrize(state,storage,PondLife,'pond',now)}
+function claimCow(state,storage,FarmLife,now=Date.now()){return claimPrize(state,storage,FarmLife,'farm',now)}
+const api={KEY,COST,START,REFILL,PAIR_PAYOUT,GOLDEN_FISH_ID,COW_ID,SYMBOLS,DESTINATIONS,destination,reward,create,decode,evaluate,spin,refill,day,tomorrow,claimGolden,claimCow};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else globalThis.SlotsLife=api;
 })();

@@ -8,7 +8,7 @@ A centered sage cabinet with cream, pale blue, and sand reel windows, hand-drawn
 
 ## Rules
 
-Choose a map before spending 10 seeds. Exactly two matching symbols award 20, a net gain of 10 after the spin cost. Any three matching symbols unlock the chosen map's collectible: Kin for the pond or Buttercup for the farm. All six symbols have equal chances per independent reel; triple probability is 1/36, pair probability 90/216. Triples award the friend, not seeds. No progress-based collectible unlocks remain.
+Choose a map before spending 10 seeds. Exactly two matching symbols award 20, a net gain of 10 after the spin cost. Any three matching symbols unlock the chosen map's collectible: Kin for the pond or Buttercup for the farm. All six symbols have equal chances per independent reel; triple probability is 1/36, pair probability 90/216. Each triple awards another friend, including after previous claims; odds remain 1/36 per spin. Unclaimed wins persist across visits. Triples award the friend, not seeds. No progress-based collectible unlocks remain.
 
 Start at 200 seeds. A purse below the spin cost refills to 50 at the next local midnight, once per calendar day. No immediate refill, missed-day accumulation, purchase, or cash conversion. Existing version 1 and 2 saves receive a one-time increase to at least 200 seeds; higher balances and earned prizes are preserved.
 
@@ -16,7 +16,7 @@ Start at 200 seeds. A purse below the spin cost refills to 50 at the next local 
 
 A fresh action starts each spin; no autoplay, held-key repeat, artificial near misses, or timing advantage. All outcomes use the same reveal duration. A pair displays both its 20-seed award and its 10-seed net gain. Motion reduction and optional sound are supported.
 
-Results persist before reveal. Prizes have explicit claim actions and stable IDs; partial storage-write retries cannot add duplicates. A full pond retains a pending unlock. Both maps protect new prize arrivals from stale open-tab saves. Already owned golden koi remain, but the pond's random golden event has been removed.
+Results persist before reveal. Prizes have explicit claim actions, saved win/claim counts, and a stable ID per win; partial storage-write retries cannot add duplicates. A full pond retains a pending unlock. Both maps protect new prize arrivals from stale open-tab saves. Already owned golden koi remain, but the pond's random golden event has been removed.
 
 ## Adding worlds
 

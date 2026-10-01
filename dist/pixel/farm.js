@@ -2,15 +2,19 @@
 'use strict';
 const Life=FarmLife,canvas=document.querySelector('#farm'),ctx=canvas.getContext('2d',{alpha:false});
 let state;try{state=Life.decode(localStorage.getItem(Life.KEY))}catch{}const returning=!!state;state||=Life.create();
-let sawCow=!!state.cow;
-const animals=()=>state.cow?[...state.birds,state.cow]:state.birds;
+const seenCows=new Set(state.cows.map(c=>c.id));
+const animals=()=>[...state.birds,...state.cows];
 let W=400,H=240,sceneTop=0,sceneBottom=0,last=0,clock=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,selected=null,lastRules=0;
 const grain=[],walk=new Map(),hearts=[];const moment=document.querySelector('#moment'),card=document.querySelector('#bird-card');
 let noticeUntil=Date.now()+7000;
 function notice(text){moment.textContent=text;noticeUntil=Date.now()+7000}
 function receiveCow(){
- if(sawCow)return;
- try{const incoming=Life.decode(localStorage.getItem(Life.KEY));if(incoming?.cow){state.cow=incoming.cow;sawCow=true;notice('Buttercup has arrived from Golden Seed. A gentle new friend.')}}catch{}
+ try{
+  const incoming=Life.decode(localStorage.getItem(Life.KEY));
+  for(const c of incoming?.cows||[])if(!seenCows.has(c.id)){
+   state.cows.push(c);seenCows.add(c.id);notice(`${c.name} has arrived from Golden Seed. A gentle new friend.`);
+  }
+ }catch{}
 }
 function save(){try{receiveCow();localStorage.setItem(Life.KEY,JSON.stringify(state));document.querySelector('#save-status').textContent='Saved on this device'}catch{document.querySelector('#save-status').textContent='Storage unavailable — this visit only'}}
 function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
@@ -124,7 +128,7 @@ document.querySelector('#remove-bird').onclick=()=>{
  const b=animals().find(b=>b.id===selected);if(!b)return;
  const lastRooster=b.stage==='adult'&&b.sex==='rooster'&&!state.birds.some(other=>other.id!==b.id&&other.stage==='adult'&&other.sex==='rooster');
  if(!confirm(`Remove ${b.name} from your farm?${lastRooster?" Hens need an adult rooster in the yard to lay eggs.":''}`))return;
- if(b.species==='cow')state.cow=null;else Life.removeBird(state,b.id);walk.delete(b.id);selected=null;card.hidden=true;picker.value='';notice(`${b.name} has left the farm.`);ui();save();draw();picker.focus();
+ if(b.species==='cow')state.cows=state.cows.filter(c=>c.id!==b.id);else Life.removeBird(state,b.id);walk.delete(b.id);selected=null;card.hidden=true;picker.value='';notice(`${b.name} has left the farm.`);ui();save();draw();picker.focus();
 };
 restart.onclick=()=>{if(state.birds.length||state.eggs.length)return;state.birds=Life.create().birds;notice('Clover & Bramble. A fresh little beginning.');ui();save();draw()};
 function ui(){

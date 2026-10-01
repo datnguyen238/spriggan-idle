@@ -27,15 +27,15 @@ function unlockedState() {
 const FarmLife=require('../dist/pixel/farm-life.js');
 test('new purse starts at 200 seeds with no prizes unlocked',()=>{const s=Life.create(now);assert.equal(s.balance,200);assert.equal(s.selectedMap,'pond');assert.equal(s.goldenUnlocked,false);assert.equal(s.cowUnlocked,false)});
 test('a pair awards 20 seeds for a net gain of 10 and a miss costs 10',()=>{const s=Life.create(now);let r=Life.spin(s,sequence(0,0,.3),now);assert.equal(r.kind,'pair');assert.equal(r.payout,20);assert.equal(r.net,10);assert.equal(s.balance,210);r=Life.spin(s,sequence(0,.3,.5),now);assert.equal(r.kind,'miss');assert.equal(s.balance,200)});
-test('any triple unlocks only the chosen map; duplicate wins do not duplicate rewards',()=>{for(const value of [0,.2,.4,.6,.8,.99]){const s=Life.create(now);s.selectedMap='farm';const r=Life.spin(s,()=>value,now);assert.equal(r.kind,'triple');assert.equal(r.newReward,true);assert.equal(r.map,'farm');assert.equal(s.cowUnlocked,true);assert.equal(s.goldenUnlocked,false);assert.equal(s.balance,190);assert.equal(Life.spin(s,()=>value,now).newReward,false);s.selectedMap='pond';Life.spin(s,()=>value,now);assert.equal(s.goldenUnlocked,true)}});
+test('every triple awards another prize for only the chosen map',()=>{for(const value of [0,.2,.4,.6,.8,.99]){const s=Life.create(now);s.selectedMap='farm';const r=Life.spin(s,()=>value,now);assert.equal(r.kind,'triple');assert.equal(r.newReward,true);assert.equal(r.map,'farm');assert.equal(s.cowUnlocked,true);assert.equal(s.goldenUnlocked,false);assert.equal(s.balance,190);assert.equal(Life.spin(s,()=>value,now).newReward,true);assert.equal(Life.reward(s,'farm').won,2);s.selectedMap='pond';Life.spin(s,()=>value,now);assert.equal(s.goldenUnlocked,true)}});
 test('sixty spins no longer grant a guaranteed collectible',()=>{const s=Life.create(now);s.spins=59;Life.spin(s,sequence(0,.3,.5),now);assert.equal(s.goldenUnlocked,false);assert.equal(Life.decode(JSON.stringify(s),now).goldenUnlocked,false)});
 test('empty purse waits until next local midnight, refills once to 50, never accumulates missed days',()=>{const t=new Date(2026,9,1,20,30).getTime(),s=Life.create(t);s.balance=10;Life.spin(s,sequence(0,.3,.5),t);const next=new Date(2026,9,2).getTime();assert.equal(s.refillAt,next);assert.equal(s.balance,0);assert.equal(Life.refill(s,t+1000),false);assert.equal(Life.spin(s,()=>0,t),null);const reloaded=Life.decode(JSON.stringify(s),t);assert.equal(Life.refill(reloaded,next-1),false);assert.equal(Life.refill(reloaded,next),true);assert.equal(reloaded.balance,50);assert.equal(Life.refill(reloaded,next),false);reloaded.balance=10;Life.spin(reloaded,sequence(0,.3,.5),next);assert.equal(Life.refill(reloaded,next+1),false);assert.equal(Life.refill(reloaded,new Date(2026,9,9).getTime()),true);assert.equal(reloaded.balance,50)});
 test('nonempty balances remain untouched on later days and clock rollback cannot refill',()=>{const s=Life.create(now);s.balance=20;assert.equal(Life.refill(s,now+864000000),false);assert.equal(s.balance,20);s.balance=10;Life.spin(s,sequence(0,.3,.5),now);assert.equal(Life.refill(s,now-86400000),false)});
 test('older balances and earned golden rewards migrate without a spin-count unlock',()=>{const s={...Life.create(now),version:1,balance:170,spins:80,goldenUnlocked:true};const migrated=Life.decode(JSON.stringify(s),now);assert.equal(migrated.balance,200);assert.equal(migrated.goldenUnlocked,true);assert.equal(migrated.version,3);assert.equal(Life.decode(JSON.stringify({...s,goldenUnlocked:false}),now).goldenUnlocked,false)});
 test('results and separate prize flags survive reloading',()=>{const s=Life.create(now);s.selectedMap='farm';Life.spin(s,()=>0,now);assert.deepEqual(Life.decode(JSON.stringify(s),now),s);for(const bad of ['bad','null','{}',JSON.stringify({...s,balance:-10})])assert.equal(Life.decode(bad,now),null)});
 test('all 216 equally likely outcomes have honest pair and triple frequencies',()=>{let pair=0,triple=0,miss=0;for(const a of Life.SYMBOLS)for(const b of Life.SYMBOLS)for(const c of Life.SYMBOLS){const r=Life.evaluate([a.id,b.id,c.id]);if(r.kind==='pair')pair++;else if(r.kind==='triple')triple++;else miss++}assert.equal(pair,90);assert.equal(triple,6);assert.equal(miss,120)});
-test('cow claim adds one actual saved cow and preserves chickens, eggs, and meals',()=>{const s=Life.create(now);s.cowUnlocked=true;const farm=FarmLife.create(now);farm.birds[0].meals=83;farm.birds[0].layFood=83;const storage=memoryStorage([[FarmLife.KEY,JSON.stringify(farm)]]);assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'claimed');const after=FarmLife.decode(storage.getItem(FarmLife.KEY),now);assert.deepEqual(after.birds,farm.birds);assert.equal(after.cow.id,Life.COW_ID);assert.equal(after.cow.name,'Buttercup');assert.equal(s.cowClaimed,true);assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'existing')});
-test('cow receipt retries safely after partial storage failure',()=>{const s=Life.create(now);s.cowUnlocked=true;const storage=memoryStorage(),write=storage.setItem;storage.setItem=(key,value)=>{if(key===Life.KEY)throw Error('full');write(key,value)};assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'storage-error');assert.equal(s.cowClaimed,false);assert(FarmLife.decode(storage.getItem(FarmLife.KEY),now).cow);storage.setItem=write;assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'existing');assert.equal(s.cowClaimed,true)});
+test('cow claim adds one actual saved cow and preserves chickens, eggs, and meals',()=>{const s=Life.create(now);s.cowUnlocked=true;const farm=FarmLife.create(now);farm.birds[0].meals=83;farm.birds[0].layFood=83;const storage=memoryStorage([[FarmLife.KEY,JSON.stringify(farm)]]);assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'claimed');const after=FarmLife.decode(storage.getItem(FarmLife.KEY),now);assert.deepEqual(after.birds,farm.birds);assert.equal(after.cows[0].id,Life.COW_ID);assert.equal(after.cows[0].name,'Buttercup');assert.equal(s.cowClaimed,true);assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'existing')});
+test('cow receipt retries safely after partial storage failure',()=>{const s=Life.create(now);s.cowUnlocked=true;const storage=memoryStorage(),write=storage.setItem;storage.setItem=(key,value)=>{if(key===Life.KEY)throw Error('full');write(key,value)};assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'storage-error');assert.equal(s.cowClaimed,false);assert(FarmLife.decode(storage.getItem(FarmLife.KEY),now).cows.length===1);storage.setItem=write;assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'existing');assert.equal(s.cowClaimed,true)});
 test('locked prizes and invalid farm saves are never overwritten',()=>{const s=Life.create(now),storage=memoryStorage([[FarmLife.KEY,'bad']]);assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'locked');s.cowUnlocked=true;assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'invalid');assert.equal(storage.getItem(FarmLife.KEY),'bad')});
 test('claim creates a missing pond and saves one stable golden Kin before the claim receipt', () => {
   const storage = memoryStorage();
@@ -74,19 +74,13 @@ test('claim freshly reads the pond and preserves fish identities, care, and sett
   assert.deepEqual(after.settings, before.settings);
 });
 
-test('an existing golden koi satisfies the reward even in a full pond', () => {
-  const pond = PondLife.create(now);
-  while (pond.fish.length < PondLife.MAX_KOI) pond.fish.push(PondLife.makeFish(pond.fish.length, now));
-  pond.fish[3].golden = true;
-  pond.fish[3].name = 'My golden koi';
-  const storage = memoryStorage([[PondLife.KEY, JSON.stringify(pond)]]);
-  const state = unlockedState();
-  const result = Life.claimGolden(state, storage, PondLife, now);
-  assert.equal(result.status, 'existing');
-  assert.equal(result.fish.id, pond.fish[3].id);
-  assert.equal(result.fish.name, 'My golden koi');
-  assert.equal(PondLife.decode(storage.getItem(PondLife.KEY), now).fish.length, 12);
-  assert.equal(state.goldenClaimed, true);
+test('an existing golden koi does not consume a new reward when the pond is full',()=>{
+ const pond=PondLife.create(now);while(pond.fish.length<PondLife.MAX_KOI)pond.fish.push(PondLife.makeFish(pond.fish.length,now));pond.fish[3].golden=true;
+ const storage=memoryStorage([[PondLife.KEY,JSON.stringify(pond)]]),state=unlockedState();
+ assert.equal(Life.claimGolden(state,storage,PondLife,now).status,'full');assert.equal(Life.reward(state,'pond').claimed,0);
+ pond.fish.pop();storage.setItem(PondLife.KEY,JSON.stringify(pond));
+ assert.equal(Life.claimGolden(state,storage,PondLife,now).status,'claimed');
+ assert.equal(PondLife.decode(storage.getItem(PondLife.KEY),now).fish.filter(f=>f.golden).length,2);
 });
 
 test('locked, full, and invalid ponds are never overwritten or marked claimed', () => {
@@ -146,4 +140,48 @@ test('the 200-seed migration applies once and preserves richer wallets and earne
   const reloaded=Life.decode(JSON.stringify(upgraded),now);
   assert.equal(reloaded.balance,Math.max(200,balance)-10);
  }
+});
+
+test('claim, leave, return, win and claim again adds distinct animals for both maps',()=>{
+ for(const map of ['pond','farm']){
+  const storage=memoryStorage(),MapLife=map==='pond'?PondLife:FarmLife,claim=map==='pond'?Life.claimGolden:Life.claimCow;
+  let state=Life.create(now);state.selectedMap=map;
+  for(let i=1;i<=3;i++){
+   Life.spin(state,()=>0,now);assert.equal(Life.reward(state,map).won,i);
+   assert.equal(claim(state,storage,MapLife,now).status,'claimed');
+   state=Life.decode(storage.getItem(Life.KEY),now);
+   assert.deepEqual(Life.reward(state,map),{won:i,claimed:i});
+   assert.equal(claim(state,storage,MapLife,now).status,'existing');
+  }
+  const world=MapLife.decode(storage.getItem(MapLife.KEY),now),animals=map==='pond'?world.fish.filter(f=>f.golden):world.cows;
+  assert.equal(animals.length,3);assert.equal(new Set(animals.map(a=>a.id)).size,3);
+  assert.equal(state.balance,170);
+ }
+});
+test('multiple unclaimed wins survive reload and a second-prize receipt failure cannot duplicate an animal',()=>{
+ const storage=memoryStorage();let s=Life.create(now);s.selectedMap='farm';
+ for(let i=0;i<3;i++)Life.spin(s,()=>0,now);
+ s=Life.decode(JSON.stringify(s),now);assert.deepEqual(Life.reward(s,'farm'),{won:3,claimed:0});
+ Life.claimCow(s,storage,FarmLife,now);
+ const write=storage.setItem;storage.setItem=(key,value)=>{if(key===Life.KEY)throw Error('receipt failed');write(key,value)};
+ assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'storage-error');
+ assert.equal(FarmLife.decode(storage.getItem(FarmLife.KEY),now).cows.length,2);
+ storage.setItem=write;s=Life.decode(storage.getItem(Life.KEY),now);
+ assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'existing');
+ assert.deepEqual(Life.reward(s,'farm'),{won:3,claimed:2});
+ assert.equal(FarmLife.decode(storage.getItem(FarmLife.KEY),now).cows.length,2);
+ assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'claimed');
+ assert.equal(FarmLife.decode(storage.getItem(FarmLife.KEY),now).cows.length,3);
+});
+test('old claimed and unclaimed prize flags migrate without awarding a free extra prize',()=>{
+ const old=Life.create(now);delete old.rewards;old.goldenUnlocked=true;old.goldenClaimed=true;old.cowUnlocked=true;
+ const s=Life.decode(JSON.stringify(old),now);
+ assert.deepEqual(Life.reward(s,'pond'),{won:1,claimed:1});assert.deepEqual(Life.reward(s,'farm'),{won:1,claimed:0});
+ s.selectedMap='pond';Life.spin(s,()=>0,now);assert.deepEqual(Life.reward(s,'pond'),{won:2,claimed:1});
+});
+test('the old single cow migrates with care data and multiple cows survive decoding',()=>{
+ const old=FarmLife.create(now);delete old.cows;old.cow=FarmLife.makeCow(now);old.cow.meals=42;old.cow.name='My cow';
+ const farm=FarmLife.decode(JSON.stringify(old),now);assert.equal(farm.cows.length,1);assert.equal(farm.cows[0].meals,42);assert.equal(farm.cows[0].name,'My cow');assert.equal('cow' in farm,false);
+ farm.cows.push({...FarmLife.makeCow(now),id:Life.COW_ID+'-2'});
+ assert.equal(FarmLife.decode(JSON.stringify(farm),now).cows.length,2);
 });
