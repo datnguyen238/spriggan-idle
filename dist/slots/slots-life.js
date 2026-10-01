@@ -1,173 +1,55 @@
-/* Golden Seed rules and saves, independent of drawing and reel animation. */
-(() => {
-  'use strict';
-
-  const KEY = 'spriggan.slots.v1';
-  const COST = 10;
-  const GOLDEN_AT = 60;
-  const GOLDEN_FISH_ID = 'spriggan-golden-seed-koi';
-  const SYMBOLS = Object.freeze([
-    { id: 'leaf', label: 'Leaf', weight: 30, payout: 40 },
-    { id: 'flower', label: 'Flower', weight: 25, payout: 60 },
-    { id: 'egg', label: 'Egg', weight: 20, payout: 100 },
-    { id: 'chicken', label: 'Chicken', weight: 12, payout: 200 },
-    { id: 'koi', label: 'Koi', weight: 8, payout: 400 },
-    { id: 'seed', label: 'Golden seed', weight: 5, payout: 1000 }
-  ].map(Object.freeze));
-  const UNLOCKS = Object.freeze([
-    { at: 8, id: 'flowers', label: 'Flower bed' },
-    { at: 20, id: 'lanterns', label: 'Garden lanterns' },
-    { at: 35, id: 'lotus', label: 'Lotus pond' },
-    { at: GOLDEN_AT, id: 'golden-koi', label: 'Golden koi' }
-  ].map(Object.freeze));
-  const symbolsById = new Map(SYMBOLS.map(symbol => [symbol.id, symbol]));
-  const totalWeight = SYMBOLS.reduce((sum, symbol) => sum + symbol.weight, 0);
-  const isWhole = value => Number.isSafeInteger(value) && value >= 0;
-  const timestamp = value => Number.isFinite(value) && value >= 0 ? Math.floor(value) : Date.now();
-
-  function create(now = Date.now()) {
-    return {
-      version: 1,
-      balance: 200,
-      spins: 0,
-      lastResult: null,
-      goldenUnlocked: false,
-      goldenClaimed: false,
-      settings: { sound: false, motion: true },
-      savedAt: timestamp(now)
-    };
-  }
-
-  function evaluate(symbols) {
-    const [first, second, third] = symbols;
-    if (first === second && second === third) {
-      return { payout: symbolsById.get(first).payout, kind: 'triple' };
-    }
-    if (first === second || first === third || second === third) {
-      return { payout: COST, kind: 'pair' };
-    }
-    return { payout: 0, kind: 'miss' };
-  }
-
-  function decode(raw, now = Date.now()) {
-    try {
-      const saved = JSON.parse(raw);
-      if (!saved || Array.isArray(saved) || saved.version !== 1 ||
-          !isWhole(saved.balance) || !isWhole(saved.spins)) return null;
-      const time = timestamp(now);
-      let lastResult = null;
-      if (saved.spins > 0 && Array.isArray(saved.lastResult?.symbols) &&
-          saved.lastResult.symbols.length === 3 &&
-          saved.lastResult.symbols.every(id => symbolsById.has(id))) {
-        const symbols = [...saved.lastResult.symbols];
-        const outcome = evaluate(symbols);
-        lastResult = {
-          symbols,
-          ...outcome,
-          net: outcome.payout - COST,
-          newUnlocks: UNLOCKS.filter(unlock => unlock.at === saved.spins),
-          goldenUnlocked: saved.lastResult.goldenUnlocked === true
-        };
-      }
-      const goldenUnlocked = saved.goldenUnlocked === true || saved.spins >= GOLDEN_AT ||
-        (lastResult !== null && lastResult.symbols.every(id => id === 'seed'));
-      const settings = saved.settings || {};
-      return {
-        version: 1,
-        balance: saved.balance,
-        spins: saved.spins,
-        lastResult,
-        goldenUnlocked,
-        goldenClaimed: goldenUnlocked && saved.goldenClaimed === true,
-        settings: { sound: settings.sound === true, motion: settings.motion !== false },
-        savedAt: Number.isFinite(saved.savedAt) ? Math.max(0, Math.min(time, saved.savedAt)) : time
-      };
-    } catch {
-      return null;
-    }
-  }
-
-  function draw(random) {
-    const value = random();
-    if (!Number.isFinite(value) || value < 0 || value > 1) {
-      throw new RangeError('The random source must return a number between zero and one.');
-    }
-    const target = value * totalWeight;
-    let cumulative = 0;
-    for (const symbol of SYMBOLS) {
-      cumulative += symbol.weight;
-      if (target < cumulative) return symbol.id;
-    }
-    // A supplied deterministic source may return exactly 1.
-    return SYMBOLS[SYMBOLS.length - 1].id;
-  }
-
-  function spin(state, random = Math.random, now = Date.now()) {
-    if (state.balance < COST) return null;
-    const symbols = Array.from({ length: 3 }, () => draw(random));
-    const outcome = evaluate(symbols);
-    const previousSpins = state.spins;
-    const nextSpins = previousSpins + 1;
-    const unlocked = nextSpins >= GOLDEN_AT || symbols.every(id => id === 'seed');
-    const result = {
-      symbols,
-      ...outcome,
-      net: outcome.payout - COST,
-      newUnlocks: UNLOCKS.filter(unlock => unlock.at > previousSpins && unlock.at <= nextSpins),
-      goldenUnlocked: !state.goldenUnlocked && unlocked
-    };
-
-    // Settle once before animation. A reload can only reveal this completed result.
-    state.balance += result.net;
-    state.spins = nextSpins;
-    state.goldenUnlocked = state.goldenUnlocked || unlocked;
-    state.lastResult = result;
-    state.savedAt = timestamp(now);
-    return result;
-  }
-
-  function refill(state, now = Date.now()) {
-    if (state.balance >= COST) return false;
-    state.balance = 100;
-    state.savedAt = timestamp(now);
-    return true;
-  }
-
-  function probabilityStats() {
-    let paidWeight = 0;
-    let payoutWeight = 0;
-    let netWinWeight = 0;
-    let pairWeight = 0;
-    let tripleWeight = 0;
-    let goldenWeight = 0;
-    for (const first of SYMBOLS) {
-      for (const second of SYMBOLS) {
-        for (const third of SYMBOLS) {
-          const symbols = [first.id, second.id, third.id];
-          const weight = first.weight * second.weight * third.weight;
-          const outcome = evaluate(symbols);
-          payoutWeight += outcome.payout * weight;
-          if (outcome.payout > 0) paidWeight += weight;
-          if (outcome.payout > COST) netWinWeight += weight;
-          if (outcome.kind === 'pair') pairWeight += weight;
-          if (outcome.kind === 'triple') tripleWeight += weight;
-          if (symbols.every(id => id === 'seed')) goldenWeight += weight;
-        }
-      }
-    }
-    const denominator = totalWeight ** 3;
-    const expectedPayout = payoutWeight / denominator;
-    return {
-      return: expectedPayout / COST,
-      expectedPayout,
-      payoutRate: paidWeight / denominator,
-      netWinRate: netWinWeight / denominator,
-      pairRate: pairWeight / denominator,
-      tripleRate: tripleWeight / denominator,
-      goldenRate: goldenWeight / denominator
-    };
-  }
-
+/* Golden Seed: virtual seeds, calendar-day refill, and persistent map prizes. */
+(()=>{
+'use strict';
+const KEY='spriggan.slots.v1',COST=10,START=200,REFILL=50,PAIR_PAYOUT=20;
+const GOLDEN_FISH_ID='spriggan-golden-seed-koi',COW_ID='spriggan-golden-seed-cow';
+const SYMBOLS=Object.freeze(['leaf','flower','moon','star','seed','friend'].map(id=>Object.freeze({id,label:{leaf:'Leaf',flower:'Blossom',moon:'Moon',star:'Star',seed:'Seed',friend:'Friend'}[id],weight:1})));
+// Add playable reward destinations here; the selector and reward details follow this registry.
+const DESTINATIONS=Object.freeze([
+ {id:'pond',name:'Stillwater Pond',shortName:'pond',friend:'Kin',title:'Kin, the golden koi',art:'koi',href:'../pond/',unlocked:'goldenUnlocked',claimed:'goldenClaimed',claim:'claimGolden',description:'A golden shimmer to swim, feed, and grow in your pond.'},
+ {id:'farm',name:'Sunny Side Farm',shortName:'farm',friend:'Buttercup',title:'Buttercup, the cow',art:'cow',href:'../pixel/',unlocked:'cowUnlocked',claimed:'cowClaimed',claim:'claimCow',description:'A gentle grazer to wander and snack with your flock.'}
+].map(Object.freeze));
+const destination=id=>DESTINATIONS.find(map=>map.id===id)||DESTINATIONS[0];
+const whole=n=>Number.isSafeInteger(n)&&n>=0;
+const timestamp=n=>Number.isFinite(n)&&n>=0?Math.floor(n):Date.now();
+function day(now){const d=new Date(now);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function tomorrow(now){const d=new Date(now);d.setHours(24,0,0,0);return d.getTime()}
+function create(now=Date.now()){return{version:3,balance:START,spins:0,selectedMap:'pond',lastResult:null,...Object.fromEntries(DESTINATIONS.flatMap(map=>[[map.unlocked,false],[map.claimed,false]])),refillAt:null,lastRefillDay:null,settings:{sound:false,motion:true},savedAt:timestamp(now)}}
+function evaluate(symbols){const [a,b,c]=symbols;if(a===b&&b===c)return{kind:'triple',payout:0};if(a===b||a===c||b===c)return{kind:'pair',payout:PAIR_PAYOUT};return{kind:'miss',payout:0}}
+function decode(raw,now=Date.now()){
+ try{const s=JSON.parse(raw);if(!s||![1,2,3].includes(s.version)||!whole(s.balance)||!whole(s.spins))return null;
+ const n=create(now);n.balance=s.version<3?Math.max(START,s.balance):s.balance;n.spins=s.spins;n.selectedMap=destination(s.selectedMap).id;
+ for(const key of DESTINATIONS.flatMap(map=>[map.unlocked,map.claimed]))n[key]=s[key]===true;
+ for(const map of DESTINATIONS)n[map.unlocked] ||= n[map.claimed];
+ n.settings={sound:s.settings?.sound===true,motion:s.settings?.motion!==false};n.savedAt=timestamp(s.savedAt??now);
+ n.lastRefillDay=typeof s.lastRefillDay==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s.lastRefillDay)?s.lastRefillDay:null;
+ n.refillAt=s.refillAt!==null&&Number.isFinite(s.refillAt)&&s.refillAt>=0?s.refillAt:null;
+ if(n.balance<COST&&n.refillAt===null)n.refillAt=tomorrow(n.savedAt);
+ if(n.balance>=COST)n.refillAt=null;
+ if(s.version===3&&Array.isArray(s.lastResult?.symbols)&&s.lastResult.symbols.length===3&&s.lastResult.symbols.every(id=>SYMBOLS.some(v=>v.id===id))){
+  const result=s.lastResult;n.lastResult={symbols:[...result.symbols],...evaluate(result.symbols),map:destination(result.map).id,newReward:result.newReward===true};n.lastResult.net=n.lastResult.payout-COST;
+ }
+ return n;
+ }catch{return null}
+}
+function refill(s,now=Date.now()){
+ if(s.balance>=COST){s.refillAt=null;return false}
+ if(s.refillAt===null){s.refillAt=tomorrow(now);return false}
+ const today=day(now);
+ if(now<s.refillAt||s.lastRefillDay===today)return false;
+ // One fresh balance, even after several absent days. Never add to a nonempty purse.
+ s.balance=REFILL;s.refillAt=null;s.lastRefillDay=today;s.savedAt=timestamp(now);return true;
+}
+function spin(s,random=Math.random,now=Date.now()){
+ refill(s,now);if(s.balance<COST)return null;
+ const symbols=Array.from({length:3},()=>{const r=random();if(!Number.isFinite(r)||r<0||r>1)throw RangeError('Random value must be between 0 and 1');return SYMBOLS[Math.min(SYMBOLS.length-1,Math.floor(r*SYMBOLS.length))].id});
+ const outcome=evaluate(symbols),map=destination(s.selectedMap).id,key=destination(map).unlocked;
+ const result={symbols,...outcome,net:outcome.payout-COST,map,newReward:outcome.kind==='triple'&&!s[key]};
+ if(outcome.kind==='triple')s[key]=true;
+ s.balance+=result.net;s.spins++;s.lastResult=result;s.savedAt=timestamp(now);
+ if(s.balance<COST)s.refillAt=tomorrow(now);
+ return result;
+}
   function claimGolden(state, storage, PondLife, now = Date.now()) {
     if (!state.goldenUnlocked) return { status: 'locked' };
     if (!PondLife || typeof PondLife.decode !== 'function' ||
@@ -205,10 +87,19 @@
     }
   }
 
-  const api = {
-    KEY, COST, GOLDEN_AT, GOLDEN_FISH_ID, SYMBOLS, UNLOCKS,
-    create, decode, spin, refill, probabilityStats, claimGolden
-  };
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  else globalThis.SlotsLife = api;
+
+function claimCow(state,storage,FarmLife,now=Date.now()){
+ if(!state.cowUnlocked)return{status:'locked'};
+ try{
+  const raw=storage.getItem(FarmLife.KEY),farm=raw==null?FarmLife.create(now):FarmLife.decode(raw,now);
+  if(!farm)return{status:'invalid'};
+  const existing=!!farm.cow;
+  if(!farm.cow)farm.cow=FarmLife.makeCow(now);
+  farm.savedAt=now;storage.setItem(FarmLife.KEY,JSON.stringify(farm));
+  const claimed={...state,cowClaimed:true,savedAt:timestamp(now)};storage.setItem(KEY,JSON.stringify(claimed));Object.assign(state,claimed);
+  return{status:existing?'existing':'claimed',cow:farm.cow};
+ }catch{return{status:'storage-error'}}
+}
+const api={KEY,COST,START,REFILL,PAIR_PAYOUT,GOLDEN_FISH_ID,COW_ID,SYMBOLS,DESTINATIONS,destination,create,decode,evaluate,spin,refill,day,tomorrow,claimGolden,claimCow};
+if(typeof module!=='undefined'&&module.exports)module.exports=api;else globalThis.SlotsLife=api;
 })();

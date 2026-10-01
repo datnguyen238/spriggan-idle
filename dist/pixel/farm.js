@@ -2,11 +2,17 @@
 'use strict';
 const Life=FarmLife,canvas=document.querySelector('#farm'),ctx=canvas.getContext('2d',{alpha:false});
 let state;try{state=Life.decode(localStorage.getItem(Life.KEY))}catch{}const returning=!!state;state||=Life.create();
+let sawCow=!!state.cow;
+const animals=()=>state.cow?[...state.birds,state.cow]:state.birds;
 let W=400,H=240,sceneTop=0,sceneBottom=0,last=0,clock=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,selected=null,lastRules=0;
 const grain=[],walk=new Map(),hearts=[];const moment=document.querySelector('#moment'),card=document.querySelector('#bird-card');
 let noticeUntil=Date.now()+7000;
 function notice(text){moment.textContent=text;noticeUntil=Date.now()+7000}
-function save(){try{localStorage.setItem(Life.KEY,JSON.stringify(state));document.querySelector('#save-status').textContent='Saved on this device'}catch{document.querySelector('#save-status').textContent='Storage unavailable — this visit only'}}
+function receiveCow(){
+ if(sawCow)return;
+ try{const incoming=Life.decode(localStorage.getItem(Life.KEY));if(incoming?.cow){state.cow=incoming.cow;sawCow=true;notice('Buttercup has arrived from Golden Seed. A gentle new friend.')}}catch{}
+}
+function save(){try{receiveCow();localStorage.setItem(Life.KEY,JSON.stringify(state));document.querySelector('#save-status').textContent='Saved on this device'}catch{document.querySelector('#save-status').textContent='Storage unavailable — this visit only'}}
 function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
 function resize(){
  const r=canvas.getBoundingClientRect(),density=Math.min(devicePixelRatio||1,2);
@@ -82,17 +88,32 @@ function chicken(b){
  if(selected===b.id){rect(-9,9,18,1,'#fff0b4');rect(-10,8,1,1,'#fff0b4');rect(9,8,1,1,'#fff0b4')}
  ctx.restore();
 }
+function cow(b){
+ const m=walk.get(b.id),step=m?.moving?Math.sin(clock*7+(m.phase||0)):0;
+ ctx.save();ctx.translate(Math.round(b.x*W),Math.round(b.y*H));if(m?.left)ctx.scale(-1,1);
+ rect(-14,8,28,3,'#39563c35');
+ for(const x of [-10,7]){rect(x,3,4,7+Math.round(step*(x<0?1:-1)),'#ded6bd');rect(x,9+Math.round(step*(x<0?1:-1)),4,2,'#53645a')}
+ ctx.translate(0,step>0?1:0);
+ rect(-14,-7,24,14,'#b8ab8c');rect(-12,-10,19,18,'#fff5df');rect(-14,-6,24,10,'#fff5df');
+ rect(-12,-7,7,7,'#5b7262');rect(-7,-10,6,5,'#5b7262');rect(0,0,7,6,'#657c69');
+ rect(6,-12,11,14,'#e5dbc4');rect(8,-11,9,12,'#fff5df');rect(5,-15,4,5,'#d5ba82');rect(14,-16,3,5,'#d5ba82');
+ rect(4,-10,4,3,'#657c69');rect(17,-10,4,3,'#657c69');rect(8,-5,12,7,'#e5adac');rect(10,-3,1,2,'#946e6b');rect(17,-3,1,2,'#946e6b');
+ rect(10,-9,2,2,'#3b5145');rect(16,-9,2,2,'#3b5145');rect(10,-9,1,1,'#fff');
+ rect(-17,-5,2,9,'#cbb887');rect(-18,3,3,3,'#566d5c');
+ if(selected===b.id)rect(-15,13,33,1,'#fff0b4');ctx.restore();
+}
 function egg(e){const x=e.x*W,y=e.y*H,wiggle=Date.now()>e.hatchesAt-15000&&!paused?Math.sin(clock*8):0;rect(x-6,y+2,12,4,'#ad9259');rect(x-4,y,8,5,'#c6ab6c');rect(x-3+wiggle,y-5,6,7,'#fff1d0');rect(x-2+wiggle,y-7,4,2,'#fff1d0');rect(x+1+wiggle,y-3,2,4,'#e0d1a9')}
-function draw(){background();for(const g of grain){rect(g.x*W,g.y*H,2,1,'#e5cc83');rect(g.x*W+1,g.y*H-1,1,1,'#fbdf96')}const objects=[...state.birds.map(b=>({y:b.y,draw:()=>chicken(b)})),...state.eggs.map(e=>({y:e.y,draw:()=>egg(e)}))];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(const h of hearts){const x=h.x*W,y=h.y*H-(1-h.life)*15;ctx.globalAlpha=h.life;rect(x-2,y-1,2,2,'#bc7962');rect(x+1,y-1,2,2,'#bc7962');rect(x-1,y+1,3,2,'#bc7962');rect(x,y+3,1,1,'#bc7962');ctx.globalAlpha=1}}
+function draw(){background();for(const g of grain){rect(g.x*W,g.y*H,2,1,'#e5cc83');rect(g.x*W+1,g.y*H-1,1,1,'#fbdf96')}const objects=[...animals().map(b=>({y:b.y,draw:()=>b.species==='cow'?cow(b):chicken(b)})),...state.eggs.map(e=>({y:e.y,draw:()=>egg(e)}))];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(const h of hearts){const x=h.x*W,y=h.y*H-(1-h.life)*15;ctx.globalAlpha=h.life;rect(x-2,y-1,2,2,'#bc7962');rect(x+1,y-1,2,2,'#bc7962');rect(x-1,y+1,3,2,'#bc7962');rect(x,y+3,1,1,'#bc7962');ctx.globalAlpha=1}}
 function scatter(x=.5,y=.62){if(grain.length>=60)return notice('Plenty of grain already. Let them finish a little.');for(let i=0;i<10&&grain.length<60;i++)grain.push({x:Math.max(.17,Math.min(.82,x+(Math.random()-.5)*.13)),y:Math.max(.4,Math.min(.82,y+(Math.random()-.5)*.1)),life:60});notice('A little grain, a little gathering.');draw()}
-function inspect(){if(!selected)return;const b=state.birds.find(b=>b.id===selected),e=state.eggs.find(e=>e.id===selected);if(!b&&!e){card.hidden=true;selected=null;return}card.hidden=false;document.querySelector('#bird-name').textContent=b?b.name:'A warm little egg';let detail;
+function inspect(){if(!selected)return;const b=animals().find(b=>b.id===selected),e=state.eggs.find(e=>e.id===selected);if(!b&&!e){card.hidden=true;selected=null;return}card.hidden=false;document.querySelector('#bird-name').textContent=b?b.name:'A warm little egg';let detail;
  if(e)detail=`Hatching in ${Math.max(1,Math.ceil((e.hatchesAt-Date.now())/1000))} seconds. A tiny life is on its way.`;
+ else if(b.species==='cow')detail=`Cow · ${b.meals} meals shared. A Golden Seed friend, here to wander with your flock.`;
  else if(b.stage==='chick')detail=`Little chick · ${Math.min(Life.GROW_MEALS,b.meals)}/${Life.GROW_MEALS} meals to grow into an adult.`;
  else if(b.sex==='hen')detail=`Hen · ${b.layFood}/${Life.LAY_MEALS} meals for her next egg. ${state.birds.length+state.eggs.length>=Life.LIMIT?'The yard is full.':'Every grain she eats counts.'}`;
  else detail='Rooster · Keeping the little family company. Scatter some grain and he’ll come running.';
  document.querySelector('#bird-detail').textContent=detail;document.querySelector('#remove-bird').hidden=!b;
 }
-canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=((e.clientY-r.top)/r.height*(H+sceneTop+sceneBottom)-sceneTop)/H;let nearest=null,dist=14;for(const b of [...state.birds,...state.eggs]){const d=Math.hypot((b.x-x)*W,(b.y-y)*H);if(d<dist){nearest=b;dist=d}}if(nearest){selected=nearest.id;inspect();draw()}else scatter(x,y)});
+canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=((e.clientY-r.top)/r.height*(H+sceneTop+sceneBottom)-sceneTop)/H;let nearest=null,dist=14;for(const b of [...animals(),...state.eggs]){const d=Math.hypot((b.x-x)*W,(b.y-y)*H);if(d<dist){nearest=b;dist=d}}if(nearest){selected=nearest.id;inspect();draw()}else scatter(x,y)});
 document.querySelector('#feed').onclick=()=>scatter();document.querySelector('#close-card').onclick=()=>{selected=null;card.hidden=true;draw()};
 const controlsToggle=document.querySelector('#toggle-controls'),controls=document.querySelector('#farm-controls');
 controlsToggle.onclick=()=>{const expanded=controlsToggle.getAttribute('aria-expanded')==='true';controlsToggle.setAttribute('aria-expanded',String(!expanded));controls.inert=expanded;controls.setAttribute('aria-hidden',String(expanded));document.querySelector('.dashboard').classList.toggle('collapsed',expanded)};
@@ -100,23 +121,23 @@ const motion=document.querySelector('#motion');function syncMotion(){motion.setA
 const picker=document.querySelector('#flock-picker'),restart=document.querySelector('#restart-flock');let flockOptions='';
 picker.onchange=()=>{selected=picker.value||null;card.hidden=!selected;inspect();draw()};
 document.querySelector('#remove-bird').onclick=()=>{
- const b=state.birds.find(b=>b.id===selected);if(!b)return;
+ const b=animals().find(b=>b.id===selected);if(!b)return;
  const lastRooster=b.stage==='adult'&&b.sex==='rooster'&&!state.birds.some(other=>other.id!==b.id&&other.stage==='adult'&&other.sex==='rooster');
  if(!confirm(`Remove ${b.name} from your farm?${lastRooster?" Hens need an adult rooster in the yard to lay eggs.":''}`))return;
- Life.removeBird(state,b.id);walk.delete(b.id);selected=null;card.hidden=true;picker.value='';notice(`${b.name} has left the farm.`);ui();save();draw();picker.focus();
+ if(b.species==='cow')state.cow=null;else Life.removeBird(state,b.id);walk.delete(b.id);selected=null;card.hidden=true;picker.value='';notice(`${b.name} has left the farm.`);ui();save();draw();picker.focus();
 };
 restart.onclick=()=>{if(state.birds.length||state.eggs.length)return;state.birds=Life.create().birds;notice('Clover & Bramble. A fresh little beginning.');ui();save();draw()};
 function ui(){
- const signature=JSON.stringify(state.birds.map(b=>[b.id,b.name,b.stage,b.sex]));
- if(signature!==flockOptions){flockOptions=signature;picker.replaceChildren(new Option('Meet a chicken…',''));for(const b of state.birds)picker.add(new Option(`${b.name} · ${b.stage==='chick'?'chick':b.sex}`,b.id))}
- picker.value=state.birds.some(b=>b.id===selected)?selected:'';picker.disabled=!state.birds.length;restart.hidden=!!(state.birds.length||state.eggs.length);
+ const signature=JSON.stringify(animals().map(b=>[b.id,b.name,b.stage,b.sex]));
+ if(signature!==flockOptions){flockOptions=signature;picker.replaceChildren(new Option('Meet a farm friend…',''));for(const b of animals())picker.add(new Option(`${b.name} · ${b.stage==='chick'?'chick':b.sex}`,b.id))}
+ picker.value=animals().some(b=>b.id===selected)?selected:'';picker.disabled=!animals().length;restart.hidden=!!(state.birds.length||state.eggs.length);
 document.querySelector('#adults').textContent=state.birds.filter(b=>b.stage==='adult').length;document.querySelector('#chicks').textContent=state.birds.filter(b=>b.stage==='chick').length;document.querySelector('#eggs').textContent=state.eggs.length;inspect();if(Date.now()>noticeUntil)moment.textContent=state.eggs.length?'Something small is on its way.':state.birds.length+state.eggs.length>=Life.LIMIT?'A full little family. Room for 16, love for everyone.':'Feed, hatch, grow. No hurry at all.'}
 function tick(now){const events=Life.advance(state,now);if(events.length)notice(events.at(-1));ui();save()}
 function frame(ts){
  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
  if(!paused){
   clock+=dt;
-  for(const b of state.birds){
+  for(const b of animals()){
    let m=walk.get(b.id);
    if(!m){m={x:b.x,y:b.y,rest:0,hasGoal:false,left:false,phase:Math.random()*8,angle:Math.random()*Math.PI*2,routeIn:0,pace:.85+Math.random()*.3};walk.set(b.id,m)}
    m.rest=Math.max(0,m.rest-dt);m.routeIn-=dt;
@@ -137,7 +158,7 @@ function frame(ts){
     const sway=target?0:Math.sin(clock*.65+m.phase)*.35;
     const desired=Math.atan2(dy,dx)+sway,delta=Math.atan2(Math.sin(desired-m.angle),Math.cos(desired-m.angle));
     const turn=(target?3.8:1.65)*dt;m.angle+=Math.max(-turn,Math.min(turn,delta));
-    const speed=(target?19:12)*m.pace*(b.stage==='chick'?1.12:1)*(1+.08*Math.sin(clock*1.4+m.phase));
+    const speed=(target?19:12)*m.pace*(b.species==='cow'?.7:b.stage==='chick'?1.12:1)*(1+.08*Math.sin(clock*1.4+m.phase));
     const vx=Math.cos(m.angle),vy=Math.sin(m.angle);
     b.x+=vx*speed*dt/W;b.y+=vy*speed*dt/H;
     // Turn back into the yard at its edges instead of waiting against a fence.
@@ -148,8 +169,9 @@ function frame(ts){
 
   }
  // Give the little flock room even when several birds chase the same grain.
- for(let i=0;i<state.birds.length;i++)for(let j=i+1;j<state.birds.length;j++){
-  const a=state.birds[i],b=state.birds[j],dx=(b.x-a.x)*W,dy=(b.y-a.y)*H,d=Math.hypot(dx,dy),space=(a.stage==='chick'?5:8)+(b.stage==='chick'?5:8);
+ const herd=animals();
+ for(let i=0;i<herd.length;i++)for(let j=i+1;j<herd.length;j++){
+  const a=herd[i],b=herd[j],dx=(b.x-a.x)*W,dy=(b.y-a.y)*H,d=Math.hypot(dx,dy),space=(a.species==='cow'?15:a.stage==='chick'?5:8)+(b.species==='cow'?15:b.stage==='chick'?5:8);
   if(d<space){const ux=d>0?dx/d:1,uy=d>0?dy/d:0,push=(space-d)*.5;
    a.x=Math.max(.17,Math.min(.82,a.x-ux*push/W));a.y=Math.max(.4,Math.min(.82,a.y-uy*push/H));
    b.x=Math.max(.17,Math.min(.82,b.x+ux*push/W));b.y=Math.max(.4,Math.min(.82,b.y+uy*push/H));
@@ -157,5 +179,6 @@ function frame(ts){
  }
  for(let i=grain.length-1;i>=0;i--){grain[i].life-=dt;if(grain[i].life<=0)grain.splice(i,1)}for(let i=hearts.length-1;i>=0;i--){hearts[i].life-=dt*.7;if(hearts[i].life<=0)hearts.splice(i,1)}}
  if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}if(!document.hidden)draw();requestAnimationFrame(frame)}
+window.addEventListener('storage',e=>{if(e.key===Life.KEY){receiveCow();ui();draw()}});
 window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your little family is right here.');resize();requestAnimationFrame(frame);
 })();

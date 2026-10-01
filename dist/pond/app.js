@@ -550,8 +550,6 @@
     const now=Date.now();
     for(const f of fish){const old=f.growth;Life.settleGrowth(f,now);if(old!==f.growth){f.size=f.baseSize*(1+f.growth)*(w<=720?.72:1);f.grad=null;dirty=true}}
     pond.fish=fish.map(f=>Life.record(f,w,h));
-    const golden=Life.maybeGolden(pond,now);
-    if(golden){spawn(w*.7,h*.45,golden);announce('A golden koi has found your pond. Meet Kin.')}
     savePond();
   }
   function decorPose(sprite){

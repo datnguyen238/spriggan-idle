@@ -2,20 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#142f2b"><meta name="description" content="Choose a little world to slow down in. Feed koi in Stillwater Pond, raise chickens at Sunny Side Farm, or grow a lucky garden in Golden Seed.">
+<meta name="theme-color" content="#142f2b"><meta name="description" content="Choose a little world to slow down in. Feed koi in Stillwater Pond, raise chickens at Sunny Side Farm, and take a turn at the Golden Seed mini-game.">
 <title>Spriggan — Choose your little world</title>
-<link rel="stylesheet" href="./landing.css">
+<link rel="stylesheet" href="./landing.css?v=4">
+<script defer src="./shared/map-entry.js?v=1"></script>
 </head>
 <body>
 <div class="page-frame" aria-hidden="true"></div>
 <header><a class="brand" href="./" aria-label="Spriggan home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27V12m0 8C5 21 4 9 5 5c9 0 13 5 11 15Zm0-4c0-7 4-11 12-11 0 7-4 12-12 11Z"/></svg><span>Spriggan<small>LITTLE WORLDS, SLOW DAYS</small></span></a><span class="header-note"><i></i> A little room to breathe</span></header>
 <main>
 <section class="intro"><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1>Somewhere quiet.<br><em>Something yours.</em></h1><p>Choose a little world. Settle in. Let the rest wait.</p></section>
+<section class="mini-games" aria-labelledby="mini-games-title"><div class="mini-heading"><p class="eyebrow">A CHANGE OF PACE</p><h2 id="mini-games-title">Little games, familiar worlds.</h2></div><a class="mini-game" href="./slots/" aria-label="Play Golden Seed mini-game"><div class="mini-preview"><img src="./previews/slots.png?v=3" width="600" height="600" alt="A sage and cream slot machine with three reels and a simple brass lever" loading="lazy"></div><div class="mini-copy"><span class="map-type">MINI-GAME / GOLDEN SEED</span><h3>A little luck to bring home.</h3><p>Turn a few seeds into a chance at a new friend for your worlds.</p></div><span class="mini-play">Play Golden Seed <span aria-hidden="true">↗</span></span></a></section>
 <section class="worlds" aria-label="Choose your map">
 <a class="world" href="./pond/" aria-label="Enter Stillwater Pond"><div class="preview pond"><img src="./previews/pond.png" width="600" height="600" alt="Koi swimming among floating lily pads in a green pond" fetchpriority="high"><span class="world-tag">01 / WATER &amp; WONDER</span><span class="enter">Enter pond <span aria-hidden="true">↗</span></span></div><div class="world-caption"><h2>Stillwater Pond</h2><span class="map-type">KOI POND</span></div><p>Soft rain, drifting lilies, and a few familiar fins.</p></a>
 <a class="world" href="./pixel/" aria-label="Enter Sunny Side Farm"><div class="preview farm"><img src="./previews/farm.png" width="600" height="600" alt="A pixel-art chicken farm with a wooden coop, hens, chicks, and a fenced garden"><span class="world-tag">02 / FEATHERS &amp; SUNSHINE</span><span class="enter">Enter farm <span aria-hidden="true">↗</span></span></div><div class="world-caption"><h2>Sunny Side Farm</h2><span class="map-type">PIXEL FARM</span></div><p>Little peeps, warm eggs, and room to grow.</p></a>
-<a class="world" href="./slots/" aria-label="Enter Golden Seed test garden"><div class="preview farm"><img src="./previews/slots.png" width="600" height="600" alt="A wooden three-reel slot machine in a pixel garden with flowers, lanterns, and a golden koi pond"><span class="world-tag">03 / A LITTLE LUCK &amp; LIFE</span><span class="enter">Enter garden <span aria-hidden="true">↗</span></span></div><div class="world-caption"><h2>Golden Seed</h2><span class="map-type">TEST GARDEN</span></div><p>A little luck, a growing garden, and a golden friend.</p></a>
+<article class="world"><div class="preview incoming"><span class="world-tag">03 / ROOM FOR SOMETHING NEW</span><div class="seed-art"><svg viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="60" cy="89" rx="38" ry="9"/><path d="M60 86V50m0 13C42 66 33 52 35 37c18 0 28 12 25 26Zm0-8c0-16 11-25 27-25 1 16-9 27-27 25Z"/><path class="spark" d="M25 25v10m-5-5h10m65 32v8m-4-4h8"/></svg><span>A new world is taking root.</span></div><span class="coming-badge">INCOMING</span></div><div class="world-caption"><h2>Somewhere new</h2><span class="map-type">ON THE HORIZON</span></div><p>A little space for what comes next.</p></article>
 </section>
+
 <p class="save-note"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 6 3v5c0 4-6 7-6 7s-6-3-6-7V5Z"/><path d="m7 9 2 2 4-4"/></svg>Your worlds are saved in this browser. Come back whenever.</p>
 </main>
 <footer><span>A SMALL ESCAPE BY SPRIGGAN</span><span>No rush. You’re right on time.</span></footer>

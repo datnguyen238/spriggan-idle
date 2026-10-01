@@ -43,13 +43,8 @@
           audio:{rain:audio.rain===true,ambient:audio.ambient===true,music:audio.music===true}}};
     }catch{return null}
   }
-  function maybeGolden(pond,now=Date.now(),random=Math.random){
-    if(now<pond.nextGoldenAt||pond.fish.length>=MAX_KOI)return null;
-    // One chance per elapsed day, not per reload or per missed day.
-    pond.nextGoldenAt=now+DAY;
-    if(pond.fish.some(f=>f.golden)||random()>=.18)return null;
-    const f=makeFish(pond.fish.length,now,true);pond.fish.push(f);return f;
-  }
+  // Kin is now exclusively a Golden Seed prize. Existing golden koi stay saved.
+  function maybeGolden(){return null}
   function record(f,w,h){
     return{id:f.id,name:f.name,golden:f.golden,baseSize:f.baseSize,pattern:f.pattern,createdAt:f.createdAt,lastGrowthAt:f.lastGrowthAt,
       growth:f.growth,nutrition:f.nutrition,meals:f.meals,x:finite(f.x/w,.5,0,1),y:finite(f.y/h,.5,0,1)};

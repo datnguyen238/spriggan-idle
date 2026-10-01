@@ -19,165 +19,24 @@ function memoryStorage(entries = []) {
 
 function unlockedState() {
   const state = Life.create(now);
-  state.spins = Life.GOLDEN_AT;
   state.goldenUnlocked = true;
   return state;
 }
 
-test('a new garden starts with 200 seeds and accessible quiet defaults', () => {
-  assert.deepEqual(Life.create(now), {
-    version: 1, balance: 200, spins: 0, lastResult: null,
-    goldenUnlocked: false, goldenClaimed: false,
-    settings: { sound: false, motion: true }, savedAt: now
-  });
-  assert.deepEqual(Life.decode(JSON.stringify(Life.create(now)), now), Life.create(now));
-});
 
-test('weighted draws honor exact cumulative boundaries and all six symbols', () => {
-  const cases = [
-    [0, 'leaf'], [.299999, 'leaf'], [.3, 'flower'], [.549999, 'flower'],
-    [.55, 'egg'], [.749999, 'egg'], [.75, 'chicken'], [.869999, 'chicken'],
-    [.87, 'koi'], [.949999, 'koi'], [.95, 'seed'], [1, 'seed']
-  ];
-  for (const [value, id] of cases) {
-    const state = Life.create(now);
-    assert.deepEqual(Life.spin(state, () => value, now).symbols, [id, id, id]);
-  }
-});
-
-test('each triple pays its documented award and every pair returns only the cost', () => {
-  const draws = [.1, .4, .6, .8, .9, .98];
-  Life.SYMBOLS.forEach((symbol, index) => {
-    const result = Life.spin(Life.create(now), () => draws[index], now);
-    assert.equal(result.kind, 'triple');
-    assert.equal(result.payout, symbol.payout);
-    assert.equal(result.net, symbol.payout - Life.COST);
-  });
-  for (const values of [[.1, .1, .4], [.1, .4, .1], [.4, .1, .1]]) {
-    const state = Life.create(now);
-    const result = Life.spin(state, sequence(...values), now);
-    assert.equal(result.kind, 'pair');
-    assert.equal(result.payout, 10);
-    assert.equal(result.net, 0);
-    assert.equal(state.balance, 200);
-  }
-  const state = Life.create(now);
-  const miss = Life.spin(state, sequence(.1, .4, .6), now);
-  assert.equal(miss.kind, 'miss');
-  assert.equal(miss.payout, 0);
-  assert.equal(miss.net, -10);
-  assert.equal(state.balance, 190);
-});
-
-test('exhaustive probability totals distinguish a refunded pair from a net win', () => {
-  const stats = Life.probabilityStats();
-  assert.equal(stats.expectedPayout, 8.3772);
-  assert(Math.abs(stats.return - .83772) < 1e-12);
-  assert.equal(stats.pairRate, .48843);
-  assert.equal(stats.tripleRate, .05299);
-  assert.equal(stats.payoutRate, .54142);
-  assert.equal(stats.netWinRate, .05299);
-  assert.equal(stats.goldenRate, .000125);
-  assert(Math.abs(stats.pairRate + stats.tripleRate - stats.payoutRate) < 1e-12);
-});
-
-test('spins settle balance, count, and result before a reload without applying them again', () => {
-  const state = Life.create(now);
-  const result = Life.spin(state, sequence(.98, .98, .98), now + 1000);
-  assert.equal(state.balance, 1190);
-  assert.equal(state.spins, 1);
-  assert.equal(state.lastResult, result);
-  assert.equal(state.savedAt, now + 1000);
-  const reloaded = Life.decode(JSON.stringify(state), now + 1000);
-  assert.deepEqual(reloaded, state);
-  assert.deepEqual(Life.decode(JSON.stringify(reloaded), now + 1000), state);
-});
-
-test('insufficient seeds refuse a spin without drawing or changing the state', () => {
-  const state = Life.create(now);
-  state.balance = 9;
-  const original = JSON.stringify(state);
-  assert.equal(Life.spin(state, () => { throw Error('must not draw'); }, now + 1000), null);
-  assert.equal(JSON.stringify(state), original);
-  state.balance = 10;
-  Life.spin(state, sequence(.1, .4, .6), now);
-  assert.equal(state.balance, 0);
-});
-
-test('invalid random values cannot partly charge or settle a spin', () => {
-  for (const invalid of [-1, 1.1, NaN, Infinity, '0.5']) {
-    const state = Life.create(now);
-    const original = JSON.stringify(state);
-    assert.throws(() => Life.spin(state, sequence(.1, invalid, .4), now), RangeError);
-    assert.equal(JSON.stringify(state), original);
-  }
-});
-
-test('save validation rejects corrupt core data and normalizes optional fields', () => {
-  for (const raw of ['not json', 'null', '{}', '[]', JSON.stringify({ ...Life.create(now), version: 2 })]) {
-    assert.equal(Life.decode(raw, now), null);
-  }
-  for (const field of ['balance', 'spins']) {
-    for (const invalid of [-1, .5, null, '100', Number.MAX_SAFE_INTEGER + 1]) {
-      assert.equal(Life.decode(JSON.stringify({ ...Life.create(now), [field]: invalid }), now), null);
-    }
-  }
-  const saved = Life.create(now);
-  saved.spins = 1;
-  saved.settings = { sound: 'true', motion: false };
-  saved.savedAt = now + 99999;
-  saved.lastResult = { symbols: ['leaf', 'leaf', 'egg'], payout: 50000, net: 49990, kind: 'triple' };
-  let decoded = Life.decode(JSON.stringify(saved), now);
-  assert.deepEqual(decoded.settings, { sound: false, motion: false });
-  assert.equal(decoded.savedAt, now);
-  assert.equal(decoded.lastResult.payout, 10);
-  assert.equal(decoded.lastResult.kind, 'pair');
-  saved.lastResult.symbols[0] = 'unknown';
-  decoded = Life.decode(JSON.stringify(saved), now);
-  assert.equal(decoded.lastResult, null);
-  saved.goldenClaimed = true;
-  assert.equal(Life.decode(JSON.stringify(saved), now).goldenClaimed, false);
-});
-
-test('seed gathering is immediate only below the spin cost and preserves progression', () => {
-  const state = unlockedState();
-  state.balance = 10;
-  assert.equal(Life.refill(state, now + 1000), false);
-  assert.equal(state.savedAt, now);
-  state.balance = 9;
-  assert.equal(Life.refill(state, now + 1000), true);
-  assert.equal(state.balance, 100);
-  assert.equal(state.spins, Life.GOLDEN_AT);
-  assert.equal(state.goldenUnlocked, true);
-  assert.equal(state.savedAt, now + 1000);
-  assert.equal(Life.refill(state, now + 2000), false);
-});
-
-test('garden decorations unlock exactly once at their milestones', () => {
-  for (const unlock of Life.UNLOCKS) {
-    const state = Life.create(now);
-    state.spins = unlock.at - 2;
-    assert.deepEqual(Life.spin(state, sequence(.1, .4, .6), now).newUnlocks, []);
-    assert.deepEqual(Life.spin(state, sequence(.1, .4, .6), now).newUnlocks, [unlock]);
-    assert.deepEqual(Life.spin(state, sequence(.1, .4, .6), now).newUnlocks, []);
-  }
-});
-
-test('golden koi unlocks by rare golden triple or guaranteed sixty-spin progress', () => {
-  const lucky = Life.create(now);
-  const luckyResult = Life.spin(lucky, () => .99, now);
-  assert.equal(luckyResult.goldenUnlocked, true);
-  assert.equal(lucky.goldenUnlocked, true);
-  assert.equal(Life.spin(lucky, () => .99, now).goldenUnlocked, false);
-  const steady = Life.create(now);
-  steady.spins = 58;
-  assert.equal(Life.spin(steady, sequence(.1, .4, .6), now).goldenUnlocked, false);
-  assert.equal(Life.spin(steady, sequence(.1, .4, .6), now).goldenUnlocked, true);
-  assert.equal(steady.goldenUnlocked, true);
-  const oldFlags = { ...steady, goldenUnlocked: false };
-  assert.equal(Life.decode(JSON.stringify(oldFlags), now).goldenUnlocked, true);
-});
-
+const FarmLife=require('../dist/pixel/farm-life.js');
+test('new purse starts at 200 seeds with no prizes unlocked',()=>{const s=Life.create(now);assert.equal(s.balance,200);assert.equal(s.selectedMap,'pond');assert.equal(s.goldenUnlocked,false);assert.equal(s.cowUnlocked,false)});
+test('a pair awards 20 seeds for a net gain of 10 and a miss costs 10',()=>{const s=Life.create(now);let r=Life.spin(s,sequence(0,0,.3),now);assert.equal(r.kind,'pair');assert.equal(r.payout,20);assert.equal(r.net,10);assert.equal(s.balance,210);r=Life.spin(s,sequence(0,.3,.5),now);assert.equal(r.kind,'miss');assert.equal(s.balance,200)});
+test('any triple unlocks only the chosen map; duplicate wins do not duplicate rewards',()=>{for(const value of [0,.2,.4,.6,.8,.99]){const s=Life.create(now);s.selectedMap='farm';const r=Life.spin(s,()=>value,now);assert.equal(r.kind,'triple');assert.equal(r.newReward,true);assert.equal(r.map,'farm');assert.equal(s.cowUnlocked,true);assert.equal(s.goldenUnlocked,false);assert.equal(s.balance,190);assert.equal(Life.spin(s,()=>value,now).newReward,false);s.selectedMap='pond';Life.spin(s,()=>value,now);assert.equal(s.goldenUnlocked,true)}});
+test('sixty spins no longer grant a guaranteed collectible',()=>{const s=Life.create(now);s.spins=59;Life.spin(s,sequence(0,.3,.5),now);assert.equal(s.goldenUnlocked,false);assert.equal(Life.decode(JSON.stringify(s),now).goldenUnlocked,false)});
+test('empty purse waits until next local midnight, refills once to 50, never accumulates missed days',()=>{const t=new Date(2026,9,1,20,30).getTime(),s=Life.create(t);s.balance=10;Life.spin(s,sequence(0,.3,.5),t);const next=new Date(2026,9,2).getTime();assert.equal(s.refillAt,next);assert.equal(s.balance,0);assert.equal(Life.refill(s,t+1000),false);assert.equal(Life.spin(s,()=>0,t),null);const reloaded=Life.decode(JSON.stringify(s),t);assert.equal(Life.refill(reloaded,next-1),false);assert.equal(Life.refill(reloaded,next),true);assert.equal(reloaded.balance,50);assert.equal(Life.refill(reloaded,next),false);reloaded.balance=10;Life.spin(reloaded,sequence(0,.3,.5),next);assert.equal(Life.refill(reloaded,next+1),false);assert.equal(Life.refill(reloaded,new Date(2026,9,9).getTime()),true);assert.equal(reloaded.balance,50)});
+test('nonempty balances remain untouched on later days and clock rollback cannot refill',()=>{const s=Life.create(now);s.balance=20;assert.equal(Life.refill(s,now+864000000),false);assert.equal(s.balance,20);s.balance=10;Life.spin(s,sequence(0,.3,.5),now);assert.equal(Life.refill(s,now-86400000),false)});
+test('older balances and earned golden rewards migrate without a spin-count unlock',()=>{const s={...Life.create(now),version:1,balance:170,spins:80,goldenUnlocked:true};const migrated=Life.decode(JSON.stringify(s),now);assert.equal(migrated.balance,200);assert.equal(migrated.goldenUnlocked,true);assert.equal(migrated.version,3);assert.equal(Life.decode(JSON.stringify({...s,goldenUnlocked:false}),now).goldenUnlocked,false)});
+test('results and separate prize flags survive reloading',()=>{const s=Life.create(now);s.selectedMap='farm';Life.spin(s,()=>0,now);assert.deepEqual(Life.decode(JSON.stringify(s),now),s);for(const bad of ['bad','null','{}',JSON.stringify({...s,balance:-10})])assert.equal(Life.decode(bad,now),null)});
+test('all 216 equally likely outcomes have honest pair and triple frequencies',()=>{let pair=0,triple=0,miss=0;for(const a of Life.SYMBOLS)for(const b of Life.SYMBOLS)for(const c of Life.SYMBOLS){const r=Life.evaluate([a.id,b.id,c.id]);if(r.kind==='pair')pair++;else if(r.kind==='triple')triple++;else miss++}assert.equal(pair,90);assert.equal(triple,6);assert.equal(miss,120)});
+test('cow claim adds one actual saved cow and preserves chickens, eggs, and meals',()=>{const s=Life.create(now);s.cowUnlocked=true;const farm=FarmLife.create(now);farm.birds[0].meals=83;farm.birds[0].layFood=83;const storage=memoryStorage([[FarmLife.KEY,JSON.stringify(farm)]]);assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'claimed');const after=FarmLife.decode(storage.getItem(FarmLife.KEY),now);assert.deepEqual(after.birds,farm.birds);assert.equal(after.cow.id,Life.COW_ID);assert.equal(after.cow.name,'Buttercup');assert.equal(s.cowClaimed,true);assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'existing')});
+test('cow receipt retries safely after partial storage failure',()=>{const s=Life.create(now);s.cowUnlocked=true;const storage=memoryStorage(),write=storage.setItem;storage.setItem=(key,value)=>{if(key===Life.KEY)throw Error('full');write(key,value)};assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'storage-error');assert.equal(s.cowClaimed,false);assert(FarmLife.decode(storage.getItem(FarmLife.KEY),now).cow);storage.setItem=write;assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'existing');assert.equal(s.cowClaimed,true)});
+test('locked prizes and invalid farm saves are never overwritten',()=>{const s=Life.create(now),storage=memoryStorage([[FarmLife.KEY,'bad']]);assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'locked');s.cowUnlocked=true;assert.equal(Life.claimCow(s,storage,FarmLife,now).status,'invalid');assert.equal(storage.getItem(FarmLife.KEY),'bad')});
 test('claim creates a missing pond and saves one stable golden Kin before the claim receipt', () => {
   const storage = memoryStorage();
   const state = unlockedState();
@@ -276,4 +135,15 @@ test('a failed slot receipt retries against the already saved fish without dupli
   assert.equal(Life.claimGolden(state, storage, PondLife, now).status, 'existing');
   assert.equal(PondLife.decode(storage.getItem(PondLife.KEY), now).fish.length, 6);
   assert.equal(state.goldenClaimed, true);
+});
+
+test('the 200-seed migration applies once and preserves richer wallets and earned rewards',()=>{
+ for(const version of [1,2])for(const balance of [0,50,190,350]){
+  const old={...Life.create(now),version,balance,spins:12,cowUnlocked:true,goldenClaimed:true,selectedMap:'farm',refillAt:now+10000};
+  const upgraded=Life.decode(JSON.stringify(old),now);
+  assert.equal(upgraded.balance,Math.max(200,balance));assert.equal(upgraded.refillAt,null);assert.equal(upgraded.cowUnlocked,true);assert.equal(upgraded.goldenClaimed,true);assert.equal(upgraded.spins,12);assert.equal(upgraded.selectedMap,'farm');
+  Life.spin(upgraded,sequence(0,.3,.5),now);
+  const reloaded=Life.decode(JSON.stringify(upgraded),now);
+  assert.equal(reloaded.balance,Math.max(200,balance)-10);
+ }
 });
