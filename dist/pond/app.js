@@ -15,7 +15,7 @@
   // Cache the water and individual plants; animate only their positions and angles.
   const bgCanvas=document.createElement('canvas');
   const bgCtx=bgCanvas.getContext('2d',{alpha:false});
-  let decorSprites=[],plantBodies=[];
+  let decorSprites=[],plantBodies=[],goldenAuraSprite=null;
   const LILY_PADS=[
     {x:.89,y:.28,r:.060,angle:-.6,flower:'ivory',phase:.3},
     {x:.96,y:.34,r:.048,angle:.8,phase:1.6},
@@ -207,6 +207,15 @@
     return{image,width:image.width/dpr,height:image.height/dpr,originX,originY};
   }
   function buildDecorSprites(){
+    // Cache the soft halo; no per-frame blur filters or glow textures.
+    goldenAuraSprite=makeDecorSprite(240,240,120,120,()=>{
+      const glow=ctx.createRadialGradient(0,0,0,0,0,120);
+      glow.addColorStop(0,'rgba(255,223,132,.64)');
+      glow.addColorStop(.3,'rgba(255,213,100,.46)');
+      glow.addColorStop(.62,'rgba(243,188,66,.22)');
+      glow.addColorStop(1,'rgba(243,188,66,0)');
+      ctx.fillStyle=glow;ctx.fillRect(-120,-120,240,240);
+    });
     const s=Math.min(w,h);
     decorSprites=LILY_PADS.map((pad,index)=>{
       const r=s*pad.r,padding=r+26;
@@ -240,10 +249,30 @@
     ctx.bezierCurveTo(-rx*.58,ry*1.15,rx*.28,ry*.96,rx*.76,ry*.56);
     ctx.quadraticCurveTo(rx*1.11,ry*.23,rx,0);ctx.fill();ctx.restore();
   }
+  function drawGoldenAura(f){
+    if(!goldenAuraSprite)return;
+    const S=f.size,pulse=1+Math.sin(t*.9+f.phase)*.055;
+    ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.a);
+    ctx.globalAlpha=night?.92:.76;
+    ctx.drawImage(goldenAuraSprite.image,-S*1.65*pulse,-S*1.02*pulse,S*3.3*pulse,S*2.04*pulse);
+    // A few slow firefly-like glints orbit the halo, following Kin as he swims.
+    const count=quality<2?5:3;
+    for(let i=0;i<count;i++){
+      const angle=t*.24+f.phase+i*Math.PI*2/count;
+      const x=Math.cos(angle)*S*1.18-S*.12,y=Math.sin(angle)*S*.65;
+      const shimmer=.5+.5*Math.sin(t*1.3+i*2.4+f.phase),r=1.1+shimmer*1.2;
+      ctx.globalAlpha=(night?.9:.8)*(.3+shimmer*.7);ctx.fillStyle='#ffe6a4';
+      ctx.beginPath();ctx.moveTo(x-r*1.8,y);ctx.quadraticCurveTo(x,y-r*.25,x,y-r*1.8);
+      ctx.quadraticCurveTo(x+r*.25,y,x+r*1.8,y);ctx.quadraticCurveTo(x,y+r*.25,x,y+r*1.8);
+      ctx.quadraticCurveTo(x-r*.25,y,x-r*1.8,y);ctx.fill();
+    }
+    ctx.restore();
+  }
   function drawKoi(f){
     const S=f.size,beat=t*(4.4+f.v*2)+f.phase,bend=Math.sin(beat)*S*.115;
     // Cheap offset shadow instead of canvas shadowBlur (which is very slow in many browsers).
     ctx.save();ctx.translate(f.x+2,f.y+10);ctx.rotate(f.a);ctx.fillStyle='rgba(0,17,20,.2)';koiBodyPath(S,bend);ctx.fill();ctx.restore();
+    if(f.golden)drawGoldenAura(f);
     ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.a+Math.sin(beat*.5)*.024);
     // The tail and paired fins move independently of the body.
     ctx.save();ctx.translate(-S*.61,bend);ctx.rotate(Math.sin(beat)*.23);
