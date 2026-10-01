@@ -3,6 +3,8 @@
   let stored=null;
   try{stored=Life.decode(localStorage.getItem(Life.KEY))}catch{}
   const pond=stored||Life.create();
+  const SLOT_GOLDEN_ID='spriggan-golden-seed-koi';
+  let sawSlotGolden=pond.fish.some(f=>f.id===SLOT_GOLDEN_ID),pendingSlotGolden=null;
   const memoryLine=document.querySelector('#pond-memory'),momentLine=document.querySelector('#pond-moment');
   const koiPicker=document.querySelector('#koi-picker'),koiTag=document.querySelector('#koi-tag'),nameInput=document.querySelector('#koi-name'),renameForm=document.querySelector('#rename-koi'),renameBtn=document.querySelector('#start-rename');
   const koiLink=document.querySelector('#koi-link'),koiLinkLine=document.querySelector('#koi-link-line'),koiLinkHalo=document.querySelector('#koi-link-halo'),koiLinkDot=document.querySelector('#koi-link-dot');
@@ -456,11 +458,37 @@
     if(e.code==='Space'&&!e.target.closest?.('button,input,select,textarea,[contenteditable=true]')){e.preventDefault();pauseBtn.click()}
   });
   function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(savePond,900)}
+  function welcomeSlotGolden(announceArrival=false){
+    if(!pendingSlotGolden)return true;
+    // An existing golden koi fulfills the reward without adding a second one.
+    if(fish.some(f=>f.golden||f.id===SLOT_GOLDEN_ID)){sawSlotGolden=true;pendingSlotGolden=null;return true}
+    if(fish.length>=Life.MAX_KOI)return false;
+    const record=pendingSlotGolden;
+    spawn(clamp(record.x*w,30,w-30),clamp(record.y*h,30,h-30),record);
+    pond.fish=fish.map(f=>Life.record(f,w,h));
+    sawSlotGolden=true;pendingSlotGolden=null;
+    if(announceArrival)announce('Kin has arrived from Golden Seed. A golden friend for your pond.');
+    return true;
+  }
+  function receiveSlotGolden(raw,announceArrival=false){
+    if(sawSlotGolden)return true;
+    const incoming=Life.decode(raw);
+    const golden=incoming?.fish.find(f=>f.id===SLOT_GOLDEN_ID&&f.golden);
+    if(golden)pendingSlotGolden=golden;
+    return welcomeSlotGolden(announceArrival);
+  }
   function savePond(){
     clearTimeout(saveTimer);
-    pond.savedAt=Date.now();pond.fish=fish.map(f=>Life.record(f,w,h));
-    pond.settings={night,raining,pace,rainVolume:Number(rainVolInput.value),collapsed:panel.classList.contains('is-collapsed'),audio:{...audioPreferences}};
-    try{localStorage.setItem(Life.KEY,JSON.stringify(pond));memoryLine.textContent='Your pond is saved on this device.'}
+    try{
+      // A suspended tab can save before its queued storage event is delivered.
+      if(!receiveSlotGolden(localStorage.getItem(Life.KEY))){
+        memoryLine.textContent='Kin is waiting. Remove a koi to welcome him and save your pond.';
+        return;
+      }
+      pond.savedAt=Date.now();pond.fish=fish.map(f=>Life.record(f,w,h));
+      pond.settings={night,raining,pace,rainVolume:Number(rainVolInput.value),collapsed:panel.classList.contains('is-collapsed'),audio:{...audioPreferences}};
+      localStorage.setItem(Life.KEY,JSON.stringify(pond));memoryLine.textContent='Your pond is saved on this device.';
+    }
     catch{memoryLine.textContent='Saving is unavailable here. Your pond will last for this visit.'}
   }
   function refreshKoiPicker(){
@@ -522,8 +550,6 @@
     const now=Date.now();
     for(const f of fish){const old=f.growth;Life.settleGrowth(f,now);if(old!==f.growth){f.size=f.baseSize*(1+f.growth)*(w<=720?.72:1);f.grad=null;dirty=true}}
     pond.fish=fish.map(f=>Life.record(f,w,h));
-    const golden=Life.maybeGolden(pond,now);
-    if(golden){spawn(w*.7,h*.45,golden);announce('A golden koi has found your pond. Meet Kin.')}
     savePond();
   }
   function decorPose(sprite){
@@ -627,6 +653,13 @@
     f.name=Life.cleanName(name,f.name);refreshKoiPicker();showKoi(f);renameBtn.focus();savePond();
   };
   document.addEventListener('visibilitychange',()=>{savePond();audio.visibility(document.hidden);if(!document.hidden){last=performance.now();checkGrowthAndVisitors()}});
+  window.addEventListener('storage',e=>{
+    if(e.key!==Life.KEY||(e.storageArea&&e.storageArea!==localStorage))return;
+    if(!receiveSlotGolden(e.newValue,true)){
+      memoryLine.textContent='Kin is waiting. Remove a koi to welcome him and save your pond.';
+      announce('A golden koi is waiting outside your full pond. Remove a koi to welcome Kin.');
+    }
+  });
   window.addEventListener('pagehide',()=>{savePond();audio.visibility(true)});
   window.addEventListener('pageshow',()=>{audio.visibility(document.hidden);syncAudioRecovery()});
   window.addEventListener('focus',()=>{if(!document.hidden)audio.visibility(false)});

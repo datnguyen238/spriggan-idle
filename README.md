@@ -1,4 +1,4 @@
-# Spriggan — Koi Pond
+# Spriggan — Little worlds
 
 A small interactive koi pond built with plain HTML, CSS, JavaScript, and the Canvas API. No build step or packages are needed.
 
@@ -27,7 +27,7 @@ Then visit http://localhost:8000. Stop the server with Ctrl+C.
 
 Your koi, names, feeding progress, and pond settings are saved automatically in this browser. Returning shows a welcome message; saved sounds resume on your first tap, or with **Resume saved sounds**. Returning from the background attempts to resume automatically; if the browser requires a gesture, tap the pond. Clearing browser data resets the pond, and saves do not sync across devices. If storage is unavailable, the pond still works for the current visit.
 
-Fed koi gradually grow with elapsed time, including time away. Ten eaten food pieces support roughly one day of growth; each koi stores up to three days of nourishment, grows by 12% of its original size per fed day, and can grow up to 75% larger. A golden koi has an 18% chance to join on a daily check after your first day, provided the pond has space. Reloading does not grant extra attempts, and only one golden koi lives in a pond at a time.
+Fed koi gradually grow with elapsed time, including time away. Ten eaten food pieces support roughly one day of growth; each koi stores up to three days of nourishment, grows by 12% of its original size per fed day, and can grow up to 75% larger. Kin is now a collectible won in Golden Seed; golden koi no longer arrive through random pond events. Existing golden koi remain, with at most one in the pond.
 
 Occasional groups visit for about a minute: four frogs, six dragonflies (daylight only), twelve drifting leaves, or thirty-two sakura petals. Frogs and dragonflies take individually randomized routes between lily pads, resting and hopping or flying onward. Leaves and petals follow varied curved paths. One group visits at a time, with quiet gaps between visits. Pause freezes these animations too. Golden koi remain permanent, with at most one in the pond.
 
@@ -63,10 +63,11 @@ The bottom-center timer offers 25-minute focus, 5-minute rest, and 15-minute lon
 dist/
 ├── index.html    # Map selection landing page
 ├── pond/         # Current koi pond, including its Pomodoro timer and audio
-└── pixel/        # Sunny Side pixel chicken farm
+├── pixel/        # Sunny Side pixel chicken farm
+└── slots/        # Golden Seed pastel lottery mini-game
 ```
 
-The homepage at `/` lets visitors choose Stillwater Pond at `/pond/` or Sunny Side Farm at `/pixel/`, with an inactive Incoming tile for a future world. Both maps have a Choose map link back to the homepage. Keep map-specific scripts and assets inside their map folder and use relative asset URLs.
+The homepage at `/` groups Stillwater Pond at `/pond/` and Sunny Side Farm at `/pixel/` with an Incoming map tile. Golden Seed at `/slots/` appears separately above them in a mini-game section. Keep map-specific scripts and assets inside their map folder and use relative asset URLs.
 
 Vercel's output directory remains `dist`; no deployment setting changes are needed. Browser saves use the same origin and storage keys, so moving the pond to `/pond/` preserves existing pond and timer data on the same domain.
 
@@ -78,7 +79,7 @@ Farm state saves separately from the pond in `spriggan.farm.v1`. Egg timers cont
 
 The farm fills the viewport, with a collapsible control panel and expandable growth guide. Pixel artwork renders on an integer grid at up to 2× screen density for crisp edges on desktop and mobile.
 
-Farm saves migrate automatically to the meal-based lifecycle, preserving existing birds and feeding progress. Existing eggs use the three-minute incubation measured from their original laying time. The farm links back to the map-selection landing page.
+Farm saves migrate automatically to the meal-based lifecycle, preserving existing birds and feeding progress. Existing eggs use the three-minute incubation measured from their original laying time. The landing page links to the farm.
 
 To remove a chicken or chick, tap it or choose it under Your flock, then choose Remove from farm and confirm. Eggs stay in the farm. An empty farm stays empty after reload; once there are no birds or eggs, Start a new flock adds a fresh hen and rooster.
 
@@ -89,3 +90,20 @@ Chickens and chicks follow independent random routes with gentle turns, varied w
 The homepage is `dist/index.html`, styled by `dist/landing.css`. Square previews in `dist/previews/` are static captures of the real map canvases, so choosing a map does not start simulations or load audio in the background. The Incoming tile is not interactive. Map saves remain separate and keep their existing browser storage keys. Vercel continues serving `dist` with no build step.
 
 Both maps open with compact controls: a round launcher for the pond and a square launcher for the farm. Click to expand, tap outside or press Escape to close. The full-size panels animate above their buttons, keep their scrollable controls, and exclude hidden controls from keyboard focus. Shared styling and dismissal behavior live in `dist/shared/map-controls.css` and `map-controls.js`.
+
+## Golden Seed mini-game
+
+Visit `/slots/` or choose Golden Seed from the landing page. A centered sage-and-cream machine uses six equally likely symbols on three independent reels. Select Stillwater Pond for Kin or Sunny Side Farm for Buttercup before spinning.
+
+- New players start with 200 virtual seeds. Each spin costs 10.
+- Exactly two matching symbols award 20 (a net gain of 10 after the spin cost). Any triple unlocks the selected collectible, with no extra seed payout. Different symbols return zero.
+- When fewer than 10 seeds remain, refill to 50 at the next local midnight. Nonempty playable balances stay unchanged. Refills do not stack for missed days and cannot be repeated in one calendar day.
+- Odds per spin: triple 1/36 (2.78%), pair 90/216 (41.67%), no match 120/216 (55.56%). Outcomes do not depend on timing or past results. No 60-spin guarantee or immediate refill remains.
+- Win, then choose Welcome home. A full pond keeps Kin available to claim later. Buttercup is a saved cow who wanders, eats grain, and appears in the farm's friend selector; she does not lay eggs or count against the 16-chicken-and-egg limit. One of each prize, without duplicate animals.
+- Existing saves receive a one-time increase to at least 200 seeds; higher balances and earned prizes are preserved. Results settle before animation, claims use stable animal IDs, and supported browsers serialize wallet mutations across tabs with Web Locks. Open map tabs receive newly claimed prizes before saving their own state.
+
+The seeds are free, have no cash value, and cannot be purchased. All saves are local to this browser and domain.
+
+Reward destinations are listed in `SlotsLife.DESTINATIONS`; the dropdown and reward details grow with that registry. See `docs/slot-design-notes.md` for adding a map and its prize integration.
+
+Direct visits to `/pond/` and `/pixel/` first redirect to the landing page. Map cards open the selected world using `dist/shared/map-entry.js`; ordinary refreshes after entering from home remain in that world. This is a navigation flow, not an access restriction, and leaves browser saves intact.

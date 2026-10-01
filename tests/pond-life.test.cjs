@@ -27,14 +27,9 @@ test('clock rollback does not create growth or double count elapsed time',()=>{
  const f=Life.makeFish(0,now);Life.feed(f,now);Life.settleGrowth(f,now-Life.DAY);assert.equal(f.growth,0);assert.equal(f.lastGrowthAt,now);
  Life.settleGrowth(f,now);assert.equal(f.growth,0);
 });
-test('golden check cannot be rerolled on reload and never exceeds twelve koi',()=>{
- const p=Life.create(now);assert.equal(Life.maybeGolden(p,now,()=>0),null);
- assert.equal(Life.maybeGolden(p,now+Life.DAY,()=>.9),null);
- const restored=Life.decode(JSON.stringify(p),now+Life.DAY);
- assert.equal(Life.maybeGolden(restored,now+Life.DAY,()=>0),null);
- const golden=Life.maybeGolden(restored,now+Life.DAY*2,()=>0);assert(golden.golden);assert.equal(restored.fish.length,6);
- assert.equal(Life.maybeGolden(restored,now+Life.DAY*3,()=>0),null);
- const full=Life.create(now);while(full.fish.length<12)full.fish.push(Life.makeFish(full.fish.length,now));assert.equal(Life.maybeGolden(full,now+Life.DAY,()=>0),null);assert.equal(full.fish.length,12);
+test('golden koi no longer arrive randomly, and existing golden koi persist',()=>{
+ const p=Life.create(now);for(let day=0;day<100;day++)assert.equal(Life.maybeGolden(p,now+Life.DAY*day,()=>0),null);
+ assert.equal(p.fish.length,5);p.fish[0].golden=true;assert.equal(Life.decode(JSON.stringify(p),now).fish[0].golden,true);
 });
 test('invalid saves are rejected and malformed fields normalized',()=>{
  for(const raw of ['not json','null','{}','{"version":1,"fish":[null]}'])assert.equal(Life.decode(raw,now),null);
