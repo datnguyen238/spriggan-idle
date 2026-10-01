@@ -1,0 +1,16 @@
+/* A fixed launcher with a full-size panel above it; controls never squeeze during animation. */
+.panel,.panel.is-collapsed,main[data-night=true] .panel,.dashboard,.dashboard.collapsed{position:relative;width:52px;height:52px;padding:0;border:0;background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+.dashboard,.dashboard.collapsed{position:absolute}
+.panel #toggle-controls,.dashboard #toggle-controls{position:relative;display:flex;align-items:center;justify-content:center;gap:0;width:52px;height:52px;min-height:52px;padding:0;margin:0;border:1px solid #f6edce88;box-shadow:0 5px 22px #142d323d;cursor:pointer;color:#294239;background:#efeada;border-radius:50%}
+.dashboard #toggle-controls{border-radius:7px;background:#294333f5;color:#fff;border-color:#d5e3b780}
+.panel #toggle-controls>span,.dashboard #toggle-controls>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.panel #toggle-controls svg,.dashboard #toggle-controls svg{display:block;flex:0 0 23px;margin:0;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transform:none;transition:transform .2s}
+.panel #toggle-controls[aria-expanded=true] svg,.dashboard #toggle-controls[aria-expanded=true] svg{transform:rotate(90deg)}
+.panel .panel-content,.panel.is-collapsed .panel-content,.dashboard #farm-controls{position:absolute;right:0;bottom:64px;display:block;width:230px;padding:17px;border:1px solid #fff8e6ab;border-radius:17px;background:#efeada;color:#294239;box-shadow:0 12px 36px #001b2440;opacity:1;visibility:visible;transform:translateY(0) scale(1);transform-origin:bottom right;transition:opacity .2s ease,transform .25s ease,visibility 0s;pointer-events:auto}
+main[data-night=true] .panel .panel-content{background:#e5e9e5}
+.panel.is-collapsed .panel-content,.dashboard.collapsed #farm-controls{opacity:0;visibility:hidden;transform:translateY(8px) scale(.96);pointer-events:none;transition:opacity .18s ease,transform .22s ease,visibility 0s .22s}
+.panel .panel-content-inner{max-height:min(55dvh,calc(100dvh - 200px));overflow:auto;overscroll-behavior:contain}
+.dashboard #farm-controls{width:258px;max-height:min(65dvh,calc(100dvh - 200px));background:#294333f5;color:#fff;border-color:#d8e6c84d;padding:16px;overflow:auto;overscroll-behavior:contain}
+@media(max-width:1100px){.panel .panel-content-inner{max-height:max(90px,min(55dvh,calc(100dvh - var(--timer-space,260px) - 175px)))}}
+@media(max-width:600px){.dashboard #farm-controls{width:min(258px,calc(100vw - 32px))}.panel .panel-content{width:min(250px,calc(100vw - 36px))}}
+@media(prefers-reduced-motion:reduce){.panel .panel-content,.panel.is-collapsed .panel-content,.dashboard #farm-controls,.panel #toggle-controls svg,.dashboard #toggle-controls svg{transition:none}}

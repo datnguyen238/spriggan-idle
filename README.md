@@ -87,3 +87,5 @@ Chickens and chicks follow independent random routes with gentle turns, varied w
 ## Map selection page
 
 The homepage is `dist/index.html`, styled by `dist/landing.css`. Square previews in `dist/previews/` are static captures of the real map canvases, so choosing a map does not start simulations or load audio in the background. The Incoming tile is not interactive. Map saves remain separate and keep their existing browser storage keys. Vercel continues serving `dist` with no build step.
+
+Both maps open with compact controls: a round launcher for the pond and a square launcher for the farm. Click to expand, tap outside or press Escape to close. The full-size panels animate above their buttons, keep their scrollable controls, and exclude hidden controls from keyboard focus. Shared styling and dismissal behavior live in `dist/shared/map-controls.css` and `map-controls.js`.
