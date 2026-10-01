@@ -4,7 +4,7 @@
   try{stored=Life.decode(localStorage.getItem(Life.KEY))}catch{}
   const pond=stored||Life.create();
   const SLOT_GOLDEN_ID='spriggan-golden-seed-koi';
-  let sawSlotGolden=pond.fish.some(f=>f.id===SLOT_GOLDEN_ID),pendingSlotGolden=null;
+  const seenSlotGolden=new Set(pond.fish.map(f=>f.id)),pendingSlotGolden=new Map();
   const memoryLine=document.querySelector('#pond-memory'),momentLine=document.querySelector('#pond-moment');
   const koiPicker=document.querySelector('#koi-picker'),koiTag=document.querySelector('#koi-tag'),nameInput=document.querySelector('#koi-name'),renameForm=document.querySelector('#rename-koi'),renameBtn=document.querySelector('#start-rename');
   const koiLink=document.querySelector('#koi-link'),koiLinkLine=document.querySelector('#koi-link-line'),koiLinkHalo=document.querySelector('#koi-link-halo'),koiLinkDot=document.querySelector('#koi-link-dot');
@@ -459,22 +459,22 @@
   });
   function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(savePond,900)}
   function welcomeSlotGolden(announceArrival=false){
-    if(!pendingSlotGolden)return true;
-    // An existing golden koi fulfills the reward without adding a second one.
-    if(fish.some(f=>f.golden||f.id===SLOT_GOLDEN_ID)){sawSlotGolden=true;pendingSlotGolden=null;return true}
-    if(fish.length>=Life.MAX_KOI)return false;
-    const record=pendingSlotGolden;
-    spawn(clamp(record.x*w,30,w-30),clamp(record.y*h,30,h-30),record);
+    for(const [id,record] of pendingSlotGolden){
+      if(!fish.some(f=>f.id===id)){
+        if(fish.length>=Life.MAX_KOI)return false;
+        spawn(clamp(record.x*w,30,w-30),clamp(record.y*h,30,h-30),record);
+        if(announceArrival)announce(`${record.name} has arrived from Golden Seed. A golden friend for your pond.`);
+      }
+      seenSlotGolden.add(id);pendingSlotGolden.delete(id);
+    }
     pond.fish=fish.map(f=>Life.record(f,w,h));
-    sawSlotGolden=true;pendingSlotGolden=null;
-    if(announceArrival)announce('Kin has arrived from Golden Seed. A golden friend for your pond.');
     return true;
   }
   function receiveSlotGolden(raw,announceArrival=false){
-    if(sawSlotGolden)return true;
     const incoming=Life.decode(raw);
-    const golden=incoming?.fish.find(f=>f.id===SLOT_GOLDEN_ID&&f.golden);
-    if(golden)pendingSlotGolden=golden;
+    for(const golden of incoming?.fish||[]){
+      if(golden.golden&&(golden.id===SLOT_GOLDEN_ID||golden.id.startsWith(SLOT_GOLDEN_ID+'-'))&&!seenSlotGolden.has(golden.id))pendingSlotGolden.set(golden.id,golden);
+    }
     return welcomeSlotGolden(announceArrival);
   }
   function savePond(){

@@ -162,7 +162,7 @@ test('a full unsaved pond holds saving until a koi leaves, preserving all fish a
   assert.equal(saved.fish.find(fish => fish.golden).id, SlotsLife.GOLDEN_FISH_ID);
 });
 
-test('an existing local golden koi is kept without importing a second golden fish', () => {
+test('an existing local golden koi is kept while a newly won golden koi arrives', () => {
   const initial = PondLife.create(now);
   initial.fish[0].golden = true;
   initial.fish[0].name = 'Local golden';
@@ -174,7 +174,21 @@ test('an existing local golden koi is kept without importing a second golden fis
   app.emit('storage', { key: PondLife.KEY, newValue: app.storage.getItem(PondLife.KEY), storageArea: app.storage });
   app.emit('pagehide');
   const saved = app.read();
-  assert.equal(saved.fish.length, 5);
-  assert.equal(saved.fish.filter(fish => fish.golden).length, 1);
+  assert.equal(saved.fish.length, 6);
+  assert.equal(saved.fish.filter(fish => fish.golden).length, 2);
   assert.equal(saved.fish.find(fish => fish.golden).id, initial.fish[0].id);
+});
+
+test('an open pond receives successive golden prizes once and does not resurrect a removed prize',()=>{
+ const app=openPond(),slots=SlotsLife.create();
+ for(let i=1;i<=3;i++){
+  SlotsLife.spin(slots,()=>0);
+  assert.equal(SlotsLife.claimGolden(slots,app.storage,PondLife).status,'claimed');
+  app.emit('storage',{key:PondLife.KEY,newValue:app.storage.getItem(PondLife.KEY),storageArea:app.storage});app.emit('pagehide');
+  assert.equal(app.read().fish.filter(f=>f.golden).length,i);
+ }
+ const removed=app.read().fish.findIndex(f=>f.id===SlotsLife.GOLDEN_FISH_ID)+1;
+ app.invoke('remove_koi',{number:removed});app.emit('pagehide');
+ SlotsLife.spin(slots,()=>0);SlotsLife.claimGolden(slots,app.storage,PondLife);app.emit('pagehide');
+ const fish=app.read().fish;assert.equal(fish.filter(f=>f.golden).length,3);assert(!fish.some(f=>f.id===SlotsLife.GOLDEN_FISH_ID));
 });

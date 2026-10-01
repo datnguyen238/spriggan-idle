@@ -35,8 +35,6 @@
           meals:Math.round(finite(f.meals,0,0,1000000)),x:finite(f.x,.5,0,1),y:finite(f.y,.5,0,1)};
         settleGrowth(result,now);return result;
       });
-      // Treat duplicated golden flags in edited or corrupt storage as ordinary koi.
-      let goldenFound=false;for(const f of fish){if(f.golden){if(goldenFound)f.golden=false;goldenFound=true}}
       const s=p.settings||{},audio=s.audio||{};
       return{version:1,savedAt:finite(p.savedAt,now,0,now),nextGoldenAt:finite(p.nextGoldenAt,now+DAY,0,now+DAY),fish,
         settings:{night:s.night===true,raining:s.raining===true,pace:finite(s.pace,1,.4,2),rainVolume:finite(s.rainVolume,40,0,100),collapsed:s.collapsed===true,
