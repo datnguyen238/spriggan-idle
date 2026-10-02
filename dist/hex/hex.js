@@ -2,14 +2,13 @@
 const Life=HexLife,canvas=document.querySelector('#meadow'),ctx=canvas.getContext('2d'),$=s=>document.querySelector(s);
 let state=Life.create(),selected='sprout',paused=false,showRanges=false,W=1000,H=550,S=30,zoom=1,pan={x:0,y:0},hover=null,last=0,pointer=null,noteUntil=0;
 const TOTALS_KEY='spriggan.hex.totals.v1';
-function readTotals(){
- try{const saved=JSON.parse(localStorage.getItem(TOTALS_KEY));return{shooed:Number.isSafeInteger(saved?.shooed)&&saved.shooed>=0?saved.shooed:0,snacks:Number.isSafeInteger(saved?.snacks)&&saved.snacks>=0?saved.snacks:0}}catch{return{shooed:0,snacks:0}}
-}
+function readTotals(){try{return Life.progress(localStorage.getItem(TOTALS_KEY))}catch{return Life.progress(null)}}
 Object.assign(state,readTotals());
-let savedShooed=state.shooed,savedSnacks=state.snacks;
+let savedProgress='';
 function saveTotals(){
- if(state.shooed===savedShooed&&state.snacks===savedSnacks)return;
- try{localStorage.setItem(TOTALS_KEY,JSON.stringify({shooed:state.shooed,snacks:state.snacks}));savedShooed=state.shooed;savedSnacks=state.snacks}catch{}
+ const serialized=JSON.stringify({shooed:state.shooed,snacks:state.snacks,storeys:state.storeys});
+ if(serialized===savedProgress)return;
+ try{localStorage.setItem(TOTALS_KEY,serialized);savedProgress=serialized}catch{}
 }
 window.addEventListener('pagehide',saveTotals);
 let night=false;try{night=localStorage.getItem('spriggan.hex.moonlight')==='true'}catch{}
@@ -52,25 +51,28 @@ function crops(q,r){at(q,r,()=>{
  for(let y=-8;y<=7;y+=7){line([[-17,y],[17,y+5]],'#ac9a6780',3);for(let x=-12;x<=13;x+=9){const yy=y+(x+17)*.14;ellipse(x,yy,3.2,2,'#d6a367');line([[x,yy],[x-3,yy-5],[x,yy-2],[x+3,yy-6]],'#7b9859',2)}}
  })}
 function barn(){at(0,0,()=>{
- shadow(0,7,51,18);
- poly([[-33,-2],[6,17],[36,0],[-3,-19]],'#c2b783');
- poly([[-31,-4],[6,13],[6,-26],[-31,-43]],'#d8b598','#b69d8160');
- poly([[6,13],[34,-3],[34,-42],[6,-26]],'#f2dfb6','#b69d8160');
- for(let i=0;i<5;i++)line([[-28,-10-i*6],[3,4-i*6]],'#bfa08360',1);
- poly([[6,-26],[34,-42],[21,-63]],'#f1dfba');
- poly([[-38,-44],[4,-24],[21,-63],[-22,-81]],'#91a497');
- poly([[21,-63],[4,-24],[40,-44]],'#69877b');
- line([[-22,-81],[21,-63],[40,-44]],'#c5cfb7',2.5);
- for(let i=1;i<5;i++){const f=i/5;line([[-38+42*f,-44+20*f],[-22+43*f,-81+18*f]],'#6a887d6b',1)}
- poly([[14,8],[26,1],[26,-20],[14,-13]],'#8a9170');line([[20,4],[20,-16]],'#657c6155',1);ellipse(23,-6,1,1,'#eed496');
- poly([[-19,-20],[-8,-15],[-8,-29],[-19,-34]],'#6e9489');line([[-13.5,-17],[-13.5,-31]],'#ecddb5',1.5);line([[-19,-27],[-8,-22]],'#ecddb5',1.5);
- ellipse(21,-42,4,4.7,'#7a9681');ellipse(21,-42,2.3,3,'#d2dcb5');
- rect(-14,-78,8,15,'#ceba9a');poly([[-16,-80],[-6,-80],[-3,-76],[-13,-76]],'#f0dec1');
- ellipse(-8,-95,5,4,'#f6f7e3a0');ellipse(-5,-105,7,4,'#f6f7e375');
- // Carrot baskets, little hay bales, and the farm sign.
- ellipse(-36,11,9,5,'#b8a270');rect(-44,4,16,7,'#c7b382');ellipse(-36,4,8,4,'#dec48a');for(let i=0;i<3;i++)line([[-41+i*5,6],[-41+i*5,12]],'#ac9864',1);
- ellipse(37,8,7,4,'#c5aa7b');for(let i=0;i<3;i++){ellipse(33+i*4,3,2,4,'#d99567');line([[33+i*4,0],[31+i*4,-3],[35+i*4,-4]],'#83995d',1.5)}
- rect(5,27,2,14,'#9d9974');poly([[-6,25],[18,25],[18,34],[-6,34]],'#f2e5bd','#b9b48b',.7);text('CARROTS',6,31.5,4.7,'#81916a','monospace');
+ shadow(0,8,36,13);
+ const floorHeight=25,roofY=-state.storeys*floorHeight;
+ // Draw only floors that can appear in the viewport, even for very tall saved keeps.
+ const visible=Math.min(state.storeys,Math.ceil((H+Math.abs(pan.y))/(floorHeight*S/30*zoom))+4);
+ for(let i=0;i<visible;i++){
+  const y=-i*floorHeight;
+  poly([[-24,y-12],[0,y],[0,y-25],[-24,y-37]],i%2?'#b9b39a':'#c8bba0');
+  poly([[0,y],[24,y-12],[24,y-37],[0,y-25]],i%2?'#e2d6b5':'#eadcba');
+  line([[-24,y-12],[0,y],[24,y-12]],'#8e9b8070',1);
+  for(let k=0;k<2;k++)line([[-24,y-20-k*8],[0,y-8-k*8],[24,y-20-k*8]],'#9ca28a45',.7);
+  poly([[8,y-8],[16,y-12],[16,y-24],[8,y-20]],night?'#efc887':'#6c9387');
+  line([[12,y-10],[12,y-22]],'#c9c5a1',1);
+  poly([[-16,y-20],[-9,y-16],[-9,y-26],[-16,y-30]],night?'#dfbb7d':'#789587');
+ }
+ poly([[-29,roofY-13],[0,roofY+2],[29,roofY-13],[0,roofY-45]],'#8ca594');
+ poly([[0,roofY-45],[0,roofY+2],[29,roofY-13]],'#627f75');
+ line([[-29,roofY-13],[0,roofY-45],[29,roofY-13]],'#c7d1b4',2);
+ line([[0,roofY-45],[0,roofY-64]],'#a6b593',1.5);
+ const sway=reduced?0:Math.sin(state.time*1.7)*2;
+ poly([[0,roofY-64],[18,roofY-61+sway],[13,roofY-54+sway],[0,roofY-56]],'#daca97');
+ poly([[3,-2],[12,-6],[12,-20],[3,-16]],'#71816a');ellipse(9,-11,1,1,'#eed496');
+ ellipse(-28,5,8,4,'#c7b382');for(let i=0;i<3;i++){ellipse(-32+i*4,0,2,4,'#d99567');line([[-32+i*4,-3],[-34+i*4,-6]],'#83995d',1.5)}
  })}
 const fenceEdges=[];{
  const edges=new Map();for(const t of tiles.filter(t=>Life.farm(t.q,t.r))){const x=(t.q-t.r)*1.5,y=(t.q+t.r)*.8660254;const v=Array.from({length:6},(_,i)=>[x+Math.cos(i*Math.PI/3),y+Math.sin(i*Math.PI/3)]);for(let i=0;i<6;i++){const a=v[i],b=v[(i+1)%6],key=[a.map(n=>n.toFixed(4)).join(','),b.map(n=>n.toFixed(4)).join(',')].sort().join('|');if(edges.has(key))edges.delete(key);else edges.set(key,{a,b})}}fenceEdges.push(...edges.values());
@@ -93,13 +95,14 @@ function tower(t){at(t.q,t.r,()=>{
  })}
 function creature(c){at(c.q,c.r,()=>{
  const moving=!c.chew&&!paused&&!reduced,bob=moving?Math.abs(Math.sin(state.time*5+c.phase))*3:0,chew=c.chew?Math.sin(state.time*16)*1.5:0;
- shadow(0,1,12,5);if(c.type==='puddle'){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle='#e4fff2';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,1,17+Math.sin(state.time*2),6,0,0,Math.PI*2);ctx.stroke();ctx.restore()}ctx.translate(0,c.type==='puddle'?-bob*.35:-bob);
- const body=Life.TYPES[c.type].color;
- if(c.type==='mochi'){ellipse(-5,-21,3,10,body);ellipse(4,-22,3,11,body);ellipse(-5,-22,1.3,6,'#dbaba8');ellipse(4,-23,1.3,7,'#dbaba8')}
- ellipse(-7,0,4,2.5,body);ellipse(7,0,4,2.5,body);ellipse(0,-10+chew,c.type==='truffle'?13:12,c.type==='truffle'?12:11,c.hit>0?'#f8edcf':body);ellipse(-3,-14,6,5,'#fff8e62b');
- if(c.type==='puddle'){ellipse(-13,-9,5,3,'#80afbd');ellipse(13,-9,5,3,'#80afbd');line([[-7,-20],[-11,-25],[-7,-24],[0,-27],[7,-24],[11,-25],[7,-20]],'#b4ded7',2)}
- if(c.type==='sprout'){line([[0,-20],[0,-27]],'#6f9766',2);ctx.save();ctx.translate(0,-26);ctx.rotate(-.4);ellipse(-5,0,6,2.8,'#7ca970');ellipse(4,-2,5,2.6,'#8fb37a');ctx.restore()}
- if(c.type==='truffle'){ellipse(0,-20,16,7,'#b99a7d');ellipse(-4,-24,7,3,'#e6d1a9');ellipse(7,-21,3,2,'#ecdabc');ellipse(-9,-19,2,1.5,'#ecdabc')}
+ ellipse(0,2,13,5,'#263f4260');if(c.type==='puddle'){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle='#e4fff2';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,1,17+Math.sin(state.time*2),6,0,0,Math.PI*2);ctx.stroke();ctx.restore()}ctx.translate(0,c.type==='puddle'?-bob*.35:-bob);
+ const body=Life.TYPES[c.type].color,outline={sprout:'#3c7652',mochi:'#995669',truffle:'#80563b',puddle:'#386e94'}[c.type];
+ const shape=(x,y,rx,ry,fill)=>{ellipse(x,y,rx,ry,fill);ctx.strokeStyle=outline;ctx.lineWidth=1.1;ctx.stroke()};
+ if(c.type==='mochi'){shape(-5,-21,3,10,body);shape(4,-22,3,11,body);ellipse(-5,-22,1.3,6,'#c96c86');ellipse(4,-23,1.3,7,'#c96c86')}
+ ellipse(-7,0,4,2.5,body);ellipse(7,0,4,2.5,body);shape(0,-10+chew,c.type==='truffle'?13:12,c.type==='truffle'?12:11,c.hit>0?'#f8edcf':body);ellipse(-3,-14,6,5,'#fff8e62b');
+ if(c.type==='puddle'){ellipse(-13,-9,5,3,'#478cb4');ellipse(13,-9,5,3,'#478cb4');line([[-7,-20],[-11,-25],[-7,-24],[0,-27],[7,-24],[11,-25],[7,-20]],'#a1dced',2)}
+ if(c.type==='sprout'){line([[0,-20],[0,-27]],'#6f9766',2);ctx.save();ctx.translate(0,-26);ctx.rotate(-.4);ellipse(-5,0,6,2.8,'#398955');ellipse(4,-2,5,2.6,'#4ea56b');ctx.restore()}
+ if(c.type==='truffle'){shape(0,-20,16,7,'#ae704f');ellipse(-4,-24,7,3,'#e6d1a9');ellipse(7,-21,3,2,'#ecdabc');ellipse(-9,-19,2,1.5,'#ecdabc')}
  ellipse(-4,-11,1.3,1.8,'#45594c');ellipse(4,-11,1.3,1.8,'#45594c');ellipse(-8,-7,2.5,1.2,'#dba79599');ellipse(8,-7,2.5,1.2,'#dba79599');
  line([[-1.5,-6],[0,-5],[1.5,-6]],'#707b60',.8);
  if(c.chew){poly([[8,-8],[17,-10],[12,-1]],'#e0a478');line([[16,-9],[20,-13],[17,-12],[17,-15]],'#86a16e',1.5);text('♥',0,-31,10,'#cfaa88')}
@@ -144,7 +147,7 @@ function render(){
 }
 function resize(){const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;S=Math.min(W/(W<600?30:46),Math.max(12,(H-180)/17),42);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);render()}
 function note(message){$('#map-note').textContent=message;noteUntil=performance.now()+4200}
-function ui(){ saveTotals();$('#visitors').textContent=state.creatures.length;$('#shooed').textContent=state.shooed;$('#snacks').textContent=state.snacks;$('#crowd').disabled=state.creatures.length>=Life.LIMIT;$('#zoom-in').disabled=zoom>=2.3;$('#zoom-out').disabled=zoom<=.85;if(performance.now()>noteUntil)$('#map-note').textContent=paused?'The meadow is resting. Resume whenever you like.':`Tap a ${Life.TYPES[selected].aquatic?'river':'grass'} tile to invite ${Life.TYPES[selected].name}.`}
+function ui(){ saveTotals();$('#keep-storeys').textContent=`Central keep · ${state.storeys} ${state.storeys===1?'storey':'storeys'}`;$('#visitors').textContent=state.creatures.length;$('#shooed').textContent=state.shooed;$('#snacks').textContent=state.snacks;$('#crowd').disabled=state.creatures.length>=Life.LIMIT;$('#zoom-in').disabled=zoom>=2.3;$('#zoom-out').disabled=zoom<=.85;if(performance.now()>noteUntil)$('#map-note').textContent=paused?'The meadow is resting. Resume whenever you like.':`Tap a ${Life.TYPES[selected].aquatic?'river':'grass'} tile to invite ${Life.TYPES[selected].name}.`}
 function invite(q,r){const result=Life.spawn(state,q,r,selected);note(result.ok?`${Life.TYPES[selected].name} is off to find a snack.`:result.reason);ui();render();return result}
 function crowd(count=3){const options=tiles.filter(t=>Life.habitat(t.q,t.r,selected));for(let i=0;i<count;i++){const tile=options[Math.floor(Math.random()*options.length)];Life.spawn(state,tile.q,tile.r,selected)}note('A little company for the carrot patch.');ui();render()}
 function point(event){const r=canvas.getBoundingClientRect();return{x:event.clientX-r.left,y:event.clientY-r.top}}
@@ -154,8 +157,8 @@ canvas.addEventListener('pointermove',e=>{const p=point(e);if(pointer&&pointer.i
 canvas.addEventListener('pointerup',e=>{if(!pointer||pointer.id!==e.pointerId)return;const moved=pointer.moved;pointer=null;canvas.style.cursor='crosshair';if(!moved){hover=tileAt(point(e));if(hover)invite(hover.q,hover.r);else note('Tap one of the hex tiles to invite a friend.')}if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId)});
 canvas.addEventListener('pointercancel',()=>{pointer=null;canvas.style.cursor='crosshair'});canvas.addEventListener('pointerleave',()=>{if(!pointer){hover=null;render()}});
 canvas.addEventListener('keydown',e=>{const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,1],ArrowRight:[0,-1]};if(directions[e.key]){e.preventDefault();const [q,r]=directions[e.key];hover||={q:3,r:0};hover={q:Math.max(-Life.SIZE,Math.min(Life.SIZE,hover.q+q)),r:Math.max(-Life.SIZE,Math.min(Life.SIZE,hover.r+r))};render()}else if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!e.repeat){hover||={q:3,r:0};invite(hover.q,hover.r)}}});
-const icons={puddle:'<path d="m15 27-7-6 3 13m34-7 7-6-3 13M20 20l-3-8 8 5 5-8 5 8 8-5-3 8" fill="#a8d9d1" stroke="#80afbd"/>',sprout:'<path d="M30 22v-9m0 1c-12 0-13-9-13-9 10 0 13 6 13 9Zm0 0c0-9 12-11 12-11 0 10-12 11-12 11" fill="#83a76e" stroke="#6e9364"/>',mochi:'<ellipse cx="22" cy="18" rx="5" ry="13" fill="#eccbc4"/><ellipse cx="38" cy="16" rx="5" ry="14" fill="#eccbc4"/><path d="M22 11v10m16-12v11" stroke="#d5a6a0" stroke-width="2"/>',truffle:'<ellipse cx="30" cy="23" rx="23" ry="12" fill="#b99a7d"/><ellipse cx="24" cy="18" rx="8" ry="4" fill="#e6d1a9"/><ellipse cx="42" cy="24" rx="4" ry="3" fill="#e6d1a9"/>'};
-for(const el of document.querySelectorAll('[data-icon]')){const type=el.dataset.icon;el.innerHTML=`<svg viewBox="0 0 60 60" aria-hidden="true"><ellipse cx="30" cy="49" rx="20" ry="5" fill="#71866420"/>${type==='mochi'?icons[type]:''}<ellipse cx="30" cy="35" rx="19" ry="17" fill="${Life.TYPES[type].color}"/>${type!=='mochi'?icons[type]:''}<g fill="#435949"><ellipse cx="24" cy="34" rx="1.7" ry="2.2"/><ellipse cx="36" cy="34" rx="1.7" ry="2.2"/></g><path d="m28 41 2 1 2-1" fill="none" stroke="#66745b" stroke-linecap="round"/><g fill="#dba79599"><ellipse cx="18" cy="40" rx="4" ry="1.8"/><ellipse cx="42" cy="40" rx="4" ry="1.8"/></g></svg>`}
+const icons={puddle:'<path d="m15 27-7-6 3 13m34-7 7-6-3 13M20 20l-3-8 8 5 5-8 5 8 8-5-3 8" fill="#a1dced" stroke="#478cb4"/>',sprout:'<path d="M30 22v-9m0 1c-12 0-13-9-13-9 10 0 13 6 13 9Zm0 0c0-9 12-11 12-11 0 10-12 11-12 11" fill="#4ea56b" stroke="#398955"/>',mochi:'<ellipse cx="22" cy="18" rx="5" ry="13" fill="#ed9caa"/><ellipse cx="38" cy="16" rx="5" ry="14" fill="#ed9caa"/><path d="M22 11v10m16-12v11" stroke="#c96c86" stroke-width="2"/>',truffle:'<ellipse cx="30" cy="23" rx="23" ry="12" fill="#ae704f"/><ellipse cx="24" cy="18" rx="8" ry="4" fill="#e6d1a9"/><ellipse cx="42" cy="24" rx="4" ry="3" fill="#e6d1a9"/>'};
+for(const el of document.querySelectorAll('[data-icon]')){const type=el.dataset.icon;el.innerHTML=`<svg viewBox="0 0 60 60" aria-hidden="true"><ellipse cx="30" cy="49" rx="20" ry="5" fill="#71866420"/>${type==='mochi'?icons[type]:''}<ellipse cx="30" cy="35" rx="19" ry="17" fill="${Life.TYPES[type].color}" stroke="#405c55" stroke-opacity=".6" stroke-width="1.2"/>${type!=='mochi'?icons[type]:''}<g fill="#435949"><ellipse cx="24" cy="34" rx="1.7" ry="2.2"/><ellipse cx="36" cy="34" rx="1.7" ry="2.2"/></g><path d="m28 41 2 1 2-1" fill="none" stroke="#66745b" stroke-linecap="round"/><g fill="#dba79599"><ellipse cx="18" cy="40" rx="4" ry="1.8"/><ellipse cx="42" cy="40" rx="4" ry="1.8"/></g></svg>`}
 for(const button of document.querySelectorAll('[data-creature]'))button.onclick=()=>{selected=button.dataset.creature;document.querySelectorAll('[data-creature]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));note(`${Life.TYPES[selected].name} is ready. Pick a ${Life.TYPES[selected].aquatic?'river':'grass'} tile.`);render()};
 const controls=$('.hex-controls'),trigger=$('#toggle-controls'),panel=$('#hex-panel');
 function setControls(open){trigger.setAttribute('aria-expanded',String(open));trigger.setAttribute('aria-label',`${open?'Close':'Open'} meadow controls`);controls.classList.toggle('is-open',open);panel.inert=!open}
@@ -164,7 +167,7 @@ document.addEventListener('click',event=>{if(!controls.contains(event.target))se
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&controls.classList.contains('is-open')){setControls(false);trigger.focus()}});
 function syncLight(){document.body.dataset.night=String(night);$('#light-mode').setAttribute('aria-pressed',String(night));$('#light-mode').textContent=night?'☾ Moonlight':'☀ Daylight';render()}
 $('#light-mode').onclick=()=>{night=!night;try{localStorage.setItem('spriggan.hex.moonlight',String(night))}catch{}syncLight()};syncLight();
-$('#crowd').onclick=()=>crowd();$('#pause').onclick=()=>{paused=!paused;$('#pause').setAttribute('aria-pressed',String(paused));$('#pause').textContent=paused?'▶ Resume':'Ⅱ Pause';note(paused?'The meadow is resting.':'The carrot patrol is back on duty.');render()};$('#ranges').onclick=()=>{showRanges=!showRanges;$('#ranges').setAttribute('aria-pressed',String(showRanges));render()};$('#reset').onclick=()=>{const {shooed,snacks}=state;state=Object.assign(Life.create(),{shooed,snacks});note('A fresh meadow. Invite someone new.');ui();render()};
+$('#crowd').onclick=()=>crowd();$('#pause').onclick=()=>{paused=!paused;$('#pause').setAttribute('aria-pressed',String(paused));$('#pause').textContent=paused?'▶ Resume':'Ⅱ Pause';note(paused?'The meadow is resting.':'The carrot patrol is back on duty.');render()};$('#ranges').onclick=()=>{showRanges=!showRanges;$('#ranges').setAttribute('aria-pressed',String(showRanges));render()};$('#reset').onclick=()=>{const {shooed,snacks,storeys}=state;state=Object.assign(Life.create(),{shooed,snacks,storeys});note('A fresh meadow. Invite someone new.');ui();render()};
 $('#zoom-in').onclick=()=>{zoom=Math.min(2.3,zoom+.2);ui();render()};$('#zoom-out').onclick=()=>{zoom=Math.max(.85,zoom-.2);ui();render()};$('#recenter').onclick=()=>{zoom=1;pan={x:0,y:0};ui();render()};
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;if(document.hidden)return;if(!paused)Life.step(state,dt);ui();render()}
 document.addEventListener('visibilitychange',()=>{last=performance.now()});new ResizeObserver(resize).observe(canvas);resize();

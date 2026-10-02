@@ -51,3 +51,21 @@ test('unguarded fence visitors keep eating until their HP reaches zero',()=>{
 test('both rivers accept swimmers and have bridges for land creatures',()=>{
  for(const r of [-4,4]){assert(Life.spawn(Life.create(),0,r,'puddle').ok);assert(!Life.spawn(Life.create(),0,r,'mochi').ok);for(const q of [-4,4])assert(Life.spawn(Life.create(),q,r,'mochi').ok)}
 });
+test('the hundredth shooed monster adds a storey and resets only its counter',()=>{
+ const s=Life.create();s.shooed=99;s.snacks=37;Life.spawn(s,3,0,'mochi');
+ for(let i=0;i<60;i++)Life.step(s,.05);
+ assert.equal(s.storeys,2);assert.equal(s.shooed,0);assert.equal(s.snacks,37);
+});
+test('the hundredth snack removes a storey and keeps the monster eating',()=>{
+ const s=Life.create();s.towers=[];s.storeys=3;s.snacks=99;s.shooed=41;Life.spawn(s,3,0);
+ for(let i=0;i<83;i++)Life.step(s,.05);
+ assert.equal(s.storeys,2);assert.equal(s.snacks,0);assert.equal(s.shooed,41);assert.equal(s.creatures.length,1);
+ s.storeys=1;s.snacks=99;s.creatures[0].chew=.01;Life.step(s,.05);
+ assert.equal(s.storeys,1);assert.equal(s.snacks,0);
+});
+test('saved progress migrates old totals, carries overflow and tolerates invalid data',()=>{
+ assert.deepEqual(Life.progress('{bad'),{storeys:1,shooed:0,snacks:0});
+ assert.deepEqual(Life.progress(JSON.stringify({shooed:253,snacks:117})),{storeys:2,shooed:53,snacks:17});
+ const saved={storeys:5,shooed:42,snacks:19};assert.deepEqual(Life.progress(JSON.stringify(saved)),saved);
+ assert.deepEqual(Life.progress(JSON.stringify({storeys:-2,shooed:1.5,snacks:'99'})),{storeys:1,shooed:0,snacks:0});
+});
