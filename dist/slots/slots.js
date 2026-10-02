@@ -29,7 +29,7 @@ function sync(){
  $('#reward-name').textContent=destination.title;
  $('#reward-description').textContent=destination.description+(counts.claimed?` ${counts.claimed} claimed · every triple wins another.`:'');
  $('#claim-status').textContent=claimMessage;
- $('#visit').hidden=!unlocked;$('#visit').href=destination.href;$('#visit').textContent=`Visit your ${destination.shortName} ↗`;
+ $('#visit').hidden=!unlocked;$('#visit').href=destination.href;$('#visit-label').textContent=`Visit your ${destination.shortName}`;
  $('#sound').textContent=state.settings.sound?'Sound on':'Sound off';$('#sound').setAttribute('aria-pressed',String(state.settings.sound));
  $('#motion').textContent=motion()?'Motion on':'Motion off';$('#motion').setAttribute('aria-pressed',String(motion()));
  $('#save-status').textContent=storageOK?'Saved in this browser':'Storage unavailable · seeds have not been spent';

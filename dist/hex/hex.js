@@ -1,6 +1,17 @@
 (()=>{'use strict';
 const Life=HexLife,canvas=document.querySelector('#meadow'),ctx=canvas.getContext('2d'),$=s=>document.querySelector(s);
 let state=Life.create(),selected='sprout',paused=false,showRanges=false,W=1000,H=550,S=30,zoom=1,pan={x:0,y:0},hover=null,last=0,pointer=null,noteUntil=0;
+const TOTALS_KEY='spriggan.hex.totals.v1';
+function readTotals(){
+ try{const saved=JSON.parse(localStorage.getItem(TOTALS_KEY));return{shooed:Number.isSafeInteger(saved?.shooed)&&saved.shooed>=0?saved.shooed:0,snacks:Number.isSafeInteger(saved?.snacks)&&saved.snacks>=0?saved.snacks:0}}catch{return{shooed:0,snacks:0}}
+}
+Object.assign(state,readTotals());
+let savedShooed=state.shooed,savedSnacks=state.snacks;
+function saveTotals(){
+ if(state.shooed===savedShooed&&state.snacks===savedSnacks)return;
+ try{localStorage.setItem(TOTALS_KEY,JSON.stringify({shooed:state.shooed,snacks:state.snacks}));savedShooed=state.shooed;savedSnacks=state.snacks}catch{}
+}
+window.addEventListener('pagehide',saveTotals);
 let night=false;try{night=localStorage.getItem('spriggan.hex.moonlight')==='true'}catch{}
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const tiles=[];for(let q=-Life.SIZE;q<=Life.SIZE;q++)for(let r=-Life.SIZE;r<=Life.SIZE;r++)tiles.push({q,r});tiles.sort((a,b)=>a.q+a.r-b.q-b.r||a.q-b.q);
@@ -133,7 +144,7 @@ function render(){
 }
 function resize(){const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;S=Math.min(W/(W<600?30:46),Math.max(12,(H-180)/17),42);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);render()}
 function note(message){$('#map-note').textContent=message;noteUntil=performance.now()+4200}
-function ui(){ $('#visitors').textContent=state.creatures.length;$('#shooed').textContent=state.shooed;$('#snacks').textContent=state.snacks;$('#crowd').disabled=state.creatures.length>=Life.LIMIT;$('#zoom-in').disabled=zoom>=2.3;$('#zoom-out').disabled=zoom<=.85;if(performance.now()>noteUntil)$('#map-note').textContent=paused?'The meadow is resting. Resume whenever you like.':`Tap a ${Life.TYPES[selected].aquatic?'river':'grass'} tile to invite ${Life.TYPES[selected].name}.`}
+function ui(){ saveTotals();$('#visitors').textContent=state.creatures.length;$('#shooed').textContent=state.shooed;$('#snacks').textContent=state.snacks;$('#crowd').disabled=state.creatures.length>=Life.LIMIT;$('#zoom-in').disabled=zoom>=2.3;$('#zoom-out').disabled=zoom<=.85;if(performance.now()>noteUntil)$('#map-note').textContent=paused?'The meadow is resting. Resume whenever you like.':`Tap a ${Life.TYPES[selected].aquatic?'river':'grass'} tile to invite ${Life.TYPES[selected].name}.`}
 function invite(q,r){const result=Life.spawn(state,q,r,selected);note(result.ok?`${Life.TYPES[selected].name} is off to find a snack.`:result.reason);ui();render();return result}
 function crowd(count=3){const options=tiles.filter(t=>Life.habitat(t.q,t.r,selected));for(let i=0;i<count;i++){const tile=options[Math.floor(Math.random()*options.length)];Life.spawn(state,tile.q,tile.r,selected)}note('A little company for the carrot patch.');ui();render()}
 function point(event){const r=canvas.getBoundingClientRect();return{x:event.clientX-r.left,y:event.clientY-r.top}}
@@ -153,7 +164,7 @@ document.addEventListener('click',event=>{if(!controls.contains(event.target))se
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&controls.classList.contains('is-open')){setControls(false);trigger.focus()}});
 function syncLight(){document.body.dataset.night=String(night);$('#light-mode').setAttribute('aria-pressed',String(night));$('#light-mode').textContent=night?'☾ Moonlight':'☀ Daylight';render()}
 $('#light-mode').onclick=()=>{night=!night;try{localStorage.setItem('spriggan.hex.moonlight',String(night))}catch{}syncLight()};syncLight();
-$('#crowd').onclick=()=>crowd();$('#pause').onclick=()=>{paused=!paused;$('#pause').setAttribute('aria-pressed',String(paused));$('#pause').textContent=paused?'▶ Resume':'Ⅱ Pause';note(paused?'The meadow is resting.':'The carrot patrol is back on duty.');render()};$('#ranges').onclick=()=>{showRanges=!showRanges;$('#ranges').setAttribute('aria-pressed',String(showRanges));render()};$('#reset').onclick=()=>{state=Life.create();note('A fresh meadow. Invite someone new.');ui();render()};
+$('#crowd').onclick=()=>crowd();$('#pause').onclick=()=>{paused=!paused;$('#pause').setAttribute('aria-pressed',String(paused));$('#pause').textContent=paused?'▶ Resume':'Ⅱ Pause';note(paused?'The meadow is resting.':'The carrot patrol is back on duty.');render()};$('#ranges').onclick=()=>{showRanges=!showRanges;$('#ranges').setAttribute('aria-pressed',String(showRanges));render()};$('#reset').onclick=()=>{const {shooed,snacks}=state;state=Object.assign(Life.create(),{shooed,snacks});note('A fresh meadow. Invite someone new.');ui();render()};
 $('#zoom-in').onclick=()=>{zoom=Math.min(2.3,zoom+.2);ui();render()};$('#zoom-out').onclick=()=>{zoom=Math.max(.85,zoom-.2);ui();render()};$('#recenter').onclick=()=>{zoom=1;pan={x:0,y:0};ui();render()};
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;if(document.hidden)return;if(!paused)Life.step(state,dt);ui();render()}
 document.addEventListener('visibilitychange',()=>{last=performance.now()});new ResizeObserver(resize).observe(canvas);resize();
