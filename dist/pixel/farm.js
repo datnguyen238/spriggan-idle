@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const Life=FarmLife,canvas=document.querySelector('#farm'),ctx=canvas.getContext('2d',{alpha:false});
+const Life=FarmLife,Runtime=SprigganRuntime,canvas=document.querySelector('#farm'),ctx=canvas.getContext('2d',{alpha:false});
 let state;try{state=Life.decode(localStorage.getItem(Life.KEY))}catch{}const returning=!!state;state||=Life.create();
 const seenCows=new Set(state.cows.map(c=>c.id));
 const animals=()=>[...state.birds,...state.cows];
@@ -137,8 +137,7 @@ function ui(){
  picker.value=animals().some(b=>b.id===selected)?selected:'';picker.disabled=!animals().length;restart.hidden=!!(state.birds.length||state.eggs.length);
 document.querySelector('#adults').textContent=state.birds.filter(b=>b.stage==='adult').length;document.querySelector('#chicks').textContent=state.birds.filter(b=>b.stage==='chick').length;document.querySelector('#eggs').textContent=state.eggs.length;inspect();if(Date.now()>noticeUntil)moment.textContent=state.eggs.length?'Something small is on its way.':state.birds.length+state.eggs.length>=Life.LIMIT?'A full little family. Room for 16, love for everyone.':'Feed, hatch, grow. No hurry at all.'}
 function tick(now){const events=Life.advance(state,now);if(events.length)notice(events.at(-1));ui();save()}
-function frame(ts){
- const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+function update(dt){
  if(!paused){
   clock+=dt;
   for(const b of animals()){
@@ -182,7 +181,14 @@ function frame(ts){
   }
  }
  for(let i=grain.length-1;i>=0;i--){grain[i].life-=dt;if(grain[i].life<=0)grain.splice(i,1)}for(let i=hearts.length-1;i>=0;i--){hearts[i].life-=dt*.7;if(hearts[i].life<=0)hearts.splice(i,1)}}
- if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}if(!document.hidden)draw();requestAnimationFrame(frame)}
+}
+function frame(ts){
+ requestAnimationFrame(frame);
+ const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+ if(document.hidden)return;
+ update(dt);
+ if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}draw();
+}
 window.addEventListener('storage',e=>{if(e.key===Life.KEY){receiveCow();ui();draw()}});
-window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your little family is right here.');resize();requestAnimationFrame(frame);
+window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your little family is right here.');resize();Runtime.runBackground(update,()=>{const now=performance.now();if(now-lastRules>1000){lastRules=now;tick(Date.now())}},()=>paused);requestAnimationFrame(frame);
 })();

@@ -57,8 +57,8 @@
   reset.onclick=()=>change(()=>{select(state,state.mode);status.textContent='Timer reset. A fresh start.'});
   modes.forEach(button=>{button.onclick=()=>change(()=>{select(state,button.dataset.timerMode);status.textContent=''})});
   collapse.onclick=()=>change(()=>{state.collapsed=!state.collapsed});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)draw()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden||!SprigganRuntime.mobile)draw()});
   window.addEventListener('pageshow',draw);
   new ResizeObserver(()=>{document.querySelector('main').style.setProperty('--timer-space',`${root.offsetHeight+70}px`)}).observe(root);
-  draw();setInterval(()=>{if(!document.hidden)draw()},250);
+  draw();setInterval(()=>{if(!document.hidden||!SprigganRuntime.mobile)draw()},250);
 })();

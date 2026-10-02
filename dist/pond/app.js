@@ -1,5 +1,5 @@
 (()=>{
-  const Life=globalThis.PondLife;
+  const Life=globalThis.PondLife,Runtime=globalThis.SprigganRuntime;
   let stored=null;
   try{stored=Life.decode(localStorage.getItem(Life.KEY))}catch{}
   const pond=stored||Life.create();
@@ -652,7 +652,7 @@
     const name=nameInput.value.trim();if(!name){nameInput.setCustomValidity('Give your koi a name.');nameInput.reportValidity();return}
     f.name=Life.cleanName(name,f.name);refreshKoiPicker();showKoi(f);renameBtn.focus();savePond();
   };
-  document.addEventListener('visibilitychange',()=>{savePond();audio.visibility(document.hidden);if(!document.hidden){last=performance.now();checkGrowthAndVisitors()}});
+  document.addEventListener('visibilitychange',()=>{savePond();if(Runtime.mobile)audio.visibility(document.hidden);else if(!document.hidden&&audio.needsResume)audio.resume();if(!document.hidden){last=performance.now();checkGrowthAndVisitors()}});
   window.addEventListener('storage',e=>{
     if(e.key!==Life.KEY||(e.storageArea&&e.storageArea!==localStorage))return;
     if(!receiveSlotGolden(e.newValue,true)){
@@ -661,7 +661,7 @@
     }
   });
   window.addEventListener('pagehide',()=>{savePond();audio.visibility(true)});
-  window.addEventListener('pageshow',()=>{audio.visibility(document.hidden);syncAudioRecovery()});
+  window.addEventListener('pageshow',()=>{audio.visibility(document.hidden&&Runtime.mobile);syncAudioRecovery()});
   window.addEventListener('focus',()=>{if(!document.hidden)audio.visibility(false)});
   let resizeRaf=0;
   window.addEventListener('resize',()=>{cancelAnimationFrame(resizeRaf);resizeRaf=requestAnimationFrame(()=>resize())});
@@ -676,7 +676,10 @@
   syncAudioRecovery();
   if(pond.settings.collapsed)toggleControlsBtn.click();
   if(stored)document.querySelector('.intro .eyebrow').textContent='Welcome back to your pond';
-  syncPause();syncFeedingStatus();checkGrowthAndVisitors();setInterval(checkGrowthAndVisitors,30000);requestAnimationFrame(frame);
+  syncPause();syncFeedingStatus();checkGrowthAndVisitors();setInterval(checkGrowthAndVisitors,30000);
+  let backgroundSaveAt=0;
+  Runtime.runBackground(update,()=>{const now=performance.now();if(now-backgroundSaveAt>=1000){backgroundSaveAt=now;checkGrowthAndVisitors()}dirty=true},()=>paused);
+  requestAnimationFrame(frame);
   if(document.modelContext?.registerTool){
     const register=tool=>{try{Promise.resolve(document.modelContext.registerTool(tool)).catch(()=>{})}catch{}};
     register({name:'feed_koi',title:'Feed the koi',description:'Drop food into the pond at a position given as percentages of its width and height, up to 100 food pieces in the pond at once.',inputSchema:{type:'object',properties:{x:{type:'number',minimum:0,maximum:100},y:{type:'number',minimum:0,maximum:100}},required:['x','y'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){if(!input||!Number.isFinite(input.x)||!Number.isFinite(input.y)||input.x<0||input.x>100||input.y<0||input.y>100)throw Error('x and y must be numbers from 0 to 100');const added=drop(w*input.x/100,h*input.y/100);return{foodPieces:food.length,added,limit:MAX_FOOD}}});

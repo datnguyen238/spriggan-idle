@@ -49,9 +49,9 @@ Vercel Web Analytics is included in `dist/pond/index.html` using the plain HTML 
 
 The `/_vercel/insights/script.js` endpoint is provided by Vercel. A simple local server does not provide that endpoint; its local 404 does not affect the pond. Live collection must be verified after deployment; content blockers may prevent tracking.
 
-Crickets use a persistent native audio player. Rain uses a decoded continuous loop. Both pause in the background and restart on return. A rejected restart shows the resume control; browser autoplay policy may still require a tap. Generated music continues to use Web Audio.
+Crickets use a persistent native audio player. Rain uses a decoded continuous loop. On desktop, rain, crickets, and enabled music continue when switching tabs. On phones and tablets, sounds pause in the background and restart on return. A rejected restart shows the resume control; browser autoplay policy may still require a tap. Generated music continues to use Web Audio.
 
-Rain uses one continuously looping AudioBufferSource, with no JavaScript timers or media-player handoffs at loop boundaries. `dist/pond/rain-seamless.wav` blends the original recording’s tail into its head with a 1.2-second equal-power overlap, producing a 13.8-second cyclic recording without fade-to-silence. Its decoded buffer is retained across background pauses; its playback context is recreated on return. Keep this file and `pond-rain-loop.js` in the deployed folder.
+Rain uses one continuously looping AudioBufferSource, with no JavaScript timers or media-player handoffs at loop boundaries. `dist/pond/rain-seamless.wav` blends the original recording’s tail into its head with a 1.2-second equal-power overlap, producing a 13.8-second cyclic recording without fade-to-silence. On mobile, its decoded buffer is retained across background pauses; its playback context is recreated on return. Keep this file and `pond-rain-loop.js` in the deployed folder.
 
 ## Pomodoro timer
 
@@ -107,3 +107,7 @@ The seeds are free, have no cash value, and cannot be purchased. All saves are l
 Reward destinations are listed in `SlotsLife.DESTINATIONS`; the dropdown and reward details grow with that registry. See `docs/slot-design-notes.md` for adding a map and its prize integration.
 
 Direct visits to `/pond/` and `/pixel/` first redirect to the landing page. Map cards open the selected world using `dist/shared/map-entry.js`; ordinary refreshes after entering from home remain in that world. This is a navigation flow, not an access restriction, and leaves browser saves intact.
+
+Desktop tab switches keep the pond and farm simulation active through `dist/shared/background.js`, using small physics steps between throttled background callbacks. The Pomodoro continues updating and completing from its saved deadline. Manual animation pause is still respected. Phones and tablets (including iPad desktop user agents) retain pause-on-hide audio and animation behavior; existing deadline-based timer and growth rules are unchanged. Actual navigation/closing a page stops its audio and background loop. Browser sleep, freezing, and discarded tabs cannot be prevented; simulation recovery after a long suspension is bounded to two minutes of movement, while deadline-based progress uses the actual time.
+
+Golden Seed keeps the play screen brief: rules and detailed payout text are omitted. When a settled spin leaves fewer than 10 seeds, a dismissible popup says to return tomorrow for 50. The popup appears once per empty balance per visit, waits until the result is revealed, and never appears if a due refill makes the balance playable. Pending animal claims remain available after dismissing it.

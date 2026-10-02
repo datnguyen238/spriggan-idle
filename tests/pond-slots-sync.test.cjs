@@ -78,7 +78,7 @@ function openPond(initial = PondLife.create(now)) {
     visibility() {}
   }
   const sandbox = {
-    PondLife, PondPlants, PondAudio: Audio,
+    PondLife, PondPlants, PondAudio: Audio, SprigganRuntime:{mobile:true,runBackground(){}},
     localStorage: storage,
     devicePixelRatio: 1,
     ResizeObserver: class { observe() {} },
