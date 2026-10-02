@@ -55,7 +55,7 @@ Rain uses one continuously looping AudioBufferSource, with no JavaScript timers 
 
 ## Pomodoro timer
 
-The bottom-center timer offers 25-minute focus, 5-minute rest, and 15-minute long breaks. Start, pause, resume, reset, or minimize it. Completing a focus session prepares a short break; every fourth completed focus session prepares a long break. Each next session starts when you choose. Its progress ring and four session dots show your progress, and completion is announced visually. The countdown uses a saved deadline, so it remains accurate across background tabs and reloads. Timer state stays in this browser independently of pond animation. Files: `dist/pond/pond-timer.js` and `dist/pond/pond-timer.css`.
+The bottom-center timer offers 25-minute focus, 5-minute rest, and 15-minute long breaks. Start, pause, resume, reset, or minimize it. Completing a focus session prepares a short break; every fourth completed focus session prepares a long break. Each next session starts when you choose. Its progress ring and four session dots show your progress, and completion is announced visually with a quiet three-note chime. The bell button mutes the chime and remembers your preference. Starting the timer enables audio; a restored timer needs a tap or keyboard interaction before it can sound. Chimes stay silent while the pond is hidden on mobile. The countdown uses a saved deadline, so it remains accurate across background tabs and reloads. Timer state stays in this browser independently of pond animation. Files: `dist/pond/pond-timer.js`, `dist/pond/pond-timer-chime.js`, and `dist/pond/pond-timer.css`.
 
 ## Map folders
 
@@ -111,3 +111,7 @@ Direct visits to `/pond/` and `/pixel/` first redirect to the landing page. Map 
 Desktop tab switches keep the pond and farm simulation active through `dist/shared/background.js`, using small physics steps between throttled background callbacks. The Pomodoro continues updating and completing from its saved deadline. Manual animation pause is still respected. Phones and tablets (including iPad desktop user agents) retain pause-on-hide audio and animation behavior; existing deadline-based timer and growth rules are unchanged. Actual navigation/closing a page stops its audio and background loop. Browser sleep, freezing, and discarded tabs cannot be prevented; simulation recovery after a long suspension is bounded to two minutes of movement, while deadline-based progress uses the actual time.
 
 Golden Seed keeps the play screen brief: rules and detailed payout text are omitted. When a settled spin leaves fewer than 10 seeds, a dismissible popup says to return tomorrow for 50. The popup appears once per empty balance per visit, waits until the result is revealed, and never appears if a due refill makes the balance playable. Pending animal claims remain available after dismissing it.
+
+### Map ordering
+
+Place each new map first in the landing page world list (newest first), and always keep the Incoming card last. Golden Seed stays in its separate mini-game section above the maps. Current map order: Clover Keep, Sunny Side Farm, Stillwater Pond, Incoming.
