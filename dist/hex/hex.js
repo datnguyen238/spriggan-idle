@@ -95,9 +95,10 @@ function tower(t){at(t.q,t.r,()=>{
  })}
 function creature(c){at(c.q,c.r,()=>{
  const moving=!c.chew&&!paused&&!reduced,bob=moving?Math.abs(Math.sin(state.time*5+c.phase))*3:0,chew=c.chew?Math.sin(state.time*16)*1.5:0;
- ellipse(0,2,13,5,'#263f4260');if(c.type==='puddle'){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle='#e4fff2';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,1,17+Math.sin(state.time*2),6,0,0,Math.PI*2);ctx.stroke();ctx.restore()}ctx.translate(0,c.type==='puddle'?-bob*.35:-bob);
- const body=Life.TYPES[c.type].color,outline={sprout:'#3c7652',mochi:'#995669',truffle:'#80563b',puddle:'#386e94'}[c.type];
- const shape=(x,y,rx,ry,fill)=>{ellipse(x,y,rx,ry,fill);ctx.strokeStyle=outline;ctx.lineWidth=1.1;ctx.stroke()};
+ ellipse(0,2,12,4.5,'#263f4228');if(c.type==='puddle'){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle='#e4fff2';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,1,17+Math.sin(state.time*2),6,0,0,Math.PI*2);ctx.stroke();ctx.restore()}ctx.translate(0,c.type==='puddle'?-bob*.35:-bob);
+ const body=Life.TYPES[c.type].color;
+ // Body parts are filled only, with no outline stroke.
+ const shape=(x,y,rx,ry,fill)=>ellipse(x,y,rx,ry,fill);
  if(c.type==='mochi'){shape(-5,-21,3,10,body);shape(4,-22,3,11,body);ellipse(-5,-22,1.3,6,'#c96c86');ellipse(4,-23,1.3,7,'#c96c86')}
  ellipse(-7,0,4,2.5,body);ellipse(7,0,4,2.5,body);shape(0,-10+chew,c.type==='truffle'?13:12,c.type==='truffle'?12:11,c.hit>0?'#f8edcf':body);ellipse(-3,-14,6,5,'#fff8e62b');
  if(c.type==='puddle'){ellipse(-13,-9,5,3,'#478cb4');ellipse(13,-9,5,3,'#478cb4');line([[-7,-20],[-11,-25],[-7,-24],[0,-27],[7,-24],[11,-25],[7,-20]],'#a1dced',2)}
