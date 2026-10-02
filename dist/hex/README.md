@@ -1,0 +1,11 @@
+# Clover Keep
+
+Open `/hex/` using the existing static server (locally `http://127.0.0.1:8003/hex/`). This full-screen world is the first map on the landing page. The canvas fills the viewport with floating navigation, activity counters, camera buttons, and a collapsible controller.
+
+The raised axial hex map has a 15-by-15 meadow with a central 5-by-5 farm and guards on the four farm corners. Pick Sprout, Mochi, or Truffle for grass, or Puddle for the river. Two rivers run along opposite sides, each with two bridges connecting its banks; aquatic creatures swim underneath. Farm and occupied tower tiles reject placement. Creatures follow valid hex routes toward food. Guards fire traveling arrows within range; hits shoo creatures away in soft puffs. Visitors stop on an exterior tile beside the fence, keep nibbling while remaining targetable, and disappear only when their HP reaches zero. Every four seconds of eating counts another snack. Routes never enter the fenced farm, including during movement between tiles.
+
+The four creatures differ in speed and durability. Invite a few adds three of the selected type. A small welcome party demonstrates the scene on load; further spawns are manual. The crowd is capped at 60. The collapsible controller contains illustrated monster choices and a daylight/moonlight switch. Daylight uses warm sunlight; moonlight lights a flickering torch on each guard tower. Lighting preference is saved locally; outside clicks and Escape close the panel. Pause stops simulation, Clear starts a fresh scene, Ranges shows guard reach, and the camera supports dragging and button zoom. Keyboard users can focus the canvas, select tiles with the arrow keys, and place with Enter or Space.
+
+Art is drawn directly on a high-DPI canvas with layered hex tiles, a barn and fenced carrots, stone towers, guards, foliage, and creature portraits. Artwork has no external assets or dependencies. The standard Vercel Web Analytics script records visits on deployed Vercel sites. Scene progress is temporary for this map. Existing pond, farm, and lottery saves are not read or changed. The shared desktop background policy applies; mobile animation pauses when hidden.
+
+Rules: `hex-life.js`. Canvas art and interaction: `hex.js`. Layout: `hex.css`. Tests: `tests/hex-life.test.cjs`.

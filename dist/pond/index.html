@@ -69,8 +69,11 @@
     [hidden]{display:none!important}
     @media(max-width:720px){.pond-moment{left:28px;bottom:auto;top:280px;max-width:160px;font-size:10px}.intro .intro-copy{margin-top:8px}.intro .memory-line{font-size:9px;max-width:210px;margin-top:6px}}
     @media(prefers-reduced-motion:reduce){.pond-moment{transition:none}}
+    .worlds-link{pointer-events:auto;color:#eee7cf;text-decoration:none;font-size:10px;letter-spacing:.04em;min-height:44px;display:inline-flex;align-items:center;padding:0 10px;border-radius:22px}
+    .worlds-link:hover{background:#e8e5c312}.worlds-link:focus-visible{outline:2px solid #e0d3a5;outline-offset:3px}
+    @media(max-width:720px){.worlds-link{position:absolute;right:22px;top:79px;font-size:9px}}
   </style>
-  <link rel="stylesheet" href="./pond-timer.css">
+  <link rel="stylesheet" href="./pond-timer.css?v=chime-1">
 <link rel="stylesheet" href="../shared/map-controls.css">
 <script defer src="../shared/background.js?v=1"></script>
 </head>
@@ -81,6 +84,7 @@
   <header>
     <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 17c6-9 15-9 22-2-7 8-16 9-22 2Z"/><path d="m6 17-3-5v9l3-4M12 13l4-5m-4 12 5 3"/><circle cx="23" cy="15" r="1" fill="currentColor"/></svg></span><div><h1>Spriggan</h1><small>Your personal space of peace</small></div></div>
     <div class="header-right">
+      <a class="worlds-link" href="../">All worlds ↗</a>
       <div class="top-note"><span class="live-dot"></span><span id="light-label">Daylight</span><span class="note-long">&nbsp; / &nbsp; No hurry here</span></div>
       <button class="sound-btn" id="sound" type="button" aria-pressed="false" aria-label="Turn on rain sound" title="Rain sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path d="m16 9 5 6m0-6-5 6"/></svg></button>
     </div>
@@ -119,7 +123,7 @@
     <div class="timer-top"><h2 class="timer-heading">Time by the pond</h2><span class="timer-sessions" id="timer-sessions" role="img" aria-label="0 of 4 focus sessions complete"><i class="timer-dot"></i><i class="timer-dot"></i><i class="timer-dot"></i><i class="timer-dot"></i></span><span id="timer-summary"></span><button class="timer-icon" id="timer-collapse" type="button" aria-label="Minimize Pomodoro timer" aria-expanded="true" aria-controls="timer-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button></div>
     <div id="timer-body">
       <div class="timer-modes" role="group" aria-label="Timer session"><button type="button" data-timer-mode="focus" aria-pressed="true">Focus · 25m</button><button type="button" data-timer-mode="short" aria-pressed="false">Rest · 5m</button><button type="button" data-timer-mode="long" aria-pressed="false">Unwind · 15m</button></div>
-      <div class="timer-main"><div class="timer-orbit" aria-hidden="true"><svg viewBox="0 0 58 58"><circle class="timer-track" cx="29" cy="29" r="26"/><circle id="timer-progress" cx="29" cy="29" r="26"/></svg><span class="timer-leaf"><svg viewBox="0 0 28 28"><path d="M7 21C3 10 11 5 23 5c0 11-4 18-13 16M6 24 19 10m-8 9 0-6m4 2h5"/></svg></span></div><div class="timer-reading"><span id="timer-time" role="timer" aria-live="off">25:00</span><span id="timer-label">Focus softly</span></div><div class="timer-actions"><button class="timer-action" id="timer-action" type="button" aria-label="Start focus timer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z"/></svg><span>Begin</span></button><button class="timer-icon" id="timer-reset" type="button" aria-label="Reset current timer" title="Reset timer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></svg></button></div></div>
+      <div class="timer-main"><div class="timer-orbit" aria-hidden="true"><svg viewBox="0 0 58 58"><circle class="timer-track" cx="29" cy="29" r="26"/><circle id="timer-progress" cx="29" cy="29" r="26"/></svg><span class="timer-leaf"><svg viewBox="0 0 28 28"><path d="M7 21C3 10 11 5 23 5c0 11-4 18-13 16M6 24 19 10m-8 9 0-6m4 2h5"/></svg></span></div><div class="timer-reading"><span id="timer-time" role="timer" aria-live="off">25:00</span><span id="timer-label">Focus softly</span></div><div class="timer-actions"><button class="timer-action" id="timer-action" type="button" aria-label="Start focus timer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z"/></svg><span>Begin</span></button><div class="timer-secondary"><button class="timer-icon" id="timer-chime" type="button" aria-label="Mute timer chime" aria-pressed="true" title="Timer chime on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9Z"/><path d="M10 21h4"/><path class="chime-muted" d="m4 3 16 18"/></svg></button><button class="timer-icon" id="timer-reset" type="button" aria-label="Reset current timer" title="Reset timer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></svg></button></div></div></div>
       <p id="timer-status" role="status" aria-live="polite"></p>
     </div>
   </section>
@@ -139,7 +143,8 @@
 <script src="./pond-plants.js" defer></script>
 <script src="./pond-surprises.js" defer></script>
 <script src="./app.js?v=desktop-background-1" defer></script>
-<script src="./pond-timer.js?v=desktop-background-1" defer></script>
+<script src="./pond-timer-chime.js?v=1" defer></script>
+<script src="./pond-timer.js?v=chime-1" defer></script>
 <!-- Vercel Web Analytics: served by Vercel after Analytics is enabled. -->
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };

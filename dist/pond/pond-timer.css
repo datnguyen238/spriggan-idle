@@ -10,3 +10,5 @@
 @media(max-width:720px){.pomodoro{bottom:max(45px,env(safe-area-inset-bottom))}.timer-modes button{min-height:36px}.timer-action{min-height:40px}.timer-icon{width:36px;height:36px}.timer-main{gap:10px}#timer-time{font-size:33px}.timer-heading{letter-spacing:.16em}}
 @media(max-width:1100px) and (max-height:740px){.intro{display:none}.pond-moment{top:185px}.pomodoro{padding-top:8px;padding-bottom:10px}.timer-modes{margin:4px 0 8px}.timer-orbit{width:50px;height:50px}.timer-orbit>svg{width:50px;height:50px}.timer-leaf{inset:12px}}
 @media(prefers-reduced-motion:reduce){#timer-progress,.timer-modes button{transition:none}}
+
+.timer-secondary{display:flex;align-items:center;gap:3px}#timer-chime[aria-pressed=true]{color:#e0cd98}#timer-chime .chime-muted{display:none}#timer-chime[aria-pressed=false] .chime-muted{display:block}
