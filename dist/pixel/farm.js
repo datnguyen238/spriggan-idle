@@ -6,6 +6,40 @@ const seenCows=new Set(state.cows.map(c=>c.id));
 const animals=()=>[...state.birds,...state.cows];
 let W=400,H=240,sceneTop=0,sceneBottom=0,last=0,clock=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,selected=null,lastRules=0;
 const grain=[],walk=new Map(),hearts=[];const moment=document.querySelector('#moment'),card=document.querySelector('#bird-card');
+const musicButton=document.querySelector('#music');
+const resumeAudioButton=document.querySelector('#resume-audio');
+const musicVolumeInput=document.querySelector('#music-volume');
+const musicVolumeValue=document.querySelector('#music-volume-value');
+const audioStatus=document.querySelector('#audio-status');
+
+const farmAudio=new FarmAudio(snapshot=>{
+ musicButton.setAttribute('aria-pressed',String(snapshot.enabled));
+ musicButton.textContent=snapshot.enabled?'Gentle music on':'Gentle music';
+ musicVolumeInput.value=String(Math.round(snapshot.volume*100));
+ musicVolumeValue.textContent=`${Math.round(snapshot.volume*100)}%`;
+ resumeAudioButton.hidden=!snapshot.needsResume;
+ audioStatus.textContent=snapshot.needsResume?'Tap Resume saved sounds to continue music.':snapshot.playing?'Gentle music is playing.':'';
+});
+
+farmAudio.setVolume(0.25);
+
+musicButton.onclick=async()=>{
+ if(farmAudio.enabled)farmAudio.stop();
+ else{
+  const started=await farmAudio.start();
+  if(!started)audioStatus.textContent='Tap Resume saved sounds to start music.';
+ }
+};
+
+resumeAudioButton.onclick=async()=>{
+ const started=await farmAudio.start();
+ if(started)audioStatus.textContent='Gentle music is playing.';
+};
+
+musicVolumeInput.oninput=()=>{
+ farmAudio.setVolume(Number(musicVolumeInput.value)/100);
+};
+
 let noticeUntil=Date.now()+7000;
 function notice(text){moment.textContent=text;noticeUntil=Date.now()+7000}
 function receiveCow(){
