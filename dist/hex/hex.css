@@ -22,3 +22,8 @@ html,body{width:100%;height:100%;overflow:hidden}body:before{display:none}main{p
 @media(max-height:500px){header{padding:12px 24px}.introduction{top:76px;left:24px;right:24px;display:flex}.introduction .eyebrow,.introduction p:last-child{display:none}h1{font-size:26px}.scoreboard{margin:0}.hex-controls .playbar{max-height:calc(100dvh - 160px)}.map-note{bottom:40px}footer{padding:12px 24px}.compass{display:none}}
 
 #keep-storeys{font-size:13px;color:#efe5bc;margin:0 0 6px}.keep-rule{font:8px/1.7 monospace;color:var(--muted);margin:0 0 18px}
+
+/* Reset native button padding and use symmetric SVGs instead of font glyphs. */
+.view-controls button,#toggle-controls{display:flex;align-items:center;justify-content:center;padding:0;line-height:1;appearance:none;-webkit-appearance:none}
+.view-controls button svg{display:block;flex:0 0 20px;width:20px;height:20px;margin:0;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#toggle-controls svg{display:block;flex:0 0 23px;margin:0;pointer-events:none;transform-origin:center}
