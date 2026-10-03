@@ -108,10 +108,8 @@ Reward destinations are listed in `SlotsLife.DESTINATIONS`; the dropdown and rew
 
 Direct visits to `/pond/` and `/pixel/` first redirect to the landing page. Map cards open the selected world using `dist/shared/map-entry.js`; ordinary refreshes after entering from home remain in that world. This is a navigation flow, not an access restriction, and leaves browser saves intact.
 
-Desktop tab switches keep the pond and farm simulation active through `dist/shared/background.js`, using small physics steps between throttled background callbacks. The Pomodoro continues updating and completing from its saved deadline. Manual animation pause is still respected. Phones and tablets (including iPad desktop user agents) retain pause-on-hide audio and animation behavior; existing deadline-based timer and growth rules are unchanged. Actual navigation/closing a page stops its audio and background loop. Browser sleep, freezing, and discarded tabs cannot be prevented; simulation recovery after a long suspension is bounded to two minutes of movement, while deadline-based progress uses the actual time.
+## Farm music
 
-Golden Seed keeps the play screen brief: rules and detailed payout text are omitted. When a settled spin leaves fewer than 10 seeds, a dismissible popup says to return tomorrow for 50. The popup appears once per empty balance per visit, waits until the result is revealed, and never appears if a due refill makes the balance playable. Pending animal claims remain available after dismissing it.
+Sunny Side offers generated gentle music and a volume slider in its controller. The 38.4-second chord progression uses soft overlapping chords, bell notes, a quiet echo, and alternating melody variations. It schedules notes against the audio clock to avoid timing drift. No MP3 or WAV is required.
 
-### Map ordering
-
-Place each new map first in the landing page world list (newest first), and always keep the Incoming card last. Golden Seed stays in its separate mini-game section above the maps. Current map order: Clover Keep, Sunny Side Farm, Stillwater Pond, Incoming.
+Music preference and volume are stored separately in `spriggan.farm.music.v1`. A saved preference waits for a tap or keyboard interaction before starting after reload; Resume music is available when a browser blocks playback. Desktop tab switches keep the farm and music active. Mobile tab switches suspend music and animation, with playback retried on return. Page navigation suspends music. Browsers may still freeze or discard inactive pages. These changes do not modify animal saves, feeding, laying, hatching, or growth rules.

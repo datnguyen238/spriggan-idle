@@ -14,3 +14,16 @@ body,.scene{background:#809c60}
 button:focus-visible,summary:focus-visible,canvas:focus-visible{outline-color:#fff1b8}
 
 .flock-label{display:block;font:9px monospace;color:#fff;margin:0 0 7px}#flock-picker{width:100%;min-height:36px;margin-bottom:13px;padding:8px;color:#fff;background:#3d5b40;border:1px solid #a6bd8e80;border-radius:4px;font:10px monospace}#remove-bird,#restart-flock{min-height:36px;border:1px solid #dfc19b80;border-radius:4px;background:#6d5040;color:#fff;font:10px monospace;padding:9px 12px;margin-top:12px}#remove-bird:hover{background:#88654e}#restart-flock{width:100%;margin:0 0 12px;background:#55723d}select:focus-visible{outline:2px solid #fff1b8;outline-offset:3px}
+
+.farm-audio{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.farm-audio button{width:100%;min-height:36px;border:1px solid #c1d5ac66;border-radius:4px;background:#3d5b40;color:#fff;font:10px monospace;padding:8px 10px}
+.farm-audio button:hover{background:#55723d}
+.farm-audio button[aria-pressed=true]{background:#55723d;border-color:#d9e7bd}
+.farm-audio button+button{margin-top:7px}
+.farm-audio p{margin:8px 0 0;color:#e3ebd7;font:9px/1.5 monospace}
+.farm-audio p:empty{display:none}
+.farm-audio label{display:grid;grid-template-columns:1fr 34px;gap:7px 9px;align-items:center;margin-top:10px;color:#fff;font:9px monospace}
+.farm-audio label input{grid-column:1;width:100%;margin:0;accent-color:#d9e7bd}
+.farm-audio label output{grid-column:2;grid-row:2;text-align:right;font-variant-numeric:tabular-nums}
+
+.worlds-link{pointer-events:auto;display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border:1px solid #fff5d67a;border-radius:4px;background:#354e3bd9;color:#fff9e8;text-decoration:none;font:10px monospace}.worlds-link:hover{background:#425e43}@media(max-width:600px){.worlds-link{font-size:9px;padding:0 10px}}
