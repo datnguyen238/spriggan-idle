@@ -69,3 +69,33 @@ test('saved progress migrates old totals, carries overflow and tolerates invalid
  const saved={storeys:5,shooed:42,snacks:19};assert.deepEqual(Life.progress(JSON.stringify(saved)),saved);
  assert.deepEqual(Life.progress(JSON.stringify({storeys:-2,shooed:1.5,snacks:'99'})),{storeys:1,shooed:0,snacks:0});
 });
+test('all monster types are defeated on every legal tile, including beside each tower',()=>{
+ for(const type of Object.keys(Life.TYPES))for(let q=-Life.SIZE;q<=Life.SIZE;q++)for(let r=-Life.SIZE;r<=Life.SIZE;r++){
+  if(!Life.habitat(q,r,type))continue;
+  const s=Life.create(),c=Life.spawn(s,q,r,type).creature;
+  for(let i=0;i<2000&&s.creatures.length;i++)Life.step(s,.05);
+  assert.equal(s.creatures.length,0,`${type} survived at ${q},${r}`);assert.equal(c.hp,0);assert.equal(s.shooed,1);
+ }
+});
+test('a full stack of eaters beside a tower all take damage and eventually die',()=>{
+ for(const [q,r,type] of [[3,2,'truffle'],[-3,-2,'truffle'],[0,3,'puddle'],[0,-3,'puddle']]){
+  const s=Life.create();for(let i=0;i<Life.LIMIT;i++)Life.spawn(s,q,r,type);
+  for(let i=0;i<8000&&s.creatures.length;i++)Life.step(s,.05);
+  assert.equal(s.creatures.length,0,`${type} stack survived at ${q},${r}`);assert.equal(s.shooed,Life.LIMIT);
+ }
+});
+test('zero-HP eaters are removed before eating even if their done flag was not set',()=>{
+ for(const hp of [0,-1])for(const [q,r,type] of [[3,2,'truffle'],[-3,-2,'sprout'],[0,3,'puddle']]){
+  const s=Life.create(),c=Life.spawn(s,q,r,type).creature;c.hp=hp;c.chew=.001;s.shooed=99;
+  s.arrows.push({target:c.id,from:{q:2,r:2},to:{q,r},age:0,duration:1});
+  Life.step(s,.05);
+  assert.equal(s.creatures.length,0);assert.equal(s.snacks,0);assert.equal(s.storeys,2);assert.equal(s.shooed,0);assert.equal(s.arrows.length,0);assert.equal(c.chew,0);
+  for(let i=0;i<200;i++)Life.step(s,.05);
+  assert.equal(s.snacks,0);assert.equal(s.shooed,0);assert.equal(s.storeys,2);
+ }
+});
+test('simultaneous lethal arrows award one defeat and cancel remaining shots',()=>{
+ const s=Life.create();s.towers=[];const c=Life.spawn(s,3,2,'mochi').creature;c.chew=2;
+ for(let i=0;i<4;i++)s.arrows.push({target:c.id,from:{q:2,r:2},to:{q:3,r:2},age:0,duration:.01});
+ Life.step(s,.05);assert.equal(c.hp,0);assert.equal(s.shooed,1);assert.equal(s.creatures.length,0);assert.equal(s.arrows.length,0);
+});

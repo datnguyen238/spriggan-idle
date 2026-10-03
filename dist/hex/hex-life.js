@@ -41,9 +41,15 @@ function spawn(s,q,r,type='sprout'){
  const stats=TYPES[type],c={id:s.nextId++,q,r,type,hp:stats.hp,maxHp:stats.hp,path:path(q,r,type),phase:s.nextId*2.399,hit:0,chew:0};s.creatures.push(c);return{ok:true,creature:c};
 }
 function puff(s,q,r,color){s.effects.push({q,r,color,age:0,seed:s.nextId++})}
+function defeat(s,c){
+ if(c.done||c.hp>0)return;
+ c.hp=0;c.done=true;c.chew=0;c.path=[];s.shooed++;milestones(s);puff(s,c.q,c.r,TYPES[c.type].color);
+}
 function step(s,dt){
  s.time+=dt;
  for(const c of s.creatures){
+  if(c.hp<=0)defeat(s,c);
+  if(c.done)continue;
   c.hit=Math.max(0,c.hit-dt);
   if(c.chew){c.chew-=dt;while(c.chew<=0){s.snacks++;milestones(s);c.chew+=4;puff(s,c.q,c.r,'#e7b887')}continue}
   const next=c.path[0];if(!next){c.chew=4;continue}
@@ -57,9 +63,9 @@ function step(s,dt){
  }
  for(const a of s.arrows){
   a.age+=dt;const c=s.creatures.find(c=>c.id===a.target);if(c)a.to={q:c.q,r:c.r};
-  if(a.age>=a.duration){a.done=true;if(c&&!c.done&&c.hp>0){c.hp--;c.hit=.22;puff(s,c.q,c.r,'#f5e6b2');if(c.hp<=0){c.done=true;s.shooed++;milestones(s);puff(s,c.q,c.r,TYPES[c.type].color)}}}
+  if(a.age>=a.duration){a.done=true;if(c&&!c.done&&c.hp>0){c.hp--;c.hit=.22;puff(s,c.q,c.r,'#f5e6b2');defeat(s,c)}}
  }
- s.creatures=s.creatures.filter(c=>!c.done);s.arrows=s.arrows.filter(a=>!a.done);for(const p of s.effects)p.age+=dt;s.effects=s.effects.filter(p=>p.age<.7);
+ s.creatures=s.creatures.filter(c=>!c.done&&c.hp>0);const living=new Set(s.creatures.map(c=>c.id));s.arrows=s.arrows.filter(a=>!a.done&&living.has(a.target));for(const p of s.effects)p.age+=dt;s.effects=s.effects.filter(p=>p.age<.7);
 }
 const api={SIZE,LIMIT,TYPES,TOWERS,DIRS,inside,farm,tower,river,bridge,habitat,bank,distance,progress,milestones,create,spawn,step,path};if(typeof module!=='undefined'&&module.exports)module.exports=api;else globalThis.HexLife=api;
 })();
