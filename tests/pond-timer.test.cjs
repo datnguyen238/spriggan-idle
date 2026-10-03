@@ -31,3 +31,9 @@ test('invalid storage safely falls back to a fresh timer',()=>{
 test('pressing pause at the deadline completes rather than starting another session',()=>{
  const s=t.create();t.toggle(s,0);assert.equal(t.toggle(s,1500000),'focus');assert.equal(s.endsAt,null);assert.equal(s.mode,'short');
 });
+
+test('chime preference persists while older saves enable it by default',()=>{
+ const s=t.create();assert.equal(s.chime,true);s.chime=false;
+ assert.equal(t.decode(JSON.stringify(s)).chime,false);
+ delete s.chime;assert.equal(t.decode(JSON.stringify(s)).chime,true);
+});
