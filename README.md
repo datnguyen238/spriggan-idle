@@ -107,3 +107,9 @@ The seeds are free, have no cash value, and cannot be purchased. All saves are l
 Reward destinations are listed in `SlotsLife.DESTINATIONS`; the dropdown and reward details grow with that registry. See `docs/slot-design-notes.md` for adding a map and its prize integration.
 
 Direct visits to `/pond/` and `/pixel/` first redirect to the landing page. Map cards open the selected world using `dist/shared/map-entry.js`; ordinary refreshes after entering from home remain in that world. This is a navigation flow, not an access restriction, and leaves browser saves intact.
+
+## Farm music
+
+Sunny Side offers generated gentle music and a volume slider in its controller. The 38.4-second chord progression uses soft overlapping chords, bell notes, a quiet echo, and alternating melody variations. It schedules notes against the audio clock to avoid timing drift. No MP3 or WAV is required.
+
+Music preference and volume are stored separately in `spriggan.farm.music.v1`. A saved preference waits for a tap or keyboard interaction before starting after reload; Resume music is available when a browser blocks playback. Desktop tab switches keep the farm and music active. Mobile tab switches suspend music and animation, with playback retried on return. Page navigation suspends music. Browsers may still freeze or discard inactive pages. These changes do not modify animal saves, feeding, laying, hatching, or growth rules.

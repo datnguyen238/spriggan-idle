@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <script src="../shared/map-entry.js?v=1" data-map-guard></script>
@@ -6,19 +6,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f3efdc">
 <title>Sunny Side - Spriggan</title>
-<link rel="stylesheet" href="./farm.css?v=5">
+<link rel="stylesheet" href="./farm.css?v=lullaby-3">
 <link rel="stylesheet" href="../shared/map-controls.css">
+<link rel="stylesheet" href="../shared/icons.css?v=1">
+<script defer src="../shared/background.js?v=1"></script>
 </head>
 <body>
-<header>
-  <div class="brand">
-    <span aria-hidden="true">*</span>
-    <span>
-      Spriggan
-      <small>LITTLE WORLDS, SLOW DAYS</small>
-    </span>
-  </div>
-</header>
+<header><div class="brand"><svg class="spriggan-symbol" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M16 3v26M3 16h26M7 7l18 18M7 25 25 7"/></svg> <span>Spriggan<small>LITTLE WORLDS, SLOW DAYS</small></span></div><a class="worlds-link" href="../">All worlds <svg class="nav-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg></a></header>
 
 <main>
   <section class="heading">
@@ -111,12 +105,12 @@
           class="motion"
           aria-pressed="false"
           aria-label="Pause farm animation"
-        >Pause</button>
+        >Ⅱ</button>
         <span>Take a quiet moment</span>
       </div>
       <div class="farm-audio" aria-label="Farm music controls">
         <button id="music" type="button" aria-pressed="false">Gentle music</button>
-        <button id="resume-audio" type="button" hidden>Resume saved sounds</button>
+        <button id="resume-audio" type="button" hidden>Resume music</button>
         <p id="audio-status" role="status" aria-live="polite"></p>
 
         <label for="music-volume">
@@ -166,9 +160,10 @@
 </footer>
 
 <script src="./farm-life.js?v=repeat-prizes-1" defer></script>
-<script src="./farm-audio.js?v=1" defer></script>
-<script src="./farm.js?v=repeat-prizes-1" defer></script>
+<script src="./farm-audio.js?v=lullaby-3" defer></script>
+<script src="./farm.js?v=lullaby-3" defer></script>
 <script src="../shared/map-controls.js" defer></script>
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script><script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
 

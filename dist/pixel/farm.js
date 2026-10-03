@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const Life=FarmLife,canvas=document.querySelector('#farm'),ctx=canvas.getContext('2d',{alpha:false});
+const Life=FarmLife,Runtime=SprigganRuntime,canvas=document.querySelector('#farm'),ctx=canvas.getContext('2d',{alpha:false});
 let state;try{state=Life.decode(localStorage.getItem(Life.KEY))}catch{}const returning=!!state;state||=Life.create();
 const seenCows=new Set(state.cows.map(c=>c.id));
 const animals=()=>[...state.birds,...state.cows];
@@ -18,16 +18,16 @@ const farmAudio=new FarmAudio(snapshot=>{
  musicVolumeInput.value=String(Math.round(snapshot.volume*100));
  musicVolumeValue.textContent=`${Math.round(snapshot.volume*100)}%`;
  resumeAudioButton.hidden=!snapshot.needsResume;
- audioStatus.textContent=snapshot.needsResume?'Tap Resume saved sounds to continue music.':snapshot.playing?'Gentle music is playing.':'';
+ audioStatus.textContent=snapshot.needsResume?'Tap Resume music to continue music.':snapshot.playing?'Gentle music is playing.':'';
 });
 
-farmAudio.setVolume(0.25);
+farmAudio.notify();
 
 musicButton.onclick=async()=>{
  if(farmAudio.enabled)farmAudio.stop();
  else{
   const started=await farmAudio.start();
-  if(!started)audioStatus.textContent='Tap Resume saved sounds to start music.';
+  if(!started)audioStatus.textContent='Tap Resume music to start music.';
  }
 };
 
@@ -39,6 +39,13 @@ resumeAudioButton.onclick=async()=>{
 musicVolumeInput.oninput=()=>{
  farmAudio.setVolume(Number(musicVolumeInput.value)/100);
 };
+
+document.addEventListener('visibilitychange',()=>farmAudio.visibility(document.hidden&&Runtime.mobile));
+window.addEventListener('pagehide',()=>farmAudio.visibility(true));
+window.addEventListener('pageshow',()=>farmAudio.visibility(document.hidden&&Runtime.mobile));
+function recoverMusic(){if(farmAudio.enabled&&farmAudio.needsResume&&!document.hidden)farmAudio.start()}
+document.addEventListener('pointerdown',recoverMusic,{passive:true});
+document.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')recoverMusic()});
 
 let noticeUntil=Date.now()+7000;
 function notice(text){moment.textContent=text;noticeUntil=Date.now()+7000}
@@ -171,8 +178,7 @@ function ui(){
  picker.value=animals().some(b=>b.id===selected)?selected:'';picker.disabled=!animals().length;restart.hidden=!!(state.birds.length||state.eggs.length);
 document.querySelector('#adults').textContent=state.birds.filter(b=>b.stage==='adult').length;document.querySelector('#chicks').textContent=state.birds.filter(b=>b.stage==='chick').length;document.querySelector('#eggs').textContent=state.eggs.length;inspect();if(Date.now()>noticeUntil)moment.textContent=state.eggs.length?'Something small is on its way.':state.birds.length+state.eggs.length>=Life.LIMIT?'A full little family. Room for 16, love for everyone.':'Feed, hatch, grow. No hurry at all.'}
 function tick(now){const events=Life.advance(state,now);if(events.length)notice(events.at(-1));ui();save()}
-function frame(ts){
- const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+function update(dt){
  if(!paused){
   clock+=dt;
   for(const b of animals()){
@@ -216,7 +222,14 @@ function frame(ts){
   }
  }
  for(let i=grain.length-1;i>=0;i--){grain[i].life-=dt;if(grain[i].life<=0)grain.splice(i,1)}for(let i=hearts.length-1;i>=0;i--){hearts[i].life-=dt*.7;if(hearts[i].life<=0)hearts.splice(i,1)}}
- if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}if(!document.hidden)draw();requestAnimationFrame(frame)}
+}
+function frame(ts){
+ requestAnimationFrame(frame);
+ const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+ if(document.hidden)return;
+ update(dt);
+ if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}draw();
+}
 window.addEventListener('storage',e=>{if(e.key===Life.KEY){receiveCow();ui();draw()}});
-window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your little family is right here.');resize();requestAnimationFrame(frame);
+window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your little family is right here.');resize();Runtime.runBackground(update,()=>{const now=performance.now();if(now-lastRules>1000){lastRules=now;tick(Date.now())}},()=>paused);requestAnimationFrame(frame);
 })();
