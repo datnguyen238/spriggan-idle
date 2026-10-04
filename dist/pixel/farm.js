@@ -5,6 +5,7 @@ let state;try{state=Life.decode(localStorage.getItem(Life.KEY))}catch{}const ret
 const seenCows=new Set(state.cows.map(c=>c.id));
 const animals=()=>[...state.birds,...state.cows];
 let W=400,H=240,sceneTop=0,sceneBottom=0,last=0,clock=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,selected=null,lastRules=0;
+let foxVisitor=null;
 const grain=[],walk=new Map(),hearts=[];const moment=document.querySelector('#moment'),card=document.querySelector('#bird-card');
 const musicButton=document.querySelector('#music');
 const resumeAudioButton=document.querySelector('#resume-audio');
@@ -148,7 +149,29 @@ function cow(b){
  if(selected===b.id)rect(-15,13,33,1,'#fff0b4');ctx.restore();
 }
 function egg(e){const x=e.x*W,y=e.y*H,wiggle=Date.now()>e.hatchesAt-15000&&!paused?Math.sin(clock*8):0;rect(x-6,y+2,12,4,'#ad9259');rect(x-4,y,8,5,'#c6ab6c');rect(x-3+wiggle,y-5,6,7,'#fff1d0');rect(x-2+wiggle,y-7,4,2,'#fff1d0');rect(x+1+wiggle,y-3,2,4,'#e0d1a9')}
-function draw(){background();for(const g of grain){rect(g.x*W,g.y*H,2,1,'#e5cc83');rect(g.x*W+1,g.y*H-1,1,1,'#fbdf96')}const objects=[...animals().map(b=>({y:b.y,draw:()=>b.species==='cow'?cow(b):chicken(b)})),...state.eggs.map(e=>({y:e.y,draw:()=>egg(e)}))];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(const h of hearts){const x=h.x*W,y=h.y*H-(1-h.life)*15;ctx.globalAlpha=h.life;rect(x-2,y-1,2,2,'#bc7962');rect(x+1,y-1,2,2,'#bc7962');rect(x-1,y+1,3,2,'#bc7962');rect(x,y+3,1,1,'#bc7962');ctx.globalAlpha=1}}
+function fox(){
+ if(!foxVisitor)return;
+ const f=foxVisitor,bob=Math.sin(f.phase*12)>0?1:0;
+ ctx.save();ctx.translate(Math.round(f.x*W),Math.round(f.y*H));if(f.left)ctx.scale(-1,1);
+ rect(-14,5,29,2,'#34453235');ctx.translate(0,bob);
+ // Round ginger body, cream cheeks and a big white-tipped tail.
+ rect(-20,-5,13,6,'#b7653e');rect(-23,-8,7,6,'#f5e3bc');rect(-18,-3,9,6,'#d78c50');
+ rect(-9,-6,18,11,'#cc7946');rect(-6,-9,12,12,'#e59d58');rect(-5,1,12,4,'#f1d9ac');
+ rect(4,-12,12,11,'#e8a264');rect(5,-17,4,7,'#b36744');rect(12,-16,4,6,'#b36744');rect(6,-15,2,4,'#edbf91');rect(13,-14,2,3,'#edbf91');
+ rect(9,-5,9,4,'#fff0cf');rect(16,-5,3,2,'#453e35');rect(12,-9,2,2,'#3c3d32');rect(12,-9,1,1,'#fff3dc');
+ const step=Math.round(Math.sin(f.phase*12));rect(-6,4,3,3+step,'#644a36');rect(6,4,3,3-step,'#644a36');
+ if(f.carrying){
+  // A full, recognizable chicken held gently by its back, with dangling feet.
+  const cream=f.carrying.sex==='hen'?'#fff8e5':'#f8dfb0',sway=Math.round(Math.sin(f.phase*8));
+  ctx.save();ctx.translate(18,5+sway);
+  rect(-8,-5,15,10,'#bea582');rect(-7,-6,13,11,cream);rect(-9,-3,17,6,cream);
+  rect(-10,-6,4,5,'#eddbb8');rect(-11,-8,3,4,cream);rect(4,-9,7,9,cream);
+  rect(5,-12,2,4,'#d86c59');rect(8,-11,2,3,'#d86c59');rect(10,-6,4,2,'#e6a957');rect(8,-7,1,2,'#493f32');
+  rect(-3,-1,6,4,'#e8d6b5');rect(-2,5,2,4,'#d79950');rect(4,5,2,4,'#d79950');rect(-3,8,4,1,'#d79950');rect(3,8,4,1,'#d79950');ctx.restore();
+ }
+ ctx.restore();
+}
+function draw(){background();for(const g of grain){rect(g.x*W,g.y*H,2,1,'#e5cc83');rect(g.x*W+1,g.y*H-1,1,1,'#fbdf96')}const objects=[...(foxVisitor?[{y:foxVisitor.y,draw:fox}]:[]),...animals().map(b=>({y:b.y,draw:()=>b.species==='cow'?cow(b):chicken(b)})),...state.eggs.map(e=>({y:e.y,draw:()=>egg(e)}))];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(const h of hearts){const x=h.x*W,y=h.y*H-(1-h.life)*15;ctx.globalAlpha=h.life;rect(x-2,y-1,2,2,'#bc7962');rect(x+1,y-1,2,2,'#bc7962');rect(x-1,y+1,3,2,'#bc7962');rect(x,y+3,1,1,'#bc7962');ctx.globalAlpha=1}}
 function scatter(x=.5,y=.62){if(grain.length>=60)return notice('Plenty of grain already. Let them finish a little.');for(let i=0;i<10&&grain.length<60;i++)grain.push({x:Math.max(.17,Math.min(.82,x+(Math.random()-.5)*.13)),y:Math.max(.4,Math.min(.82,y+(Math.random()-.5)*.1)),life:60});notice('A little grain, a little gathering.');draw()}
 function inspect(){if(!selected)return;const b=animals().find(b=>b.id===selected),e=state.eggs.find(e=>e.id===selected);if(!b&&!e){card.hidden=true;selected=null;return}card.hidden=false;document.querySelector('#bird-name').textContent=b?b.name:'A warm little egg';let detail;
  if(e)detail=`Hatching in ${Math.max(1,Math.ceil((e.hatchesAt-Date.now())/1000))} seconds. A tiny life is on its way.`;
@@ -180,6 +203,9 @@ document.querySelector('#adults').textContent=state.birds.filter(b=>b.stage==='a
 function tick(now){const events=Life.advance(state,now);if(events.length)notice(events.at(-1));ui();save()}
 function update(dt){
  if(!paused){
+  // Predation counts only time spent visibly in the farm, never hidden/offline catch-up.
+  if(!document.hidden){const result=Life.foxStep(state,foxVisitor,dt);foxVisitor=result.visitor;if(result.lost){walk.delete(result.lost.id);notice(`A fox caught ${result.lost.name}. It is carrying the chicken away.`);ui();save()}}
+
   clock+=dt;
   for(const b of animals()){
    let m=walk.get(b.id);

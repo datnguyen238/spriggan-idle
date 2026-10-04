@@ -113,3 +113,7 @@ Direct visits to `/pond/` and `/pixel/` first redirect to the landing page. Map 
 Sunny Side offers generated gentle music and a volume slider in its controller. The 38.4-second chord progression uses soft overlapping chords, bell notes, a quiet echo, and alternating melody variations. It schedules notes against the audio clock to avoid timing drift. No MP3 or WAV is required.
 
 Music preference and volume are stored separately in `spriggan.farm.music.v1`. A saved preference waits for a tap or keyboard interaction before starting after reload; Resume music is available when a browser blocks playback. Desktop tab switches keep the farm and music active. Mobile tab switches suspend music and animation, with playback retried on return. Page navigation suspends music. Browsers may still freeze or discard inactive pages. These changes do not modify animal saves, feeding, laying, hatching, or growth rules.
+
+### Fox visits
+
+While the farm is visible and animation is running, a fox visits after two minutes with eligible adult chickens in the yard. It enters from a random position on any of the four sides, automatically catches and permanently removes one adult, then visibly carries the chicken out of the yard at a slower pace, retracing its exact approach route. There is no warning or dismissal interaction. The last adult hen and rooster, chicks, eggs, and cows are protected. The active countdown is saved with the farm; hidden tabs and time away do not advance it or cause offline losses. A visit in progress restarts its waiting period on reload.

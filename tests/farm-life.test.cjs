@@ -10,3 +10,55 @@ test('older farm saves retain birds and progress while eggs migrate to three-min
 
 test('remove only the selected chicken, preserving eggs and other birds',()=>{const s=L.create(0),hen=s.birds[0];meals(hen,100);L.advance(s,0);assert.equal(L.removeBird(s,hen.id),hen);assert.equal(s.birds.length,1);assert.equal(s.birds[0].sex,'rooster');assert.equal(s.eggs.length,1);assert.equal(L.removeBird(s,hen.id),null);assert.deepEqual(L.decode(JSON.stringify(s),0),s)});
 test('empty farms persist without silently restoring removed chickens',()=>{const s=L.create(0);for(const b of [...s.birds])L.removeBird(s,b.id);assert.equal(s.birds.length,0);assert.deepEqual(L.decode(JSON.stringify(s),0),s)});
+test('fox visits permanently remove one extra adult and preserve the breeding pair',()=>{
+ const s=L.create(0);s.birds.push({...s.birds[0],id:'extra',name:'Daisy'});s.foxWait=L.FOX_WAIT-.01;
+ let visitor=null,lost=0;for(let i=0;i<1000;i++){const result=L.foxStep(s,visitor,.05,()=>0);visitor=result.visitor;if(result.lost){lost++;assert.equal(visitor.carrying.name,result.lost.name)}}
+ assert.equal(lost,1);assert.equal(s.birds.length,2);assert.equal(s.birds.filter(b=>b.sex==='hen').length,1);assert.equal(s.birds.filter(b=>b.sex==='rooster').length,1);assert.equal(visitor,null);
+ assert.equal(L.decode(JSON.stringify(s),0).birds.length,2);
+});
+test('fox countdown does not attack chicks, eggs, cows, or the last pair',()=>{
+ const s=L.create(0);s.birds.push({...s.birds[0],id:'chick',stage:'chick'});s.cows.push(L.makeCow(0));s.foxWait=L.FOX_WAIT;
+ assert.equal(L.foxStep(s,null,.05).visitor,null);assert.equal(s.birds.length,3);assert.equal(s.cows.length,1);
+});
+test('fox waiting time persists but wall-clock absence never triggers an attack',()=>{
+ const s=L.create(0);s.birds.push({...s.birds[0],id:'extra'});s.foxWait=60;
+ const restored=L.decode(JSON.stringify(s),9999999);L.advance(restored,9999999);assert.equal(restored.birds.length,3);assert.equal(restored.foxWait,60);
+ assert.equal(L.foxStep(restored,null,.05).visitor,null);assert.equal(restored.foxWait,60.05);
+});
+test('a fox leaves safely if its target is removed before it arrives',()=>{
+ const s=L.create(0);s.birds.push({...s.birds[0],id:'extra'});s.foxWait=L.FOX_WAIT;
+ let {visitor}=L.foxStep(s,null,.05,()=>0);L.removeBird(s,visitor.target);
+ for(let i=0;i<1000&&visitor;i++){const result=L.foxStep(s,visitor,.05);assert.equal(result.lost,undefined);visitor=result.visitor}
+ assert.equal(visitor,null);assert.equal(s.birds.length,2);
+});
+
+test("fox interval is two minutes",()=>assert.equal(L.FOX_WAIT,120));
+test('a carrying fox retraces its curved pursuit to the exact entrance from all four directions',()=>{
+ for(const side of [.1,.35,.6,.9]){
+  const s=L.create(0);s.birds.push({...s.birds[0],id:'extra'});s.foxWait=L.FOX_WAIT;
+  let result=L.foxStep(s,null,.05,()=>side),v=result.visitor,entrance={...v.trail[0]};
+  for(let i=0;i<600&&!v.carrying;i++){
+   const b=s.birds.find(b=>b.id===v.target);b.y=.6+Math.sin(i*.05)*.08;
+   result=L.foxStep(s,v,.05,()=>side);v=result.visitor;
+  }
+  assert(v.carrying);const fox=v;
+  while(v){
+   const goal=v.trail.at(-1),before={x:v.x,y:v.y};
+   result=L.foxStep(s,v,.001,()=>side);v=result.visitor;
+   if(v&&v.trail.at(-1)===goal){const cross=(v.x-before.x)*(goal.y-before.y)-(v.y-before.y)*(goal.x-before.x);assert(Math.abs(cross)<1e-10)}
+  }
+  assert.equal(fox.x,entrance.x);assert.equal(fox.y,entrance.y);assert.equal(s.birds.length,2);
+ }
+});
+
+test('fox entry varies along every edge of the farm',()=>{
+ for(let side=0;side<4;side++){
+  const entries=[];
+  for(const along of [.2,.8]){
+   const s=L.create(0);s.birds.push({...s.birds[0],id:'extra'});s.foxWait=L.FOX_WAIT;
+   const rolls=[0,(side+.5)/4,along];const {visitor}=L.foxStep(s,null,.05,()=>rolls.shift());const point=visitor.trail[0];entries.push(point);
+   assert(side===0?point.x<0:side===1?point.x>1:side===2?point.y<0:point.y>1);
+  }
+  assert.notDeepEqual(entries[0],entries[1]);
+ }
+});
