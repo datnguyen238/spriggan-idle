@@ -1,5 +1,5 @@
 /* Quiet, independent focus companions for the farm and meadow. */
-.pomodoro[data-world]{left:50%;bottom:52px;transform:translateX(-50%);width:344px;box-sizing:border-box;z-index:3}
+.pomodoro[data-world]{position:fixed;left:50%;bottom:52px;transform:translateX(-50%);width:344px;box-sizing:border-box;z-index:3}
 .pomodoro[data-world] button{cursor:pointer;appearance:none;-webkit-appearance:none}
 .pomodoro[data-world] .timer-heading{line-height:1.5;letter-spacing:.1em}
 .pomodoro[data-world] .timer-top{gap:8px}
@@ -31,3 +31,13 @@ body:has(.pomodoro[data-world=hex]) .compass{bottom:calc(var(--timer-space,140px
  body:has(.pomodoro[data-world=hex]) .compass{display:none}
 }
 @media(max-height:550px){.pomodoro[data-world]{bottom:40px}.pomodoro[data-world].is-minimized{bottom:40px}body:has(.pomodoro[data-world]) #moment,body:has(.pomodoro[data-world]) .map-note{display:none}}
+
+/* Stack mobile controls above the timer, including when the timer expands. */
+@media(max-width:720px){
+ body:has(.pomodoro[data-world]){--map-timer-bottom:max(40px,calc(env(safe-area-inset-bottom) + 16px));--mobile-controls-bottom:calc(var(--timer-space,120px) - 70px + var(--map-timer-bottom) + 12px)}
+ .pomodoro[data-world],.pomodoro[data-world].is-minimized{bottom:var(--map-timer-bottom)}
+ main .dashboard,main .dashboard.collapsed,main .hex-controls{bottom:var(--mobile-controls-bottom)}
+ main .view-controls{bottom:calc(var(--mobile-controls-bottom) + 64px)}
+ main .dashboard #farm-controls,main .hex-controls .playbar{max-height:calc(100dvh - var(--mobile-controls-bottom) - 88px)}
+ body:has(.pomodoro[data-world=hex]) .map-note{bottom:calc(var(--mobile-controls-bottom) + 8px)}
+}

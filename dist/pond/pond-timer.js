@@ -69,6 +69,6 @@
   document.addEventListener('visibilitychange',()=>{chime.visibility(document.hidden&&SprigganRuntime.mobile);if(!document.hidden||!SprigganRuntime.mobile)draw()});
   window.addEventListener('pagehide',()=>chime.visibility(true));
   window.addEventListener('pageshow',()=>{chime.visibility(document.hidden&&SprigganRuntime.mobile);draw()});
-  new ResizeObserver(()=>{document.querySelector('main').style.setProperty('--timer-space',`${root.offsetHeight+70}px`)}).observe(root);
+  new ResizeObserver(()=>{(root.dataset.world?document.body:document.querySelector('main')).style.setProperty('--timer-space',`${root.offsetHeight+70}px`)}).observe(root);
   draw();setInterval(()=>{if(!document.hidden||!SprigganRuntime.mobile)draw()},250);
 })();
