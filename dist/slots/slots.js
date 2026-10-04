@@ -32,9 +32,8 @@ function sync(){
  $('#reward-badge').textContent=pending?'A FRIEND IS WAITING':counts.claimed?'AT HOME IN YOUR WORLD':`A FRIEND FOR YOUR ${destination.shortName.toUpperCase()}`;
  $('#reward-name').textContent=destination.title;
  $('#reward-description').textContent=destination.description;
- $('#reward-count').textContent=[pending?`${pending} waiting`:'',counts.claimed?`${counts.claimed} welcomed`:''].filter(Boolean).join(' · ');
+ $('#reward-count').textContent=pending?`${pending} waiting`:'';
  $('#claim-status').textContent=claimMessage;
- $('#visit').hidden=!unlocked;$('#visit').href=destination.href;$('#visit-label').textContent=`Visit your ${destination.shortName}`;
  $('#sound').textContent=state.settings.sound?'Sound on':'Sound off';$('#sound').setAttribute('aria-pressed',String(state.settings.sound));
  $('#motion').textContent=motion()?'Motion on':'Motion off';$('#motion').setAttribute('aria-pressed',String(motion()));
  $('#save-status').textContent=storageOK?'Saved in this browser':'Storage unavailable · seeds have not been spent';
@@ -71,6 +70,11 @@ function claimReward(map){
   const handlers={claimCow:()=>Life.claimCow(state,localStorage,FarmLife),claimGolden:()=>Life.claimGolden(state,localStorage,PondLife)};
   const result=handlers[Life.destination(map).claim]();
   const messages={claimed:`${friend(map)} is home. Go say hello.`,existing:'This friend is already home.',full:'Your pond is full. Make room for a koi, then claim Kin.',invalid:'Your map save could not be read. It has not been changed.','storage-error':'Could not save your prize. Please try again. Your friend is still waiting.',locked:'Match three to welcome this friend.'};
+  if(result.status==='claimed'||result.status==='existing'){
+   const target=new URL(Life.destination(map).href,location.href);
+   try{sessionStorage.setItem('spriggan.map-entry',JSON.stringify({path:target.pathname,at:Date.now()}))}catch{}
+   location.assign(target.href);return;
+  }
   claimMessage=messages[result.status];
   if(state.lastResult?.map===map)describe(state.lastResult);
   if($('#result').dataset.map===map){$('#result-detail').textContent=claimMessage;$('#result-detail').hidden=false}

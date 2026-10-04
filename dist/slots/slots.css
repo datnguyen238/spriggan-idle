@@ -18,7 +18,7 @@
 #visit:hover{text-decoration:underline}#visit .nav-arrow{display:block;flex:0 0 16px;width:16px;height:16px}
 .reward[data-ready=true]{background:#f0f3e7;border-color:#95ac83}
 .reward[data-ready=true] #claim{box-shadow:none}
-#claim-status:empty,.reward-count:empty,.reward-actions:has(#claim[hidden]):has(#visit[hidden]){display:none}
+#claim-status:empty,.reward-count:empty,.reward-actions:has(#claim[hidden]){display:none}
 #claim[hidden],.claim-hint[hidden]{display:none}
 .result{max-width:590px;margin:34px auto 0;padding:16px 20px;min-height:80px;border-radius:14px;align-items:center}
 .result[data-kind=triple]{background:#f6eed6;border:1px solid #b7a67566}
