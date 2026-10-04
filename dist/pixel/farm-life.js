@@ -54,7 +54,7 @@ function foxStep(s,visitor,dt,random=Math.random){
  visitor.left=x<visitor.x;visitor.trail.push({x:visitor.x,y:visitor.y});
  if(distance<=travel){
   visitor.x=x;visitor.y=y;
-  const lost=removeBird(s,target.id);visitor.carrying=lost?{name:lost.name,sex:lost.sex}:null;visitor.leaving=true;return{visitor,lost};
+  const lost=removeBird(s,target.id);visitor.carrying=lost?{...lost}:null;visitor.leaving=true;return{visitor,lost};
  }
  visitor.x+=(x-visitor.x)*travel/distance;visitor.y+=(y-visitor.y)*travel/distance;return{visitor};
 }

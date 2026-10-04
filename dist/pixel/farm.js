@@ -100,12 +100,12 @@ function background(){
  fence(W*.13,H*.87,W*.3);fence(W*.59,H*.87,W*.27);
  rect(W*.13,H*.36,2,H*.5,'#af965e');rect(W*.86,H*.36,2,H*.5,'#af965e');
 }
-function chicken(b){
- const m=walk.get(b.id),small=b.stage==='chick',moving=m?.moving,phase=m?.phase||0;
+function chicken(b,carried=false){
+ const m=carried?null:walk.get(b.id),small=b.stage==='chick',moving=m?.moving,phase=m?.phase||0;
  const step=Math.sin(clock*11+phase),bob=moving&&step>0?1:0;
- const blink=(clock+phase)%5.7>5.52,peck=!moving&&(clock+phase)%4.8>4.3;
- ctx.save();ctx.translate(Math.round(b.x*W),Math.round(b.y*H));if(m?.left)ctx.scale(-1,1);
- rect(small?-5:-8,4,small?11:17,2,'#39563c40');
+ const blink=(clock+phase)%5.7>5.52,peck=!carried&&!moving&&(clock+phase)%4.8>4.3;
+ ctx.save();if(!carried)ctx.translate(Math.round(b.x*W),Math.round(b.y*H));if(m?.left)ctx.scale(-1,1);
+ if(!carried)rect(small?-5:-8,4,small?11:17,2,'#39563c40');
  const foot=moving?Math.round(step):0;
  rect(small?-2:-4,3,2,3+foot,'#d79950');rect(small?2:4,3,2,3-foot,'#d79950');
  ctx.translate(0,bob+(peck?1:0));
@@ -131,7 +131,7 @@ function chicken(b){
   rect(8,-7,4,2,'#edb46b');rect(9,-5,2,1,'#cb904e');rect(6,-3,2,2,'#dc8778');rect(5,-4,2,1,'#efb1a0');
   if(blink)rect(5,-8,2,1,'#493f32');else{rect(5,-10,2,3,'#493f32');rect(5,-10,1,1,'#fffdf0')}
  }
- if(selected===b.id){rect(-9,9,18,1,'#fff0b4');rect(-10,8,1,1,'#fff0b4');rect(9,8,1,1,'#fff0b4')}
+ if(!carried&&selected===b.id){rect(-9,9,18,1,'#fff0b4');rect(-10,8,1,1,'#fff0b4');rect(9,8,1,1,'#fff0b4')}
  ctx.restore();
 }
 function cow(b){
@@ -161,13 +161,9 @@ function fox(){
  rect(9,-5,9,4,'#fff0cf');rect(16,-5,3,2,'#453e35');rect(12,-9,2,2,'#3c3d32');rect(12,-9,1,1,'#fff3dc');
  const step=Math.round(Math.sin(f.phase*12));rect(-6,4,3,3+step,'#644a36');rect(6,4,3,3-step,'#644a36');
  if(f.carrying){
-  // A full, recognizable chicken held gently by its back, with dangling feet.
-  const cream=f.carrying.sex==='hen'?'#fff8e5':'#f8dfb0',sway=Math.round(Math.sin(f.phase*8));
-  ctx.save();ctx.translate(18,5+sway);
-  rect(-8,-5,15,10,'#bea582');rect(-7,-6,13,11,cream);rect(-9,-3,17,6,cream);
-  rect(-10,-6,4,5,'#eddbb8');rect(-11,-8,3,4,cream);rect(4,-9,7,9,cream);
-  rect(5,-12,2,4,'#d86c59');rect(8,-11,2,3,'#d86c59');rect(10,-6,4,2,'#e6a957');rect(8,-7,1,2,'#493f32');
-  rect(-3,-1,6,4,'#e8d6b5');rect(-2,5,2,4,'#d79950');rect(4,5,2,4,'#d79950');rect(-3,8,4,1,'#d79950');rect(3,8,4,1,'#d79950');ctx.restore();
+  // Reuse the exact flock sprite, including the hen/rooster coloring and tail.
+  const sway=Math.round(Math.sin(f.phase*8));
+  ctx.save();ctx.translate(24,12+sway);chicken(f.carrying,true);ctx.restore();
  }
  ctx.restore();
 }
