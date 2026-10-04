@@ -1,8 +1,8 @@
 /* Deadline-based Pomodoro: background throttling never slows the countdown. */
 (()=>{
   'use strict';
-  const KEY='spriggan.timer.v1',DURATIONS={focus:25*60000,short:5*60000,long:15*60000};
-  function create(){return{version:1,mode:'focus',remaining:DURATIONS.focus,endsAt:null,completed:0,collapsed:false,chime:true}}
+  const KEY='spriggan.timer.v1',DURATIONS={focus:50*60000,short:5*60000,long:15*60000};
+  function create(){return{version:2,mode:'focus',remaining:DURATIONS.focus,endsAt:null,completed:0,collapsed:false,chime:true}}
   function remaining(state,now=Date.now()){return Math.max(0,state.endsAt===null?state.remaining:state.endsAt-now)}
   function advance(state,now=Date.now()){
     if(state.endsAt===null||remaining(state,now)>0)return null;
@@ -20,8 +20,8 @@
   function decode(raw){
     try{
       const state=JSON.parse(raw);
-      if(!state||state.version!==1||!Object.prototype.hasOwnProperty.call(DURATIONS,state.mode)||!Number.isFinite(state.remaining)||state.remaining<=0||state.remaining>DURATIONS[state.mode]||!(state.endsAt===null||Number.isFinite(state.endsAt))||!Number.isInteger(state.completed)||state.completed<0||state.completed>1000000)return create();
-      return{version:1,mode:state.mode,remaining:state.remaining,endsAt:state.endsAt,completed:state.completed,collapsed:state.collapsed===true,chime:state.chime!==false};
+      if(!state||![1,2].includes(state.version)||!Object.prototype.hasOwnProperty.call(DURATIONS,state.mode)||!Number.isFinite(state.remaining)||state.remaining<=0||state.remaining>DURATIONS[state.mode]||!(state.endsAt===null||Number.isFinite(state.endsAt))||!Number.isInteger(state.completed)||state.completed<0||state.completed>1000000)return create();
+      return{version:2,mode:state.mode,remaining:state.version===1&&state.mode==='focus'&&state.endsAt===null&&state.remaining===25*60000?DURATIONS.focus:state.remaining,endsAt:state.endsAt,completed:state.completed,collapsed:state.collapsed===true,chime:state.chime!==false};
     }catch{return create()}
   }
   const api={KEY,DURATIONS,create,remaining,advance,toggle,select,decode};
