@@ -20,7 +20,7 @@ Then visit http://localhost:8000. Stop the server with Ctrl+C.
 - Add a koi (up to 12), or choose **Remove a koi** and click the fish to remove. Escape cancels removal.
 - Pause or resume, switch between daylight and moonlight, and adjust the swimming pace.
 - Soft lily pads and lotus blossoms follow broad, gentle currents; leafy branches gently sway. Plain and flowering pads gently bounce away from one another and the pond edges instead of overlapping. Pause freezes their movement too.
-- Toggle rain visuals with **Add rain**. Use the speaker button for rain sound and the volume slider to adjust it.
+- Toggle rain visuals and sound together with **Add rain**. Use **Remove rain** to stop both, or set rain volume to zero for silent rain.
 - **Nature sounds** plays the included cricket recording in both daylight and moonlight. **Gentle music** adds a soft, original generated melody. These layers work alongside rain and start only after a click.
 - Space pauses or resumes when focus is outside the controls.
 - Hide or show the control panel without losing your pond settings.
@@ -117,3 +117,15 @@ Music preference and volume are stored separately in `spriggan.farm.music.v1`. A
 ### Fox visits
 
 While the farm is visible and animation is running, a fox visits after two minutes with eligible adult chickens in the yard. It enters from a random position on any of the four sides, automatically catches and permanently removes one adult, then visibly carries the chicken out of the yard at a slower pace, retracing its exact approach route. There is no warning or dismissal interaction. The last adult hen and rooster, chicks, eggs, and cows are protected. The active countdown is saved with the farm; hidden tabs and time away do not advance it or cause offline losses. A visit in progress restarts its waiting period on reload.
+
+## Rain in the farm and meadow
+
+Sunny Side Farm and Clover Keep have an Add rain toggle and separate volume slider in their controllers. The farm uses pixel raindrops and small ground splashes; the meadow uses fine diagonal rain and river ripples, with colors adjusted for moonlight. Reduced-motion settings keep only the subtle rain tint. Pausing a map freezes its rain animation.
+
+Both maps use `shared/map-rain.js` and the pond’s existing `pond-rain-loop.js` and `rain-seamless.wav`; there is no duplicate recording. Preferences save separately as `spriggan.farm.rain.v1` and `spriggan.hex.rain.v1`. Saved sound waits for an interaction after reload, with a Resume rain button if needed. Rain continues across desktop tab switches, pauses on mobile when hidden, and retries on return. Browsers may require a tap to resume audio. Rain does not change feeding, growth, combat, or other game rules.
+
+## Farm and meadow Pomodoro
+
+Both maps include a minimized focus timer at the bottom center. Expand it for 50-minute focus, 5-minute rest, and 15-minute unwind sessions; every fourth completed focus selects the longer break. Breaks wait for you to start them. The farm uses square edges, monospace digits, and a wheat motif; Clover Keep uses a rounded green card and leaf motif. Both reuse the pond’s deadline-based timer and gentle completion chime with a mute control.
+
+Each map saves its timer independently (`spriggan.farm.timer.v1` and `spriggan.hex.timer.v1`), including paused/running state, session count, minimization, and chime preference. The pond retains `spriggan.timer.v1`. Reloads preserve deadlines. On mobile, background completion is processed on return; desktop timers continue updating when hidden, subject to browser suspension. Starting a timer unlocks its chime. No game progress is changed.

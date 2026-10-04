@@ -1,0 +1,33 @@
+/* Quiet, independent focus companions for the farm and meadow. */
+.pomodoro[data-world]{left:50%;bottom:52px;transform:translateX(-50%);width:344px;box-sizing:border-box;z-index:3}
+.pomodoro[data-world] button{cursor:pointer;appearance:none;-webkit-appearance:none}
+.pomodoro[data-world] .timer-heading{line-height:1.5;letter-spacing:.1em}
+.pomodoro[data-world] .timer-top{gap:8px}
+.pomodoro[data-world] .timer-icon{flex-shrink:0;align-items:center;justify-content:center}
+.pomodoro[data-world] #timer-summary{white-space:nowrap;font:10px monospace}
+.pomodoro[data-world=pixel]{border-radius:6px;background:#294333f5;border-color:#d5e3b780;box-shadow:3px 3px 0 #18322466;color:#fff}
+.pomodoro[data-world=pixel] .timer-heading,.pomodoro[data-world=pixel] .timer-modes button,.pomodoro[data-world=pixel] .timer-action,.pomodoro[data-world=pixel] #timer-label{font-family:monospace}
+.pomodoro[data-world=pixel] .timer-icon,.pomodoro[data-world=pixel] .timer-action,.pomodoro[data-world=pixel] .timer-modes,.pomodoro[data-world=pixel] .timer-modes button,.pomodoro[data-world=pixel] .timer-dot{border-radius:3px}
+.pomodoro[data-world=pixel] #timer-time{font:32px/1.1 monospace;letter-spacing:-2px}
+.pomodoro[data-world=pixel] .timer-action{background:#d9e7bd;color:#294333}
+.pomodoro[data-world=pixel] .timer-leaf svg{stroke-linecap:square;stroke-linejoin:miter}
+.pomodoro[data-world=hex]{background:#243f35f5;border-color:#d8e6c84d;border-radius:16px;color:#f1efda}
+.pomodoro[data-world=hex] .timer-action{background:#c4d8b2;color:#263f32}
+.pomodoro[data-world=hex] .timer-leaf svg{stroke:#c4d8b2}
+body:has(.pomodoro[data-world=pixel]) #moment{bottom:var(--timer-space,140px)}
+body:has(.pomodoro[data-world=pixel]) .scene-label,body:has(.pomodoro[data-world=pixel]) .farm-edge{display:none}
+body:has(.pomodoro[data-world=hex]) .map-note{bottom:var(--timer-space,140px)}
+body:has(.pomodoro[data-world=hex]) .compass{bottom:calc(var(--timer-space,140px) + 50px)}
+@media(max-width:720px){
+ .pomodoro[data-world]{bottom:160px;width:min(344px,calc(100% - 36px));padding:12px 14px}
+ .pomodoro[data-world].is-minimized{bottom:160px;width:min(344px,calc(100% - 36px));padding:8px 10px}
+ .pomodoro[data-world].is-minimized .timer-heading{font-size:7px;max-width:82px}
+ .pomodoro[data-world] .timer-heading{font-size:8px}
+ .pomodoro[data-world] #timer-summary{font-size:9px}
+ .pomodoro[data-world] .timer-top{gap:5px}
+ body:has(.pomodoro[data-world=pixel]) #moment{top:140px;bottom:auto}
+ body:has(.pomodoro[data-world=hex]) .map-note{bottom:115px;max-width:calc(100% - 160px)}
+ body:has(.pomodoro[data-world=hex]:not(.is-minimized)) .map-note{visibility:hidden}
+ body:has(.pomodoro[data-world=hex]) .compass{display:none}
+}
+@media(max-height:550px){.pomodoro[data-world]{bottom:40px}.pomodoro[data-world].is-minimized{bottom:40px}body:has(.pomodoro[data-world]) #moment,body:has(.pomodoro[data-world]) .map-note{display:none}}

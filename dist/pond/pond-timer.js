@@ -27,13 +27,14 @@
   const api={KEY,DURATIONS,create,remaining,advance,toggle,select,decode};
   if(typeof module!=='undefined'&&module.exports){module.exports=api;return}
   const root=document.querySelector('#pomodoro');if(!root)return;
-  let state=create();try{state=decode(localStorage.getItem(KEY))}catch{}
+  const storageKey=root.dataset.storageKey||KEY;
+  let state=create();try{const saved=localStorage.getItem(storageKey);state=decode(saved);if(!saved&&root.dataset.startCollapsed==='true')state.collapsed=true}catch{}
   const time=root.querySelector('#timer-time'),action=root.querySelector('#timer-action'),reset=root.querySelector('#timer-reset'),collapse=root.querySelector('#timer-collapse');
   const status=root.querySelector('#timer-status'),ring=root.querySelector('#timer-progress'),summary=root.querySelector('#timer-summary'),label=root.querySelector('#timer-label');
   const dots=[...root.querySelectorAll('.timer-dot')],modes=[...root.querySelectorAll('[data-timer-mode]')],originalTitle=document.title;
   const chime=new PondTimerChime(),chimeButton=root.querySelector('#timer-chime');
   const labels={focus:'Focus softly',short:'A little breathing room',long:'A longer exhale'};
-  function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch{}}
+  function save(){try{localStorage.setItem(storageKey,JSON.stringify(state))}catch{}}
   function completed(finished){
     status.textContent=finished==='focus'?'Focus complete. Take a breath.':'Break complete. Begin when you’re ready.';save();if(state.chime)chime.play();
   }

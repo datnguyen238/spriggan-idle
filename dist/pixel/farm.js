@@ -48,6 +48,7 @@ function recoverMusic(){if(farmAudio.enabled&&farmAudio.needsResume&&!document.h
 document.addEventListener('pointerdown',recoverMusic,{passive:true});
 document.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')recoverMusic()});
 
+const rain=new MapRain(document.querySelector('[data-map-rain]'),'spriggan.farm.rain.v1','pixel');
 let noticeUntil=Date.now()+7000;
 function notice(text){moment.textContent=text;noticeUntil=Date.now()+7000}
 function receiveCow(){
@@ -167,7 +168,7 @@ function fox(){
  }
  ctx.restore();
 }
-function draw(){background();for(const g of grain){rect(g.x*W,g.y*H,2,1,'#e5cc83');rect(g.x*W+1,g.y*H-1,1,1,'#fbdf96')}const objects=[...(foxVisitor?[{y:foxVisitor.y,draw:fox}]:[]),...animals().map(b=>({y:b.y,draw:()=>b.species==='cow'?cow(b):chicken(b)})),...state.eggs.map(e=>({y:e.y,draw:()=>egg(e)}))];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(const h of hearts){const x=h.x*W,y=h.y*H-(1-h.life)*15;ctx.globalAlpha=h.life;rect(x-2,y-1,2,2,'#bc7962');rect(x+1,y-1,2,2,'#bc7962');rect(x-1,y+1,3,2,'#bc7962');rect(x,y+3,1,1,'#bc7962');ctx.globalAlpha=1}}
+function draw(){background();for(const g of grain){rect(g.x*W,g.y*H,2,1,'#e5cc83');rect(g.x*W+1,g.y*H-1,1,1,'#fbdf96')}const objects=[...(foxVisitor?[{y:foxVisitor.y,draw:fox}]:[]),...animals().map(b=>({y:b.y,draw:()=>b.species==='cow'?cow(b):chicken(b)})),...state.eggs.map(e=>({y:e.y,draw:()=>egg(e)}))];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(const h of hearts){const x=h.x*W,y=h.y*H-(1-h.life)*15;ctx.globalAlpha=h.life;rect(x-2,y-1,2,2,'#bc7962');rect(x+1,y-1,2,2,'#bc7962');rect(x-1,y+1,3,2,'#bc7962');rect(x,y+3,1,1,'#bc7962');ctx.globalAlpha=1}if(rain.enabled)rain.draw(ctx,W,H,clock,{top:-sceneTop,bottom:H+sceneBottom,splashes:Array.from({length:12},(_,i)=>({x:W*(.2+(i*7%11)/18),y:H*(.43+(i*3%7)/20)}))})}
 function scatter(x=.5,y=.62){if(grain.length>=60)return notice('Plenty of grain already. Let them finish a little.');for(let i=0;i<10&&grain.length<60;i++)grain.push({x:Math.max(.17,Math.min(.82,x+(Math.random()-.5)*.13)),y:Math.max(.4,Math.min(.82,y+(Math.random()-.5)*.1)),life:60});notice('A little grain, a little gathering.');draw()}
 function inspect(){if(!selected)return;const b=animals().find(b=>b.id===selected),e=state.eggs.find(e=>e.id===selected);if(!b&&!e){card.hidden=true;selected=null;return}card.hidden=false;document.querySelector('#bird-name').textContent=b?b.name:'A warm little egg';let detail;
  if(e)detail=`Hatching in ${Math.max(1,Math.ceil((e.hatchesAt-Date.now())/1000))} seconds. A tiny life is on its way.`;

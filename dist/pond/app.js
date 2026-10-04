@@ -449,6 +449,7 @@
     if(raining&&!rainDrops.length)rainDrops=Array.from({length:36},()=>({x:0,ly:0,y:0,v:0,fall:false,wait:rand(0,2)}));
     rainFxBtn.setAttribute('aria-pressed',raining);
     rainFxBtn.querySelector('span').textContent=raining?'Remove rain':'Add rain';
+    audio.toggle('rain',raining);
     dirty=true;queueSave();
   };
   nightBtn.onclick=()=>{night=!night;nightBtn.querySelector('span').textContent=night?'Daylight':'Moonlight';nightBtn.title=night?'Switch to daylight':'Switch to moonlight';nightBtn.setAttribute('aria-pressed',night);document.querySelector('main').dataset.night=night;document.querySelector('#light-label').textContent=night?'Moonlight':'Daylight';buildLayers();queueSave();dirty=true};
@@ -597,13 +598,11 @@
       ctx.restore();
     }
   }
-  const soundBtn=document.querySelector('#sound'),ambientBtn=document.querySelector('#ambient'),musicBtn=document.querySelector('#music');
+  const ambientBtn=document.querySelector('#ambient'),musicBtn=document.querySelector('#music');
   const rainVolInput=document.querySelector('#rainvol'),rainVolValue=document.querySelector('#rainvol-value'),resumeAudioBtn=document.querySelector('#resume-audio');
-  let audioPreferences={...pond.settings.audio};
+  let audioPreferences={...pond.settings.audio,rain:raining};
   const audio=new PondAudio(enabled=>{
-    audioPreferences={...enabled};
-    soundBtn.setAttribute('aria-pressed',enabled.rain);soundBtn.setAttribute('aria-label',enabled.rain?'Turn off rain sound':'Turn on rain sound');
-    soundBtn.querySelector('svg').innerHTML=enabled.rain?'<path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>':'<path d="M11 5 6 9H3v6h3l5 4Z"/><path d="m16 9 5 6m0-6-5 6"/>';
+    audioPreferences={...enabled,rain:raining};
     ambientBtn.setAttribute('aria-pressed',enabled.ambient);musicBtn.setAttribute('aria-pressed',enabled.music);
     ambientBtn.querySelector('span').textContent=enabled.ambient?'Nature sounds on':'Nature sounds';
     musicBtn.querySelector('span').textContent=enabled.music?'Music on':'Gentle music';
@@ -626,12 +625,11 @@
     const interrupted=audio.enabled[name]&&!audio.loading.has(name)&&!audio.isPlaying(name);
     audio.toggle(name,interrupted||!audio.enabled[name]);
   }
-  soundBtn.onclick=()=>toggleSound('rain');
   ambientBtn.onclick=()=>toggleSound('ambient');
   musicBtn.onclick=()=>toggleSound('music');
   resumeAudioBtn.onclick=resumeSavedAudio;
   document.addEventListener('click',e=>{
-    if(e.target.closest?.('#sound,#ambient,#music,#resume-audio'))return;
+    if(e.target.closest?.('#rainfx,#ambient,#music,#resume-audio'))return;
     if(Object.values(audioPreferences).some(Boolean)&&(!Object.values(audio.enabled).some(Boolean)||audio.needsResume))resumeSavedAudio();
   });
   rainVolInput.oninput=()=>{const value=Number(rainVolInput.value);rainVolValue.textContent=`${value}%`;audio.setVolume(value);queueSave()};
