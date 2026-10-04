@@ -69,9 +69,9 @@
     [hidden]{display:none!important}
     @media(max-width:720px){.pond-moment{left:28px;bottom:auto;top:280px;max-width:160px;font-size:10px}.intro .intro-copy{margin-top:8px}.intro .memory-line{font-size:9px;max-width:210px;margin-top:6px}}
     @media(prefers-reduced-motion:reduce){.pond-moment{transition:none}}
-    .worlds-link{pointer-events:auto;color:#eee7cf;text-decoration:none;font-size:10px;letter-spacing:.04em;min-height:44px;display:inline-flex;align-items:center;padding:0 10px;border-radius:22px}
-    .worlds-link:hover{background:#e8e5c312}.worlds-link:focus-visible{outline:2px solid #e0d3a5;outline-offset:3px}
-    @media(max-width:720px){.worlds-link{position:absolute;right:22px;top:79px;font-size:9px}}
+    .worlds-link{pointer-events:auto;color:#f8f1dc;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.04em;min-height:44px;display:inline-flex;align-items:center;gap:7px;padding:0 16px;border:1px solid #e5dfbd80;background:#23483ee6;box-shadow:0 3px 14px #071f2440;border-radius:22px;white-space:nowrap}
+    .worlds-link:hover{background:#365d4e}.worlds-link:focus-visible{outline:2px solid #e0d3a5;outline-offset:3px}
+    @media(max-width:720px){.header-right{position:absolute;right:22px;top:76px;gap:12px}.header-right .top-note{display:flex;white-space:nowrap;font-size:9px}.worlds-link{font-size:10px;padding:0 13px}}
   </style>
   <link rel="stylesheet" href="./pond-timer.css?v=chime-1">
 <link rel="stylesheet" href="../shared/map-controls.css">
@@ -85,8 +85,8 @@
   <header>
     <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 17c6-9 15-9 22-2-7 8-16 9-22 2Z"/><path d="m6 17-3-5v9l3-4M12 13l4-5m-4 12 5 3"/><circle cx="23" cy="15" r="1" fill="currentColor"/></svg></span><div><h1>Spriggan</h1><small>Your personal space of peace</small></div></div>
     <div class="header-right">
+      <div class="top-note"><span class="live-dot"></span><span id="light-label">Daylight</span></div>
       <a class="worlds-link" href="../">All worlds <svg class="nav-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
-      <div class="top-note"><span class="live-dot"></span><span id="light-label">Daylight</span><span class="note-long">&nbsp; / &nbsp; No hurry here</span></div>
     </div>
   </header>
   <div class="intro"><p class="eyebrow">A small escape, whenever you need it</p><h2>A little pause.<br><em>A little peace.</em></h2><p class="intro-copy">Let the world wait a moment.<br>There’s nowhere else you need to be.</p><p class="memory-line" id="pond-memory">Your pond is saved on this device.</p></div>
