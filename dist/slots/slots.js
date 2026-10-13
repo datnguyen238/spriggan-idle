@@ -9,7 +9,7 @@ const friend=map=>Life.destination(map).friend;
 for(const map of Life.DESTINATIONS){const option=document.createElement('option');option.value=map.id;option.textContent=map.name;mapSelect.append(option)}
 const label=(id,map)=>id==='friend'?friend(map):Life.SYMBOLS.find(s=>s.id===id).label;
 const motion=()=>state.settings.motion&&!reduce.matches;
-function read(){try{const saved=Life.decode(localStorage.getItem(Life.KEY));if(saved)state=saved}catch{storageOK=false}}
+function read(){try{const raw=localStorage.getItem(Life.KEY),saved=Life.decode(raw);if(raw!==null&&!saved){storageOK=false;return false}if(saved)state=saved;return true}catch{storageOK=false;return false}}
 function save(){try{state.savedAt=Date.now();localStorage.setItem(Life.KEY,JSON.stringify(state));storageOK=true;return true}catch{storageOK=false;return false}}
 function message(title,detail,kind='',map=state.selectedMap){ $('#result-title').textContent=title;$('#result-detail').textContent=detail;$('#result-detail').hidden=!detail;$('#result').dataset.kind=kind;$('#result').dataset.map=map;syncAnnouncement() }
 function syncAnnouncement(){
@@ -46,19 +46,20 @@ function syncEmptyNotice(){
  if(!ready||busy||animation||document.hidden||emptyNoticeFor===state.refillAt)return;
  emptyNoticeFor=state.refillAt;dialog.showModal();
 }
+document.querySelector('.earn-seeds').onclick=()=>{try{sessionStorage.setItem('spriggan.map-entry',JSON.stringify({path:new URL('../dumplings/',location.href).pathname,at:Date.now()}))}catch{}};
 $('#seed-dialog-close').onclick=()=>$('#seed-dialog').close();
-async function transaction(fn){if(busy)return;busy=true;sync();try{return await lock(()=>{read();return fn()})}finally{busy=false;sync()}}
+async function transaction(fn){if(busy)return;busy=true;sync();try{return await lock(()=>{if(!read())return;return fn()})}finally{busy=false;sync()}}
 function describe(r){
  const counts=Life.reward(state,r.map),waiting=counts.won>counts.claimed;
  const title=r.kind==='triple'?(waiting?`${friend(r.map)} is yours to welcome home.`:`${friend(r.map)} is home. Roll again for another.`):r.kind==='pair'?'A matching pair. 20 seeds won.':'Three different symbols. A quiet turn.';
  message(title,r.kind==='triple'?(waiting?`A new friend for your ${Life.destination(r.map).shortName}.`:'A little luck, a new friend.'):r.kind==='pair'?'':'10 seeds spent · 0 returned',r.kind,r.map);
 }
 function finish(){if(!animation)return;const r=animation.result;animation=null;$('#machine').classList.remove('spinning');paint(r.symbols,r.map);read();sync();describe(r);if(r.kind==='triple')chime()}
-function animate(now){if(!animation)return;const elapsed=now-animation.start;if(elapsed>=2100){finish();return}if(now-lastFrame>110){lastFrame=now;paint(Life.SYMBOLS.slice(0,3).map((_,i)=>Life.SYMBOLS[(Math.floor(elapsed/110)+i*2)%6].id),animation.result.map);names.forEach(n=>n.textContent='· · ·')}requestAnimationFrame(animate)}
+function animate(now){if(!animation)return;const elapsed=Math.max(0,now-animation.start);if(elapsed>=2100){finish();return}if(now-lastFrame>110){lastFrame=now;paint(Life.reelSymbols(elapsed),animation.result.map);names.forEach(n=>n.textContent='· · ·')}requestAnimationFrame(animate)}
 async function start(){if(animation||busy)return;await transaction(()=>{
  const before=JSON.stringify(state),r=Life.spin(state);if(!r){save();return}
  if(!save()){state=Life.decode(before);message('A little pause.','Enable browser storage before spending seeds.');return}
- claimMessage='';animation={result:r,start:performance.now(),spentBalance:state.balance-r.payout};$('#machine').classList.add('spinning');message('A little luck in motion.','Your result is saved while the reels turn.');
+ claimMessage='';lastFrame=-Infinity;animation={result:r,start:performance.now(),spentBalance:state.balance-r.payout};$('#machine').classList.add('spinning');message('A little luck in motion.','Your result is saved while the reels turn.');
  if(motion())requestAnimationFrame(animate);else finish();
  })}
 $('#spin').onclick=$('#lever').onclick=start;
