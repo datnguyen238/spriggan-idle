@@ -163,8 +163,8 @@
  // Lay out complete object groups together, including the open lid and waiting tray.
  // Reserve the bottom UI strip even when the tray is empty, so cooking never shifts the table.
  const workTop=tableY+(phone?22:26),workBottom=phone?Math.min(front-16,h-(h<650?155:185)):Math.min(front-16,h-(h<500?70:155));
- const room=Math.max(65,workBottom-workTop),unit=Math.min((w-(phone?28:72))/(phone?620:900),room/400);
- const origin=(w-(phone?620:900)*unit)/2,centerY=workTop+room/2;
+ const room=Math.max(65,workBottom-workTop),unit=Math.min((w-(phone?28:72))/(phone?620:900),room/(phone?400:340));
+ const origin=(w-(phone?620:900)*unit)/2,centerY=workTop+room/2-(phone?0:40*unit);
  const board={x:origin+(phone?172:326)*unit,y:centerY,k:unit*(phone?1:1.06)};
  const basket={x:origin+(phone?496:720)*unit,y:centerY,k:unit*(phone?1:1.2)};
  const ingredient={x:phone?board.x-72*unit:origin+60*unit,y:centerY-(phone?157:49)*unit,k:unit*.87};
