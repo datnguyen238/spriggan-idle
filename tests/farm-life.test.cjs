@@ -62,3 +62,24 @@ test('fox entry varies along every edge of the farm',()=>{
   assert.notDeepEqual(entries[0],entries[1]);
  }
 });
+
+test('a cow-only farm never starts a fox visit, even with an overdue countdown',()=>{
+ const s=L.create(0);s.birds=[];s.cows=[L.makeCow(0)];s.foxWait=L.FOX_WAIT;
+ for(let i=0;i<2000;i++)assert.equal(L.foxStep(s,null,.1).visitor,null);
+ assert.equal(s.cows.length,1);assert.equal(s.foxWait,0);assert.deepEqual(L.decode(JSON.stringify(s),0).cows,s.cows);
+});
+test('a fox abandons a target that becomes the last adult of its sex during pursuit',()=>{
+ const s=L.create(0);s.birds.push({...s.birds[0],id:'extra-hen'});s.foxWait=L.FOX_WAIT;
+ let {visitor}=L.foxStep(s,null,.05,()=>0);
+ const other=s.birds.find(b=>b.sex==='hen'&&b.id!==visitor.target);L.removeBird(s,other.id);
+ for(let i=0;i<1000&&visitor;i++){const result=L.foxStep(s,visitor,.05);assert.equal(result.lost,undefined);visitor=result.visitor}
+ assert.equal(visitor,null);assert.equal(s.birds.filter(b=>b.sex==='hen').length,1);assert.equal(s.birds.filter(b=>b.sex==='rooster').length,1);
+});
+test('repeated fox visits preserve both adult sexes and all chicks, eggs, and cows',()=>{
+ const s=L.create(0);for(let i=0;i<8;i++)s.birds.push({...s.birds[i%2],id:'extra-'+i});
+ s.birds.push({...s.birds[0],id:'protected-chick',stage:'chick'});s.cows=[L.makeCow(0)];s.eggs=[{id:'protected-egg',x:.5,y:.6,laid:0,hatchesAt:L.HATCH}];
+ for(let visit=0;visit<12;visit++){s.foxWait=L.FOX_WAIT;let v=null;for(let i=0;i<700;i++){const result=L.foxStep(s,v,.1,()=>.5);v=result.visitor;if(!v)break}}
+ assert.equal(s.birds.filter(b=>b.stage==='adult'&&b.sex==='hen').length,1);assert.equal(s.birds.filter(b=>b.stage==='adult'&&b.sex==='rooster').length,1);
+ assert.equal(s.birds.find(b=>b.id==='protected-chick').stage,'chick');assert.equal(s.eggs.length,1);assert.equal(s.cows.length,1);
+ const restored=L.decode(JSON.stringify(s),0);assert.equal(restored.birds.length,3);assert.equal(restored.cows.length,1);assert.equal(restored.eggs.length,1);
+});

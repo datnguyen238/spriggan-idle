@@ -24,3 +24,5 @@
 .result[data-kind=triple]{background:#f6eed6;border:1px solid #b7a67566}
 .result .claim-hint{margin-top:5px}
 @media(max-width:600px){.reward{padding:18px;gap:14px}.reward>#reward-art{width:58px;height:58px;border-radius:12px;padding:7px}.reward h2{font-size:21px}.reward-actions{gap:4px 12px}.reward .eyebrow{font-size:6px;letter-spacing:1px}.result{padding:16px 12px}.result strong{line-height:1.4}}
+
+#seed-dialog .earn-seeds{display:block;margin:18px auto;color:#476b56;font:13px/1.5 monospace;text-underline-offset:4px}
