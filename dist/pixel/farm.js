@@ -1,11 +1,13 @@
 (()=>{
 'use strict';
+function boot(){
+const storage=globalThis.SprigganStorage||localStorage;
 const Life=FarmLife,Runtime=SprigganRuntime,canvas=document.querySelector('#farm'),ctx=canvas.getContext('2d',{alpha:false});
-let state;try{state=Life.decode(localStorage.getItem(Life.KEY))}catch{}const returning=!!state;state||=Life.create();
+let state;try{state=Life.decode(storage.getItem(Life.KEY))}catch{}const returning=!!state;state||=Life.create();
 const seenCows=new Set(state.cows.map(c=>c.id));
 const animals=()=>[...state.birds,...state.cows];
 let W=400,H=240,sceneTop=0,sceneBottom=0,last=0,clock=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,selected=null,lastRules=0;
-let foxVisitor=null;
+let foxVisitor=null,significantPending=false;
 const grain=[],walk=new Map(),hearts=[];const moment=document.querySelector('#moment'),card=document.querySelector('#bird-card');
 const musicButton=document.querySelector('#music');
 const resumeAudioButton=document.querySelector('#resume-audio');
@@ -53,13 +55,22 @@ let noticeUntil=Date.now()+7000;
 function notice(text){moment.textContent=text;noticeUntil=Date.now()+7000}
 function receiveCow(){
  try{
-  const incoming=Life.decode(localStorage.getItem(Life.KEY));
+  const incoming=Life.decode(storage.getItem(Life.KEY));
   for(const c of incoming?.cows||[])if(!seenCows.has(c.id)){
    state.cows.push(c);seenCows.add(c.id);notice(`${c.name} has arrived from Golden Seed. A gentle new friend.`);
   }
  }catch{}
 }
-function save(){try{receiveCow();localStorage.setItem(Life.KEY,JSON.stringify(state));document.querySelector('#save-status').textContent='Saved on this device'}catch{document.querySelector('#save-status').textContent='Storage unavailable — this visit only'}}
+function save(significant=false){
+ if(significant===true)significantPending=true;
+ try{receiveCow();storage.setItem(Life.KEY,JSON.stringify(state));document.querySelector('#save-status').textContent='Saved on this device'}
+ catch{document.querySelector('#save-status').textContent='Storage unavailable — this visit only';return false}
+ if(significantPending){
+  significantPending=false;
+  try{void globalThis.SprigganAccounts?.saveProgress?.().catch(()=>{})}catch{}
+ }
+ return true;
+}
 function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
 function resize(){
  const r=canvas.getBoundingClientRect(),density=Math.min(devicePixelRatio||1,2);
@@ -70,7 +81,7 @@ function resize(){
  H=Math.max(80,canvas.height/scale-sceneTop-sceneBottom);
  ctx.setTransform(scale,0,0,scale,0,Math.round(sceneTop)*scale);ctx.imageSmoothingEnabled=false;draw();
 }
-function tree(x,y,s=1){ctx.save();ctx.translate(Math.round(x),Math.round(y));rect(-3,-8,6,23,'#796445');rect(0,1,2,13,'#ad8a53');rect(-18,-24,35,24,'#3d613e');rect(-13,-33,27,12,'#3d613e');rect(-22,-20,41,13,'#3d613e');rect(-16,-26,29,20,'#588349');rect(-10,-32,21,18,'#79a15a');rect(-15,-20,8,5,'#94b774');rect(5,-12,10,5,'#315136');ctx.restore()}
+function tree(x,y){ctx.save();ctx.translate(Math.round(x),Math.round(y));rect(-3,-8,6,23,'#796445');rect(0,1,2,13,'#ad8a53');rect(-18,-24,35,24,'#3d613e');rect(-13,-33,27,12,'#3d613e');rect(-22,-20,41,13,'#3d613e');rect(-16,-26,29,20,'#588349');rect(-10,-32,21,18,'#79a15a');rect(-15,-20,8,5,'#94b774');rect(5,-12,10,5,'#315136');ctx.restore()}
 function fence(x,y,width){rect(x,y+3,width,3,'#a88a54');rect(x,y+10,width,3,'#a88a54');for(let i=0;i<=width;i+=12){rect(x+i,y,3,18,'#d4bd7e');rect(x+i,y,2,2,'#efdaa1');rect(x+i+2,y+2,1,16,'#8e774c')}}
 function background(){
  rect(0,-sceneTop-1,W,H+sceneTop+sceneBottom+2,'#809c60');rect(0,0,W,H*.28,'#718f55');
@@ -82,7 +93,7 @@ function background(){
  for(let i=0;i<36;i++)rect(W*.46+(i*7)%(W*.12),H*.38+(i*13)%(H*.48),2,1,'#a68a5c');
  // Distant hedges and an orchard.
  for(let i=0;i<W;i+=19){rect(i,0,17,12,'#5e804d');rect(i+2,0,12,16,'#769456')}
- tree(W*.09,H*(W>300?.31:.22),.95);tree(W*.91,H*.2,1.1);tree(W*.79,H*.08,.7);
+ tree(W*.09,H*(W>300?.31:.22));tree(W*.91,H*.2);tree(W*.79,H*.08);
  fence(W*.13,H*.34,W*.73);
  // The coop, built from blocks and shingles.
  const x=W*.32,cw=Math.min(68,W*.3),ch=Math.min(46,H*.22),y=H*.34-ch;
@@ -189,19 +200,19 @@ document.querySelector('#remove-bird').onclick=()=>{
  const b=animals().find(b=>b.id===selected);if(!b)return;
  const lastRooster=b.stage==='adult'&&b.sex==='rooster'&&!state.birds.some(other=>other.id!==b.id&&other.stage==='adult'&&other.sex==='rooster');
  if(!confirm(`Remove ${b.name} from your farm?${lastRooster?" Hens need an adult rooster in the yard to lay eggs.":''}`))return;
- if(b.species==='cow')state.cows=state.cows.filter(c=>c.id!==b.id);else Life.removeBird(state,b.id);walk.delete(b.id);selected=null;card.hidden=true;picker.value='';notice(`${b.name} has left the farm.`);ui();save();draw();picker.focus();
+ if(b.species==='cow')state.cows=state.cows.filter(c=>c.id!==b.id);else Life.removeBird(state,b.id);walk.delete(b.id);selected=null;card.hidden=true;picker.value='';notice(`${b.name} has left the farm.`);ui();save(true);draw();picker.focus();
 };
-restart.onclick=()=>{if(state.birds.length||state.eggs.length)return;state.birds=Life.create().birds;notice('Clover & Bramble. A fresh little beginning.');ui();save();draw()};
+restart.onclick=()=>{if(state.birds.length||state.eggs.length)return;state.birds=Life.create().birds;notice('Clover & Bramble. A fresh little beginning.');ui();save(true);draw()};
 function ui(){
  const signature=JSON.stringify(animals().map(b=>[b.id,b.name,b.stage,b.sex]));
  if(signature!==flockOptions){flockOptions=signature;picker.replaceChildren(new Option('Meet a farm friend…',''));for(const b of animals())picker.add(new Option(`${b.name} · ${b.stage==='chick'?'chick':b.sex}`,b.id))}
  picker.value=animals().some(b=>b.id===selected)?selected:'';picker.disabled=!animals().length;restart.hidden=!!(state.birds.length||state.eggs.length);
 document.querySelector('#adults').textContent=state.birds.filter(b=>b.stage==='adult').length;document.querySelector('#chicks').textContent=state.birds.filter(b=>b.stage==='chick').length;document.querySelector('#eggs').textContent=state.eggs.length;inspect();if(Date.now()>noticeUntil)moment.textContent=state.eggs.length?'Something small is on its way.':state.birds.length+state.eggs.length>=Life.LIMIT?'A full little family. Room for 16, love for everyone.':'Feed, hatch, grow. No hurry at all.'}
-function tick(now){const events=Life.advance(state,now);if(events.length)notice(events.at(-1));ui();save()}
+function tick(now){const events=Life.advance(state,now);if(events.length)notice(events.at(-1));ui();save(events.length>0)}
 function update(dt){
  if(!paused){
   // Predation counts only time spent visibly in the farm, never hidden/offline catch-up.
-  if(!document.hidden){const result=Life.foxStep(state,foxVisitor,dt);foxVisitor=result.visitor;if(result.lost){walk.delete(result.lost.id);notice(`A fox caught ${result.lost.name}. It is carrying the chicken away.`);ui();save()}}
+  if(!document.hidden){const result=Life.foxStep(state,foxVisitor,dt);foxVisitor=result.visitor;if(result.lost){walk.delete(result.lost.id);notice(`A fox caught ${result.lost.name}. It is carrying the chicken away.`);ui();save(true)}}
 
   clock+=dt;
   for(const b of animals()){
@@ -220,7 +231,8 @@ function update(dt){
    const dx=(m.x-b.x)*W,dy=(m.y-b.y)*H,d=Math.hypot(dx,dy);
    const reach=b.stage==='chick'?6:10;
    if(target&&d<=reach){
-    grain.splice(grain.indexOf(target),1);Life.feed(b);hearts.push({x:b.x,y:b.y-.04,life:1});m.hasGoal=false;m.moving=false;m.rest=.18;
+    // Batch meals into the next one-second rule save instead of uploading each frame.
+    grain.splice(grain.indexOf(target),1);Life.feed(b);significantPending=true;hearts.push({x:b.x,y:b.y-.04,life:1});m.hasGoal=false;m.moving=false;m.rest=.18;
    }else if(m.hasGoal&&m.rest<=0){
     const sway=target?0:Math.sin(clock*.65+m.phase)*.35;
     const desired=Math.atan2(dy,dx)+sway,delta=Math.atan2(Math.sin(desired-m.angle),Math.cos(desired-m.angle));
@@ -254,5 +266,16 @@ function frame(ts){
  if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}draw();
 }
 window.addEventListener('storage',e=>{if(e.key===Life.KEY){receiveCow();ui();draw()}});
+window.addEventListener('spriggan:flush',save);
 window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your little family is right here.');resize();Runtime.runBackground(update,()=>{const now=performance.now();if(now-lastRules>1000){lastRules=now;tick(Date.now())}},()=>paused);requestAnimationFrame(frame);
+}
+if(globalThis.SprigganWorldLoading)SprigganWorldLoading.start(boot);
+else if(globalThis.SprigganAccounts){
+ let started=false;
+ SprigganAccounts.ready.then(()=>{
+  const start=()=>{const state=SprigganAccounts.state||{};if(started||state.loading||state.worldsReady===false||state.status==='changed')return;started=true;boot();if(typeof globalThis.dispatchEvent==='function'&&typeof Event==='function')globalThis.dispatchEvent(new Event('spriggan:world-ready'))};
+  if(SprigganAccounts.subscribe)SprigganAccounts.subscribe(start);
+  start();
+ });
+}else boot();
 })();

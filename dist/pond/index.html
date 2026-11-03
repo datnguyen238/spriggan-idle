@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="stylesheet" href="../shared/account-nav.css?v=2">
+<script defer src="../shared/account-config.js?v=1"></script>
+<script defer src="../shared/account-storage.js?v=2"></script>
+<script defer src="../shared/account-firebase.js?v=1"></script>
+<script defer src="../shared/accounts.js?v=6"></script>
+
 <script src="../shared/map-entry.js?v=1" data-map-guard></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -14,8 +20,9 @@
   <style>
     :root{font-family:'DM Sans',system-ui,sans-serif;color:#f1eddd;background:#102e2b;font-synthesis:none;color-scheme:dark}
     *{box-sizing:border-box}html,body{height:100%;margin:0}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.4}
-    main{height:100dvh;min-height:640px;position:relative;overflow:hidden;background:#163e36}
+    main{height:100dvh;min-height:640px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 46% 44%,#3c7862 0,#23584b 55%,#112f2d 100%)}
     #pond{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+    main[data-pond-loading] #pond{visibility:hidden}main[data-pond-loading] .bottom,main[data-pond-loading] .intro,main[data-pond-loading] #koi-tag,main[data-pond-loading] #koi-link,main[data-pond-loading] .pond-moment{display:none}.pond-loading{position:absolute;inset:0;z-index:3;display:grid;place-content:center;justify-items:center;text-align:center;padding:110px 26px 180px;background:radial-gradient(ellipse at 50% 45%,#668b6333,transparent 65%);color:#eee9d7}.pond-loading[hidden]{display:none}.pond-loading>div{max-width:330px;padding:27px 25px;border:1px solid #e6ead336;border-radius:18px;background:#143f36d9;box-shadow:0 18px 60px #061e2233}.pond-loading-title{font:500 23px/1.25 'Fraunces',Georgia,serif;margin:0 0 12px}.pond-loading-detail{font-size:12px;line-height:1.7;color:#c7d3bd;margin:0}.pond-loading-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:20px 0 0}.pond-loading-actions a,.pond-loading-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border:1px solid #d8dec078;border-radius:22px;background:#e8e8cc14;color:#eee9d7;font:11px 'DM Sans',system-ui,sans-serif;text-decoration:none}.pond-loading-actions a:focus-visible,.pond-loading-actions button:focus-visible{outline:2px solid #e5d69f;outline-offset:3px}
     .vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 56% 42%,transparent 25%,rgba(5,25,23,.18) 66%,rgba(4,21,20,.72) 100%)}
     .frame{position:absolute;inset:18px;border:1px solid #e6ead31a;border-radius:4px;pointer-events:none}
     header{position:absolute;top:0;left:0;right:0;z-index:2;padding:42px 52px;display:flex;align-items:center;justify-content:space-between;gap:20px;pointer-events:none}
@@ -79,12 +86,14 @@
 <link rel="stylesheet" href="../shared/icons.css?v=1">
 </head>
 <body>
-<main>
+<main data-pond-loading aria-busy="true">
+  <section id="pond-loading" class="pond-loading" role="status" aria-live="polite" aria-atomic="true"><div><p id="pond-loading-title" class="pond-loading-title">Opening your saved pond…</p><p id="pond-loading-detail" class="pond-loading-detail">Your koi will appear when your saved world is ready.</p><p id="pond-loading-actions" class="pond-loading-actions" hidden><a href="../account/">Open Account</a><button id="pond-loading-retry" type="button">Try again</button></p></div></section>
   <canvas id="pond" tabindex="0" aria-label="Animated koi pond. Tap water to feed, or tap a koi to see its name. Use the Meet a koi menu for keyboard access."></canvas>
   <div class="vignette"></div><div class="frame"></div>
   <header>
     <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 17c6-9 15-9 22-2-7 8-16 9-22 2Z"/><path d="m6 17-3-5v9l3-4M12 13l4-5m-4 12 5 3"/><circle cx="23" cy="15" r="1" fill="currentColor"/></svg></span><div><h1>Spriggan</h1><small>Your personal space of peace</small></div></div>
     <div class="header-right">
+      <a class="account-link" href="../account/">Account</a>
       <div class="top-note"><span class="live-dot"></span><span id="light-label">Daylight</span></div>
       <a class="worlds-link" href="../">All worlds <svg class="nav-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
     </div>
@@ -142,7 +151,7 @@
 <script src="./pond-audio.js" defer></script>
 <script src="./pond-plants.js" defer></script>
 <script src="./pond-surprises.js" defer></script>
-<script src="./app.js?v=combined-rain-2" defer></script>
+<script src="./app.js?v=event-saves-4" defer></script>
 <script src="./pond-timer-chime.js?v=1" defer></script>
 <script src="./pond-timer.js?v=map-timers-4" defer></script>
 <!-- Vercel Web Analytics: served by Vercel after Analytics is enabled. -->
@@ -150,6 +159,6 @@
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
-<script src="../shared/map-controls.js" defer></script>
+<script src="../shared/map-controls.js?v=2" defer></script>
 </body>
 </html>

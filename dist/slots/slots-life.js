@@ -121,6 +121,27 @@ function claimPrize(state,storage,MapLife,map,now=Date.now()){
 }
 function claimGolden(state,storage,PondLife,now=Date.now()){return claimPrize(state,storage,PondLife,'pond',now)}
 function claimCow(state,storage,FarmLife,now=Date.now()){return claimPrize(state,storage,FarmLife,'farm',now)}
-const api={reelSymbols,kitchenWallet,buyKitchenSeeds,KEY,COST,START,REFILL,PAIR_PAYOUT,GOLDEN_FISH_ID,COW_ID,SYMBOLS,DESTINATIONS,destination,reward,create,decode,evaluate,spin,refill,day,tomorrow,claimGolden,claimCow};
+// Recovery is an explicit choice. A removed fish never returns just by opening a world.
+// Only the original, already claimed Kin can be recovered; no new win is awarded.
+function goldenRecovery(state,storage,PondLife,now=Date.now()){
+ if(reward(state,'pond').claimed<1)return{status:'locked'};
+ if(!PondLife||typeof PondLife.decode!=='function'||typeof PondLife.makeFish!=='function')return{status:'invalid'};
+ try{
+  const raw=storage.getItem(PondLife.KEY),world=raw==null?null:PondLife.decode(raw,now);
+  if(!world||!Array.isArray(world.fish))return{status:'invalid'};
+  if(world.fish.some(fish=>fish.id===GOLDEN_FISH_ID))return{status:'existing'};
+  if(world.fish.length>=PondLife.MAX_KOI)return{status:'full'};
+  return{status:'available',world};
+ }catch{return{status:'storage-error'}}
+}
+function recoverGolden(state,storage,PondLife,now=Date.now()){
+ const recovery=goldenRecovery(state,storage,PondLife,now);
+ if(recovery.status!=='available')return{status:recovery.status};
+ const time=timestamp(now),world=recovery.world,fish=PondLife.makeFish(world.fish.length,time,true);
+ fish.id=GOLDEN_FISH_ID;fish.name='Kin';world.fish.push(fish);world.savedAt=time;
+ try{storage.setItem(PondLife.KEY,JSON.stringify(world));return{status:'recovered',fish}}
+ catch{return{status:'storage-error'}}
+}
+const api={reelSymbols,kitchenWallet,buyKitchenSeeds,KEY,COST,START,REFILL,PAIR_PAYOUT,GOLDEN_FISH_ID,COW_ID,SYMBOLS,DESTINATIONS,destination,reward,create,decode,evaluate,spin,refill,day,tomorrow,claimGolden,claimCow,goldenRecovery,recoverGolden};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else globalThis.SlotsLife=api;
 })();

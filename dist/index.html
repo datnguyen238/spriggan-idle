@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="stylesheet" href="./shared/account-nav.css?v=2">
+<script defer src="./shared/account-config.js?v=1"></script>
+<script defer src="./shared/account-storage.js?v=2"></script>
+<script defer src="./shared/account-firebase.js?v=1"></script>
+<script defer src="./shared/accounts.js?v=6"></script>
+
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#142f2b"><meta name="description" content="Choose a little world to slow down in. Take the long way home with a traveler and a dog, feed koi, and settle into a little world of your own.">
 <title>Spriggan — Choose your little world</title>
@@ -10,7 +16,7 @@
 </head>
 <body>
 <div class="page-frame" aria-hidden="true"></div>
-<header><a class="brand" href="./" aria-label="Spriggan home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27V12m0 8C5 21 4 9 5 5c9 0 13 5 11 15Zm0-4c0-7 4-11 12-11 0 7-4 12-12 11Z"/></svg><span>Spriggan<small>LITTLE WORLDS, SLOW DAYS</small></span></a><span class="header-note"><i></i> A little room to breathe</span></header>
+<header><a class="brand" href="./" aria-label="Spriggan home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27V12m0 8C5 21 4 9 5 5c9 0 13 5 11 15Zm0-4c0-7 4-11 12-11 0 7-4 12-12 11Z"/></svg><span>Spriggan<small>LITTLE WORLDS, SLOW DAYS</small></span></a><nav class="account-nav account-nav-home" aria-label="Account"><span class="header-note"><i></i> A little room to breathe</span><a class="account-link" href="./account/">Account</a></nav></header>
 <main>
 <section class="intro"><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1>Somewhere quiet.<br><em>Something yours.</em></h1><p>Choose a little world. Settle in. Let the rest wait.</p></section>
 <section class="mini-games" aria-labelledby="mini-games-title"><div class="mini-heading"><p class="eyebrow">A CHANGE OF PACE</p><h2 id="mini-games-title">Little games, familiar worlds.</h2></div><a class="mini-game" href="./slots/" aria-label="Play Golden Seed mini-game"><div class="mini-preview"><img src="./previews/slots.png?v=3" width="600" height="600" alt="A sage and cream slot machine with three reels and a simple brass lever" loading="lazy"></div><div class="mini-copy"><span class="map-type">MINI-GAME / GOLDEN SEED</span><h3>A little luck to bring home.</h3><p>Turn a few seeds into a chance at a new friend for your worlds.</p></div><span class="mini-play">Play Golden Seed <span aria-hidden="true"><svg class="nav-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg></span></span></a></section>
@@ -23,7 +29,7 @@
 <article class="world"><div class="preview incoming"><span class="world-tag">05 / ROOM FOR SOMETHING NEW</span><div class="seed-art"><svg viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="60" cy="89" rx="38" ry="9"/><path d="M60 86V50m0 13C42 66 33 52 35 37c18 0 28 12 25 26Zm0-8c0-16 11-25 27-25 1 16-9 27-27 25Z"/><path class="spark" d="M25 25v10m-5-5h10m65 32v8m-4-4h8"/></svg><span>A new world is taking root.</span></div><span class="coming-badge">INCOMING</span></div><div class="world-caption"><h2>Somewhere new</h2><span class="map-type">ON THE HORIZON</span></div><p>A little space for what comes next.</p></article>
 </section>
 
-<p class="save-note"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 6 3v5c0 4-6 7-6 7s-6-3-6-7V5Z"/><path d="m7 9 2 2 4-4"/></svg>Your worlds are saved in this browser. Come back whenever.</p>
+<p class="save-note"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 6 3v5c0 4-6 7-6 7s-6-3-6-7V5Z"/><path d="m7 9 2 2 4-4"/></svg>Play here as a guest, or sign in to save your worlds across devices.</p>
 </main>
 <footer><span>A SMALL ESCAPE BY SPRIGGAN</span><span>No rush. You’re right on time.</span></footer>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script><script defer src="/_vercel/insights/script.js"></script>

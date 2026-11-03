@@ -38,7 +38,6 @@
  }
  g.restore();
  }
- leaf(x,y,k,r,c){const g=this.g;g.save();g.translate(x,y);g.rotate(r);g.beginPath();g.moveTo(0,0);g.quadraticCurveTo(-12*k,-14*k,0,-25*k);g.quadraticCurveTo(13*k,-13*k,0,0);g.fillStyle=c;g.fill();this.line([[0,-3*k],[0,-19*k]],'#f0efcb50',k);g.restore()}
  filling(x,y,k,kind){this.at(x,y,k,()=>{const color={mushroom:'#9f8570',greens:'#86a36b',ginger:'#d3a46d',meat:'#bb7e6d'}[kind];this.oval(0,1,24,12,color);for(let i=0;i<18;i++){const a=i*2.4,r=Math.sqrt(this.seed(i+16))*21;this.oval(Math.cos(a)*r,Math.sin(a)*r*.5,3.5,2.6,i%3?color:'#d8ca9c');if(i%3===0)this.line([[Math.cos(a)*r,Math.sin(a)*r*.5],[Math.cos(a)*r+3,Math.sin(a)*r*.5-3]],'#6c895b',2)}})}
  dumpling(x,y,k,fold=3,kind='ginger'){this.at(x,y,k,()=>{const paint=()=>{const g=this.g;
  // A long crescent with pinched ends, a plump belly, and a pleated upper seam.

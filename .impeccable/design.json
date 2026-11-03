@@ -1,0 +1,555 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T23:34:12.786667Z",
+  "title": "Design System: Spriggan",
+  "extensions": {
+    "colorMeta": {
+      "pine-green": {
+        "role": "primary",
+        "displayName": "Pine green",
+        "canonical": "#142f2b",
+        "tonalRamp": [
+          "oklch(15.00% 0.01545 183.07)",
+          "oklch(26.43% 0.02511 183.07)",
+          "oklch(37.86% 0.03158 183.07)",
+          "oklch(49.29% 0.03401 183.07)",
+          "oklch(60.71% 0.03211 183.07)",
+          "oklch(72.14% 0.02612 183.07)",
+          "oklch(83.57% 0.01679 183.07)",
+          "oklch(95.00% 0.00532 183.07)"
+        ]
+      },
+      "pine-highlight": {
+        "role": "primary",
+        "displayName": "Pine highlight",
+        "canonical": "#2d5141",
+        "tonalRamp": [
+          "oklch(15.00% 0.02276 163.95)",
+          "oklch(26.43% 0.03701 163.95)",
+          "oklch(37.86% 0.04654 163.95)",
+          "oklch(49.29% 0.05013 163.95)",
+          "oklch(60.71% 0.04733 163.95)",
+          "oklch(72.14% 0.03849 163.95)",
+          "oklch(83.57% 0.02475 163.95)",
+          "oklch(95.00% 0.00784 163.95)"
+        ]
+      },
+      "parchment": {
+        "role": "neutral",
+        "displayName": "Parchment",
+        "canonical": "#f3ecd9",
+        "tonalRamp": [
+          "oklch(15.00% 0.01192 90.10)",
+          "oklch(26.43% 0.01937 90.10)",
+          "oklch(37.86% 0.02436 90.10)",
+          "oklch(49.29% 0.02624 90.10)",
+          "oklch(60.71% 0.02477 90.10)",
+          "oklch(72.14% 0.02015 90.10)",
+          "oklch(83.57% 0.01295 90.10)",
+          "oklch(95.00% 0.00411 90.10)"
+        ]
+      },
+      "soft-moss": {
+        "role": "secondary",
+        "displayName": "Soft moss",
+        "canonical": "#b8c8b3",
+        "tonalRamp": [
+          "oklch(15.00% 0.01534 138.22)",
+          "oklch(26.43% 0.02495 138.22)",
+          "oklch(37.86% 0.03137 138.22)",
+          "oklch(49.29% 0.03379 138.22)",
+          "oklch(60.71% 0.03190 138.22)",
+          "oklch(72.14% 0.02595 138.22)",
+          "oklch(83.57% 0.01668 138.22)",
+          "oklch(95.00% 0.00529 138.22)"
+        ]
+      },
+      "shell-rule": {
+        "role": "neutral",
+        "displayName": "Shell rule",
+        "canonical": "#dbe5bd25",
+        "tonalRamp": [
+          "oklch(15.00% 0.02453 118.89)",
+          "oklch(26.43% 0.03988 118.89)",
+          "oklch(37.86% 0.05014 118.89)",
+          "oklch(49.29% 0.05402 118.89)",
+          "oklch(60.71% 0.05100 118.89)",
+          "oklch(72.14% 0.04147 118.89)",
+          "oklch(83.57% 0.02666 118.89)",
+          "oklch(95.00% 0.00845 118.89)"
+        ]
+      },
+      "account-paper": {
+        "role": "neutral",
+        "displayName": "Account paper",
+        "canonical": "#f3eedf",
+        "tonalRamp": [
+          "oklch(15.00% 0.00935 91.59)",
+          "oklch(26.43% 0.01519 91.59)",
+          "oklch(37.86% 0.01910 91.59)",
+          "oklch(49.29% 0.02058 91.59)",
+          "oklch(60.71% 0.01943 91.59)",
+          "oklch(72.14% 0.01580 91.59)",
+          "oklch(83.57% 0.01016 91.59)",
+          "oklch(95.00% 0.00322 91.59)"
+        ]
+      },
+      "account-ink": {
+        "role": "neutral",
+        "displayName": "Account ink",
+        "canonical": "#29483c",
+        "tonalRamp": [
+          "oklch(15.00% 0.01937 167.45)",
+          "oklch(26.43% 0.03150 167.45)",
+          "oklch(37.86% 0.03960 167.45)",
+          "oklch(49.29% 0.04266 167.45)",
+          "oklch(60.71% 0.04028 167.45)",
+          "oklch(72.14% 0.03276 167.45)",
+          "oklch(83.57% 0.02106 167.45)",
+          "oklch(95.00% 0.00667 167.45)"
+        ]
+      },
+      "action-green": {
+        "role": "primary",
+        "displayName": "Action green",
+        "canonical": "#3d624d",
+        "tonalRamp": [
+          "oklch(15.00% 0.02488 158.46)",
+          "oklch(26.43% 0.04046 158.46)",
+          "oklch(37.86% 0.05087 158.46)",
+          "oklch(49.29% 0.05480 158.46)",
+          "oklch(60.71% 0.05174 158.46)",
+          "oklch(72.14% 0.04208 158.46)",
+          "oklch(83.57% 0.02705 158.46)",
+          "oklch(95.00% 0.00857 158.46)"
+        ]
+      },
+      "action-green-hover": {
+        "role": "primary",
+        "displayName": "Action green hover",
+        "canonical": "#4c725a",
+        "tonalRamp": [
+          "oklch(15.00% 0.02614 156.07)",
+          "oklch(26.43% 0.04250 156.07)",
+          "oklch(37.86% 0.05344 156.07)",
+          "oklch(49.29% 0.05756 156.07)",
+          "oklch(60.71% 0.05435 156.07)",
+          "oklch(72.14% 0.04420 156.07)",
+          "oklch(83.57% 0.02842 156.07)",
+          "oklch(95.00% 0.00901 156.07)"
+        ]
+      },
+      "action-parchment": {
+        "role": "neutral",
+        "displayName": "Action parchment",
+        "canonical": "#fbf6e7",
+        "tonalRamp": [
+          "oklch(15.00% 0.00929 91.58)",
+          "oklch(26.43% 0.01510 91.58)",
+          "oklch(37.86% 0.01899 91.58)",
+          "oklch(49.29% 0.02046 91.58)",
+          "oklch(60.71% 0.01931 91.58)",
+          "oklch(72.14% 0.01571 91.58)",
+          "oklch(83.57% 0.01010 91.58)",
+          "oklch(95.00% 0.00320 91.58)"
+        ]
+      },
+      "field-paper": {
+        "role": "neutral",
+        "displayName": "Field paper",
+        "canonical": "#fbf8ee",
+        "tonalRamp": [
+          "oklch(15.00% 0.00616 92.98)",
+          "oklch(26.43% 0.01002 92.98)",
+          "oklch(37.86% 0.01259 92.98)",
+          "oklch(49.29% 0.01357 92.98)",
+          "oklch(60.71% 0.01281 92.98)",
+          "oklch(72.14% 0.01042 92.98)",
+          "oklch(83.57% 0.00670 92.98)",
+          "oklch(95.00% 0.00212 92.98)"
+        ]
+      },
+      "account-focus": {
+        "role": "neutral",
+        "displayName": "Account focus",
+        "canonical": "#d7ba78",
+        "tonalRamp": [
+          "oklch(15.00% 0.04124 86.66)",
+          "oklch(26.43% 0.06706 86.66)",
+          "oklch(37.86% 0.08432 86.66)",
+          "oklch(49.29% 0.09083 86.66)",
+          "oklch(60.71% 0.08575 86.66)",
+          "oklch(72.14% 0.06974 86.66)",
+          "oklch(83.57% 0.04483 86.66)",
+          "oklch(95.00% 0.01421 86.66)"
+        ]
+      },
+      "pond-paper": {
+        "role": "neutral",
+        "displayName": "Pond paper",
+        "canonical": "#efeada",
+        "tonalRamp": [
+          "oklch(15.00% 0.00995 92.51)",
+          "oklch(26.43% 0.01618 92.51)",
+          "oklch(37.86% 0.02034 92.51)",
+          "oklch(49.29% 0.02191 92.51)",
+          "oklch(60.71% 0.02069 92.51)",
+          "oklch(72.14% 0.01682 92.51)",
+          "oklch(83.57% 0.01082 92.51)",
+          "oklch(95.00% 0.00343 92.51)"
+        ]
+      },
+      "pond-ink": {
+        "role": "neutral",
+        "displayName": "Pond ink",
+        "canonical": "#294239",
+        "tonalRamp": [
+          "oklch(15.00% 0.01581 169.69)",
+          "oklch(26.43% 0.02570 169.69)",
+          "oklch(37.86% 0.03232 169.69)",
+          "oklch(49.29% 0.03481 169.69)",
+          "oklch(60.71% 0.03286 169.69)",
+          "oklch(72.14% 0.02673 169.69)",
+          "oklch(83.57% 0.01718 169.69)",
+          "oklch(95.00% 0.00545 169.69)"
+        ]
+      },
+      "farm-panel": {
+        "role": "neutral",
+        "displayName": "Farm panel",
+        "canonical": "#294333f5",
+        "tonalRamp": [
+          "oklch(15.00% 0.01931 156.48)",
+          "oklch(26.43% 0.03139 156.48)",
+          "oklch(37.86% 0.03947 156.48)",
+          "oklch(49.29% 0.04252 156.48)",
+          "oklch(60.71% 0.04014 156.48)",
+          "oklch(72.14% 0.03265 156.48)",
+          "oklch(83.57% 0.02099 156.48)",
+          "oklch(95.00% 0.00665 156.48)"
+        ]
+      },
+      "farm-text": {
+        "role": "neutral",
+        "displayName": "Farm text",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "seed-paper": {
+        "role": "neutral",
+        "displayName": "Seed paper",
+        "canonical": "#f4f1e8",
+        "tonalRamp": [
+          "oklch(15.00% 0.00561 91.52)",
+          "oklch(26.43% 0.00913 91.52)",
+          "oklch(37.86% 0.01148 91.52)",
+          "oklch(49.29% 0.01236 91.52)",
+          "oklch(60.71% 0.01167 91.52)",
+          "oklch(72.14% 0.00949 91.52)",
+          "oklch(83.57% 0.00610 91.52)",
+          "oklch(95.00% 0.00193 91.52)"
+        ]
+      },
+      "seed-ink": {
+        "role": "neutral",
+        "displayName": "Seed ink",
+        "canonical": "#3d514c",
+        "tonalRamp": [
+          "oklch(15.00% 0.01188 177.93)",
+          "oklch(26.43% 0.01932 177.93)",
+          "oklch(37.86% 0.02429 177.93)",
+          "oklch(49.29% 0.02616 177.93)",
+          "oklch(60.71% 0.02470 177.93)",
+          "oklch(72.14% 0.02009 177.93)",
+          "oklch(83.57% 0.01292 177.93)",
+          "oklch(95.00% 0.00409 177.93)"
+        ]
+      },
+      "seed-action": {
+        "role": "secondary",
+        "displayName": "Seed action",
+        "canonical": "#5e7b70",
+        "tonalRamp": [
+          "oklch(15.00% 0.01705 169.71)",
+          "oklch(26.43% 0.02772 169.71)",
+          "oklch(37.86% 0.03485 169.71)",
+          "oklch(49.29% 0.03754 169.71)",
+          "oklch(60.71% 0.03544 169.71)",
+          "oklch(72.14% 0.02883 169.71)",
+          "oklch(83.57% 0.01853 169.71)",
+          "oklch(95.00% 0.00587 169.71)"
+        ]
+      },
+      "kitchen-night": {
+        "role": "neutral",
+        "displayName": "Kitchen night",
+        "canonical": "#222a3c",
+        "tonalRamp": [
+          "oklch(15.00% 0.01594 265.74)",
+          "oklch(26.43% 0.02592 265.74)",
+          "oklch(37.86% 0.03260 265.74)",
+          "oklch(49.29% 0.03511 265.74)",
+          "oklch(60.71% 0.03315 265.74)",
+          "oklch(72.14% 0.02696 265.74)",
+          "oklch(83.57% 0.01733 265.74)",
+          "oklch(95.00% 0.00549 265.74)"
+        ]
+      },
+      "kitchen-cyan": {
+        "role": "secondary",
+        "displayName": "Kitchen cyan",
+        "canonical": "#9ec5c7",
+        "tonalRamp": [
+          "oklch(15.00% 0.01886 200.22)",
+          "oklch(26.43% 0.03067 200.22)",
+          "oklch(37.86% 0.03856 200.22)",
+          "oklch(49.29% 0.04154 200.22)",
+          "oklch(60.71% 0.03922 200.22)",
+          "oklch(72.14% 0.03190 200.22)",
+          "oklch(83.57% 0.02051 200.22)",
+          "oklch(95.00% 0.00650 200.22)"
+        ]
+      },
+      "kitchen-pink": {
+        "role": "secondary",
+        "displayName": "Kitchen pink",
+        "canonical": "#d8a7bf",
+        "tonalRamp": [
+          "oklch(15.00% 0.02969 347.77)",
+          "oklch(26.43% 0.04827 347.77)",
+          "oklch(37.86% 0.06069 347.77)",
+          "oklch(49.29% 0.06538 347.77)",
+          "oklch(60.71% 0.06173 347.77)",
+          "oklch(72.14% 0.05020 347.77)",
+          "oklch(83.57% 0.03227 347.77)",
+          "oklch(95.00% 0.01023 347.77)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing headline; retain route-specific alternatives."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Landing world titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Supporting account prose."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Shared navigation labels."
+      },
+      "action": {
+        "displayName": "Action",
+        "purpose": "Account form buttons."
+      },
+      "field": {
+        "displayName": "Field",
+        "purpose": "Account input text."
+      },
+      "pond-title": {
+        "displayName": "Pond Title",
+        "purpose": "Pond brand title; Fraunces is local to the pond."
+      },
+      "pond-body": {
+        "displayName": "Pond Body",
+        "purpose": "Pond body and controls."
+      }
+    },
+    "shadows": [
+      {
+        "name": "account-card",
+        "value": "0 18px 55px #041c2630",
+        "purpose": "Soft separation for the account card."
+      },
+      {
+        "name": "world-controller",
+        "value": "0 12px 36px #001b2440",
+        "purpose": "Lift floating pond and farm controllers above the scene."
+      },
+      {
+        "name": "account-notice",
+        "value": "0 8px 30px #061f2940",
+        "purpose": "Separate save notices from world artwork."
+      },
+      {
+        "name": "account-dialog",
+        "value": "0 20px 90px #071e2280",
+        "purpose": "Modal depth above the dimmed backdrop."
+      },
+      {
+        "name": "world-preview-hover",
+        "value": "0 10px 30px #041e2638",
+        "purpose": "Small lift on world preview hover."
+      }
+    ],
+    "motion": [
+      {
+        "name": "preview-frame",
+        "value": "border-color .25s, box-shadow .25s",
+        "purpose": "World preview hover; disabled for reduced motion."
+      },
+      {
+        "name": "preview-image",
+        "value": "transform .6s",
+        "purpose": "Modest image scale on hover; reduced motion removes it."
+      },
+      {
+        "name": "controller-reveal",
+        "value": "opacity .2s ease, transform .25s ease",
+        "purpose": "Floating controller state change; reduced motion removes it."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "landing-intermediate",
+        "value": "850px"
+      },
+      {
+        "name": "landing-single-column",
+        "value": "600px"
+      },
+      {
+        "name": "account-intermediate",
+        "value": "900px"
+      },
+      {
+        "name": "account-single-column",
+        "value": "720px"
+      },
+      {
+        "name": "compact-account",
+        "value": "360px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Account primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The account form’s solid green action, including its shallow stepped shadow and focus state.",
+      "html": "<button class=\"ds-button-primary\" type=\"button\">Sign in <span aria-hidden=\"true\">↗</span></button>",
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;gap:13px;min-height:44px;padding:11px 16px;border-radius:6px;text-decoration:none;font:11px/1.5 monospace;text-align:center;cursor:pointer;background:#3d624d;color:#fbf6e7;border:1px solid #31553e;box-shadow:0 2px 0 #2a4837}.ds-button-primary:hover:not(:disabled){background:#4c725a}.ds-button-primary:focus-visible{outline:2px solid #d7ba78;outline-offset:4px}.ds-button-primary:disabled{cursor:wait;opacity:.55}.ds-button-primary>span{font:19px/1 Georgia}"
+    },
+    {
+      "name": "Account secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The account form’s pale, bordered action for secondary choices.",
+      "html": "<button class=\"ds-button-secondary\" type=\"button\">Keep things as they are</button>",
+      "css": ".ds-button-secondary{display:inline-flex;align-items:center;justify-content:center;gap:13px;min-height:44px;padding:11px 16px;border-radius:6px;text-decoration:none;font:11px/1.5 monospace;text-align:center;cursor:pointer;background:#faf6e9;border:1px solid #a4b19580;color:#52694c}.ds-button-secondary:hover:not(:disabled){background:#e5ead8}.ds-button-secondary:focus-visible{outline:2px solid #d7ba78;outline-offset:4px}.ds-button-secondary:disabled{cursor:wait;opacity:.55}"
+    },
+    {
+      "name": "Account text field",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "A labeled email field using the account form’s cream surface and system-font input text.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-account-email\">Email address</label><input class=\"ds-field-input\" id=\"ds-account-email\" name=\"email\" type=\"email\" autocomplete=\"email\" value=\"\" /></div>",
+      "css": ".ds-field-label{display:block;font:10px monospace;color:#596d52;margin:0 0 9px}.ds-field-input{display:block;min-width:0;width:100%;min-height:46px;background:#fbf8ee;border:1px solid #a4b09380;border-radius:6px;padding:10px 12px;font:16px/1.4 system-ui,sans-serif;color:#29483c;margin:0 0 19px}.ds-field-input:focus{border-color:#78935e}.ds-field-input:focus-visible{outline:2px solid #d7ba78;outline-offset:4px}"
+    },
+    {
+      "name": "Account navigation link",
+      "kind": "nav",
+      "refersTo": "account-nav",
+      "description": "The shared account link, shown in its homepage color variant with a confirmed cloud-save label. The preview includes the existing dark shell backdrop for the original light text contrast.",
+      "html": "<div class=\"ds-shell-preview\"><nav class=\"ds-account-nav\" aria-label=\"Account\"><a class=\"ds-account-link\" href=\"#\">Account<small class=\"ds-cloud-status\">Cloud saved</small></a></nav></div>",
+      "css": ".ds-shell-preview{background:#142f2b}.ds-account-nav{display:flex;align-items:center;justify-content:flex-end;gap:15px;pointer-events:auto;flex-shrink:0;min-width:0;color:#d2ddc1}.ds-account-link{display:inline-flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;min-height:44px;min-width:64px;padding:5px 12px;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 24%,transparent);border-radius:22px;background:transparent;color:inherit;text-decoration:none;white-space:nowrap;font:10px/1.3 monospace;pointer-events:auto;opacity:.85}.ds-account-link:hover{opacity:1;background:color-mix(in srgb,currentColor 7%,transparent)}.ds-account-link:focus-visible{outline:2px solid #c0a365;outline-offset:4px}.ds-cloud-status{display:block;font:7px/1.2 monospace;letter-spacing:0;white-space:nowrap;opacity:.9}@media(max-width:720px){.ds-account-nav{gap:9px}.ds-account-link{font-size:9px;padding-left:10px;padding-right:10px;min-width:60px}}"
+    },
+    {
+      "name": "Account status badge",
+      "kind": "chip",
+      "refersTo": "status-badge",
+      "description": "The account card’s passive state label, with the existing busy-state treatment.",
+      "html": "<span class=\"ds-account-state\">At home</span>",
+      "css": ".ds-account-state{padding:6px 8px;border:1px solid #81977233;background:#dce4cf66;border-radius:20px;font:7px monospace;white-space:nowrap;color:#5d7355}.ds-account-state[aria-busy=true]{opacity:.7}"
+    },
+    {
+      "name": "Account card",
+      "kind": "card",
+      "refersTo": "account-card",
+      "description": "The account form’s warm paper container and its heading; interactive fields remain separate primitives.",
+      "html": "<section class=\"ds-account-card\" aria-labelledby=\"ds-account-title\"><div class=\"ds-card-heading\"><p class=\"ds-card-eyebrow\">YOUR SPRIGGAN ACCOUNT</p><span class=\"ds-card-state\">A moment…</span></div><h2 class=\"ds-card-title\" id=\"ds-account-title\">Welcome back.</h2></section>",
+      "css": ".ds-account-card{background:#f3eedf;color:#29483c;color-scheme:light;border:1px solid #fff8e3;border-radius:18px;padding:27px 30px 0;box-shadow:0 18px 55px #041c2630;min-width:0;font-family:Georgia,'Times New Roman',serif}.ds-card-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}.ds-card-eyebrow{font:7px/1.6 monospace;letter-spacing:1.6px;color:#74816c;margin:0}.ds-card-state{padding:6px 8px;border:1px solid #81977233;background:#dce4cf66;border-radius:20px;font:7px monospace;white-space:nowrap;color:#5d7355}.ds-card-title{font-size:29px;line-height:1.15;font-weight:400;letter-spacing:-.7px;margin:0 0 12px}@media(max-width:900px){.ds-account-card{padding:25px 24px 0}}@media(max-width:720px){.ds-account-card{border-radius:14px;padding-top:23px}.ds-card-title{font-size:27px}.ds-card-heading{margin-bottom:17px}}"
+    },
+    {
+      "name": "World preview card",
+      "kind": "card",
+      "refersTo": "world-preview",
+      "description": "The homepage’s square preview frame, tag, caption, and entry affordance. Artwork is intentionally omitted from this self-contained primitive preview. The preview includes the existing dark shell backdrop for the original light text contrast.",
+      "html": "<div class=\"ds-shell-preview\"><a class=\"ds-world\" href=\"#\" aria-label=\"Enter Stillwater Pond\"><div class=\"ds-world-preview\"><span class=\"ds-world-tag\">04 / WATER &amp; WONDER</span><span class=\"ds-world-enter\">Enter pond <svg class=\"ds-world-arrow\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 18 18 6M6 6h12v12\"/></svg></span></div><div class=\"ds-world-caption\"><h2 class=\"ds-world-title\">Stillwater Pond</h2><span class=\"ds-world-type\">KOI POND</span></div><p class=\"ds-world-description\">Soft rain, drifting lilies, and a few familiar fins.</p></a></div>",
+      "css": ".ds-shell-preview{background:#142f2b}.ds-world{min-width:0;color:#f3ecd9;text-decoration:none;display:block;font-family:Georgia,'Times New Roman',serif}.ds-world-preview{position:relative;aspect-ratio:1;overflow:hidden;border:1px solid #e6edcb30;border-radius:9px;background:#23493c;isolation:isolate;transition:border-color .25s,box-shadow .25s}.ds-world-preview:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#092c2245,transparent 34%,transparent 55%,#0c2a2266);pointer-events:none;z-index:0}.ds-world-tag{position:absolute;left:17px;top:17px;z-index:1;font:8px monospace;letter-spacing:1px;color:#fff9e8;text-shadow:0 1px 3px #163c27;background:#163c2766;padding:7px 8px;border:1px solid #f3ecd91c;border-radius:2px}.ds-world-enter{position:absolute;bottom:17px;left:17px;right:17px;z-index:1;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #fff7d94d;padding:12px 0 0;font:11px monospace;color:#fff9e8;text-shadow:0 1px 2px #17362a}.ds-world-arrow{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.ds-world-caption{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:20px 0 8px}.ds-world-title{font-size:23px;font-weight:400;letter-spacing:-.5px;margin:0}.ds-world-type{font:7px monospace;letter-spacing:1px;white-space:nowrap;color:#b9c9ab}.ds-world-description{font-size:12px;line-height:1.6;color:#b8c8b3;margin:0}.ds-world:hover .ds-world-preview{border-color:#e1d6a7a6;box-shadow:0 10px 30px #041e2638}.ds-world:focus-visible{outline:2px solid #ead4a1;outline-offset:7px;border-radius:5px}@media(prefers-reduced-motion:reduce){.ds-world-preview{transition:none}}"
+    },
+    {
+      "name": "Pond control launcher",
+      "kind": "custom",
+      "refersTo": "pond-launcher",
+      "description": "The pond’s circular control launcher, with its existing expanded-icon rotation and keyboard-focus treatment.",
+      "html": "<button class=\"ds-pond-launcher\" type=\"button\" aria-label=\"Open pond controls\" aria-expanded=\"false\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 7h5m4 0h7M4 17h9m4 0h3\"/><circle cx=\"11\" cy=\"7\" r=\"2\"/><circle cx=\"15\" cy=\"17\" r=\"2\"/></svg></button>",
+      "css": ".ds-pond-launcher{position:relative;display:flex;align-items:center;justify-content:center;gap:0;width:52px;height:52px;min-height:52px;padding:0;margin:0;border:1px solid #f6edce88;box-shadow:0 5px 22px #142d323d;cursor:pointer;color:#294239;background:#efeada;border-radius:50%;}.ds-pond-launcher svg{display:block;flex:0 0 23px;margin:0;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transform:none;transition:transform .2s}.ds-pond-launcher[aria-expanded=true] svg{transform:rotate(90deg)}.ds-pond-launcher:hover:not(:disabled){transform:translateY(-1px)}.ds-pond-launcher:focus-visible{outline:2px solid #547153;outline-offset:4px}.ds-pond-launcher:disabled{cursor:default;opacity:.4}@media(prefers-reduced-motion:reduce){.ds-pond-launcher,.ds-pond-launcher svg{transition:none}}"
+    },
+    {
+      "name": "Farm control launcher",
+      "kind": "custom",
+      "refersTo": "farm-launcher",
+      "description": "The farm’s squarer, dark control launcher; it preserves the farm-specific silhouette rather than adopting the pond circle.",
+      "html": "<button class=\"ds-farm-launcher\" type=\"button\" aria-label=\"Open farm controls\" aria-expanded=\"false\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 7h5m4 0h7M4 17h9m4 0h3\"/><circle cx=\"11\" cy=\"7\" r=\"2\"/><circle cx=\"15\" cy=\"17\" r=\"2\"/></svg></button>",
+      "css": ".ds-farm-launcher{position:relative;display:flex;align-items:center;justify-content:center;gap:0;width:52px;height:52px;min-height:52px;padding:0;margin:0;border:1px solid #f6edce88;box-shadow:0 5px 22px #142d323d;cursor:pointer;color:#294239;background:#efeada;border-radius:50%;border-radius:7px;background:#294333f5;color:#fff;border-color:#d5e3b780}.ds-farm-launcher svg{display:block;flex:0 0 23px;margin:0;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transform:none;transition:transform .2s}.ds-farm-launcher[aria-expanded=true] svg{transform:rotate(90deg)}.ds-farm-launcher:focus-visible{outline:2px solid #fff1b8;outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-farm-launcher svg{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Little Worlds Retreat",
+    "overview": "Spriggan is quiet, personal, and gently playful. The shared shell pairs pine green, parchment, and soft moss with serif headings, small utility labels, fine borders, and soft layers. Controls are familiar and restrained, with playful details specific to each world. These descriptions were confirmed by the owner; the values above are extracted from the existing implementation.\n\nThe worlds belong to one collection without becoming interchangeable. Preserve the pond's fluid illustration and round controls, the farm's pixel artwork and squarer controls, the meadow's full-screen landscape, Little Folds' after-hours counter, and Golden Seed's light mechanical cabinet. This record captures the incumbent design; it does not authorize a redesign or normalize all routes into one palette.",
+    "keyCharacteristics": [
+      "Quiet shared framing around distinct interactive worlds.",
+      "Serif scene titles with practical utility text.",
+      "Soft layers that lift controls gently above each world.",
+      "Familiar and restrained controls with world-specific playful details.",
+      "Existing keyboard, sound, pause, and reduced-motion choices remain usable."
+    ],
+    "rules": [
+      {
+        "name": "The World Identity Rule",
+        "body": "Reuse the current route's palette before borrowing another world's colors; preserve the distinct identities within the shared collection.",
+        "section": "colors"
+      },
+      {
+        "name": "The Role Before Size Rule",
+        "body": "Keep scene titles, supporting copy, actionable labels, and metadata distinct; retain each route's font family instead of imposing the landing pairing on the pond.",
+        "section": "typography"
+      },
+      {
+        "name": "The Scene First Rule",
+        "body": "Raise the controls enough to separate them from the illustration while keeping the world itself visually dominant.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** preserve each world's existing palette, type, artwork, and controller silhouette inside the shared collection.",
+      "**Do** keep the scene visible and group controls into the existing compact controller pattern.",
+      "**Do** retain visible focus, keyboard alternatives, explicit status text, pause, sound, and reduced-motion choices.",
+      "**Do** use the final stylesheet cascade as evidence; earlier overridden values are not the current design.",
+      "**Do** use actual world previews when representing the existing games."
+    ],
+    "donts": [
+      "**Don't** impose the pond's fonts or circular controls on the pixel farm, or apply the kitchen's night accents to every route.",
+      "**Don't** treat small incumbent metadata sizes as the target for essential new instructions or forms.",
+      "**Don't** hide save failures or action states behind color or decorative icons alone.",
+      "**Don't** promote Golden Seed's mechanical bevels, lever motion, or stepped shadows into general navigation and form styling.",
+      "**Don't** turn this documentation pass into new UI, new claims, or an unrequested visual replacement."
+    ]
+  }
+}
