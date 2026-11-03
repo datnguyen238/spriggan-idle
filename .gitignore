@@ -1,3 +1,6 @@
 .DS_Store
 .vercel/
 *.zip
+.firebase/
+firebase-debug.log*
+firestore-debug.log*

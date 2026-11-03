@@ -179,6 +179,43 @@ test('old claimed and unclaimed prize flags migrate without awarding a free extr
  assert.deepEqual(Life.reward(s,'pond'),{won:1,claimed:1});assert.deepEqual(Life.reward(s,'farm'),{won:1,claimed:0});
  s.selectedMap='pond';Life.spin(s,()=>0,now);assert.deepEqual(Life.reward(s,'pond'),{won:2,claimed:1});
 });
+test('explicit Kin recovery preserves the world and prize receipt and is idempotent',()=>{
+ const state=Life.create(now);Life.spin(state,()=>0,now);
+ const storage=memoryStorage();Life.claimGolden(state,storage,PondLife,now);
+ const pond=PondLife.decode(storage.getItem(PondLife.KEY),now);pond.fish=pond.fish.filter(f=>f.id!==Life.GOLDEN_FISH_ID);pond.fish[0].meals=18;pond.settings.night=true;
+ storage.setItem(PondLife.KEY,JSON.stringify(pond));
+ const beforeState=JSON.stringify(state),beforeReceipt=storage.getItem(Life.KEY);
+ assert.equal(Life.goldenRecovery(state,storage,PondLife,now).status,'available');
+ assert.equal(PondLife.decode(storage.getItem(PondLife.KEY),now).fish.length,5);
+ const result=Life.recoverGolden(state,storage,PondLife,now);
+ assert.equal(result.status,'recovered');assert.equal(result.fish.id,Life.GOLDEN_FISH_ID);assert.equal(result.fish.golden,true);
+ const after=PondLife.decode(storage.getItem(PondLife.KEY),now);
+ assert.deepEqual(after.fish.slice(0,5),pond.fish);assert.deepEqual(after.settings,pond.settings);
+ assert.equal(JSON.stringify(state),beforeState);assert.equal(storage.getItem(Life.KEY),beforeReceipt);
+ assert.equal(Life.recoverGolden(state,storage,PondLife,now).status,'existing');
+ assert.equal(PondLife.decode(storage.getItem(PondLife.KEY),now).fish.length,6);
+});
+test('Kin recovery requires a claimed receipt and an existing valid pond with room',()=>{
+ const locked=Life.create(now),claimed=Life.create(now);claimed.goldenClaimed=true;
+ assert.equal(Life.recoverGolden(locked,{getItem(){throw Error('must not read')}},PondLife,now).status,'locked');
+ const full=PondLife.create(now);while(full.fish.length<PondLife.MAX_KOI)full.fish.push(PondLife.makeFish(full.fish.length,now));
+ for(const [raw,status] of [[null,'invalid'],['bad','invalid'],['null','invalid'],[JSON.stringify(full),'full']]){
+  const storage=memoryStorage(raw===null?[]:[[PondLife.KEY,raw]]),before=JSON.stringify(claimed);
+  assert.equal(Life.recoverGolden(claimed,storage,PondLife,now).status,status);
+  assert.equal(storage.getItem(PondLife.KEY),raw);assert.equal(storage.getItem(Life.KEY),null);assert.equal(JSON.stringify(claimed),before);
+ }
+});
+test('Kin recovery storage failure keeps the receipt and retries without spending seeds',()=>{
+ const state=Life.create(now);state.goldenClaimed=true;
+ const pond=PondLife.create(now),raw=JSON.stringify(pond),storage=memoryStorage([[PondLife.KEY,raw]]),write=storage.setItem;
+ storage.setItem=()=>{throw Error('storage full')};
+ assert.equal(Life.recoverGolden(state,storage,PondLife,now).status,'storage-error');
+ assert.equal(storage.getItem(PondLife.KEY),raw);assert.equal(state.balance,Life.START);
+ storage.setItem=write;
+ assert.equal(Life.recoverGolden(state,storage,PondLife,now).status,'recovered');
+ assert.equal(Life.recoverGolden(state,storage,PondLife,now).status,'existing');
+ assert.equal(PondLife.decode(storage.getItem(PondLife.KEY),now).fish.filter(f=>f.id===Life.GOLDEN_FISH_ID).length,1);
+});
 test('the old single cow migrates with care data and multiple cows survive decoding',()=>{
  const old=FarmLife.create(now);delete old.cows;old.cow=FarmLife.makeCow(now);old.cow.meals=42;old.cow.name='My cow';
  const farm=FarmLife.decode(JSON.stringify(old),now);assert.equal(farm.cows.length,1);assert.equal(farm.cows[0].meals,42);assert.equal(farm.cows[0].name,'My cow');assert.equal('cow' in farm,false);

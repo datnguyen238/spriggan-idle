@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) {
+      return request.auth != null
+        && request.auth.uid == uid;
+    }
+
+    function verifiedOwner(uid) {
+      return owner(uid) && request.auth.token.email_verified == true;
+    }
+
+    function validEntry(entries, key) {
+      return entries.get(key, '') is string;
+    }
+
+    function validEntries(entries) {
+      return entries is map
+        && entries.keys().hasOnly([
+          'spriggan.pond.v1', 'spriggan.farm.v1', 'spriggan.slots.v1',
+          'spriggan.dumplings.v1', 'spriggan.hex.totals.v1'
+        ])
+        && validEntry(entries, 'spriggan.pond.v1')
+        && validEntry(entries, 'spriggan.farm.v1')
+        && validEntry(entries, 'spriggan.slots.v1')
+        && validEntry(entries, 'spriggan.dumplings.v1')
+        && validEntry(entries, 'spriggan.hex.totals.v1')
+        && entries.get('spriggan.pond.v1', '').size()
+          + entries.get('spriggan.farm.v1', '').size()
+          + entries.get('spriggan.slots.v1', '').size()
+          + entries.get('spriggan.dumplings.v1', '').size()
+          + entries.get('spriggan.hex.totals.v1', '').size() <= 450000;
+    }
+
+    function validSave() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['format', 'revision', 'entries', 'updatedAt'])
+        && data.keys().hasOnly(['format', 'revision', 'entries', 'updatedAt'])
+        && data.format == 1
+        && data.revision is int
+        && data.revision >= 1
+        && data.updatedAt is timestamp
+        && data.updatedAt == request.time
+        && validEntries(data.entries);
+    }
+
+    match /users/{uid}/saves/current {
+      allow get: if verifiedOwner(uid);
+      allow create: if verifiedOwner(uid) && validSave() && request.resource.data.revision == 1;
+      allow update: if verifiedOwner(uid) && validSave()
+        && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if owner(uid);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

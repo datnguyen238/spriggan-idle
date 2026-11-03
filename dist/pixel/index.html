@@ -1,6 +1,14 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="stylesheet" href="../shared/account-nav.css?v=2">
+<script defer src="../shared/account-config.js?v=1"></script>
+<script defer src="../shared/account-storage.js?v=2"></script>
+<script defer src="../shared/account-firebase.js?v=1"></script>
+<script defer src="../shared/accounts.js?v=6"></script>
+<link rel="stylesheet" href="../shared/world-loading.css?v=accounts-load-2">
+<script defer src="../shared/world-loading.js?v=accounts-load-2"></script>
+
 <script src="../shared/map-entry.js?v=1" data-map-guard></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -14,7 +22,7 @@
 <link rel="stylesheet" href="../pond/pond-timer.css?v=chime-1"><link rel="stylesheet" href="../shared/map-timer.css?v=4">
 </head>
 <body>
-<header><div class="brand"><svg class="spriggan-symbol" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M16 3v26M3 16h26M7 7l18 18M7 25 25 7"/></svg> <span>Spriggan<small>LITTLE WORLDS, SLOW DAYS</small></span></div><a class="worlds-link" href="../">All worlds <svg class="nav-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg></a></header>
+<header><div class="brand"><svg class="spriggan-symbol" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M16 3v26M3 16h26M7 7l18 18M7 25 25 7"/></svg> <span>Spriggan<small>LITTLE WORLDS, SLOW DAYS</small></span></div><nav class="account-nav" aria-label="World navigation"><a class="account-link" href="../account/">Account</a><a class="worlds-link" href="../">All worlds <svg class="nav-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg></a></nav></header>
 
 <main>
   <section class="heading">
@@ -175,8 +183,8 @@
 
 <script src="./farm-life.js?v=carried-sprite-8" defer></script>
 <script src="./farm-audio.js?v=lullaby-3" defer></script>
-<script defer src="../pond/pond-rain-loop.js?v=1"></script><script defer src="../shared/map-rain.js?v=2"></script><script src="./farm.js?v=map-rain-1" defer></script>
-<script src="../shared/map-controls.js" defer></script>
+<script defer src="../pond/pond-rain-loop.js?v=1"></script><script defer src="../shared/map-rain.js?v=2"></script><script src="./farm.js?v=event-saves-3" defer></script>
+<script src="../shared/map-controls.js?v=2" defer></script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script><script defer src="/_vercel/insights/script.js"></script>
 <script defer src="../pond/pond-timer-chime.js?v=1"></script><script defer src="../pond/pond-timer.js?v=map-timers-4"></script>
 </body>

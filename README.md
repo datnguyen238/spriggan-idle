@@ -25,7 +25,7 @@ Then visit http://localhost:8000. Stop the server with Ctrl+C.
 - Space pauses or resumes when focus is outside the controls.
 - Hide or show the control panel without losing your pond settings.
 
-Your koi, names, feeding progress, and pond settings are saved automatically in this browser. Returning shows a welcome message; saved sounds resume on your first tap, or with **Resume saved sounds**. Returning from the background attempts to resume automatically; if the browser requires a gesture, tap the pond. Clearing browser data resets the pond, and saves do not sync across devices. If storage is unavailable, the pond still works for the current visit.
+Your koi, names, feeding progress, and pond settings are saved automatically in this browser. Returning shows a welcome message; saved sounds resume on your first tap, or with **Resume saved sounds**. Returning from the background attempts to resume automatically; if the browser requires a gesture, tap the pond. Guest saves stay in this browser; verified accounts can synchronize worlds across sessions and devices. Clearing browser data removes guest progress and any account changes that have not reached the cloud. If storage is unavailable, guest play still works for the current visit.
 
 Fed koi gradually grow with elapsed time, including time away. Ten eaten food pieces support roughly one day of growth; each koi stores up to three days of nourishment, grows by 12% of its original size per fed day, and can grow up to 75% larger. Kin is now a collectible won in Golden Seed; golden koi no longer arrive through random pond events. Existing golden koi remain, within the 12-koi pond limit.
 
@@ -36,6 +36,22 @@ Page markup and styles are in `dist/pond/index.html`; animation and controls are
 ## Publish with Vercel
 
 Import this GitHub repository into Vercel. The included `vercel.json` serves the `dist` folder directly, with no build step. After deploying, share the production URL.
+
+## Optional accounts at the existing URL
+
+The Account link opens `/account/` on the current site. Firebase Email/Password authentication and Firestore cloud saves can be enabled without changing the Vercel URL, buying a domain, moving hosting, or setting up a separate email provider. Follow [the account setup guide](docs/accounts-setup.md) to create the Firebase project, publish the supplied database rules, and fill in the public Web app configuration in `dist/shared/account-config.js`.
+
+Until that configuration is supplied, accounts show a setup-pending message and all worlds remain available as guests. Registration, email verification, password reset, sign-out, account deletion, and downloadable world backups are implemented. Email verification is required for reading and writing cloud saves.
+
+Guest saves keep their original browser keys. Account worlds use separate browser storage for each user. Creating an account starts a separate set of worlds unless the player explicitly chooses to copy this device's guest worlds. The Account page can also copy guest worlds later, with confirmation before replacing account progress; the guest originals stay intact. Signing out returns to those guest worlds. Sound preferences and Pomodoro timers remain local to the device.
+
+Pond, farm, meadow progress, kitchen, and slots synchronize as one versioned snapshot so shop coins, seed spending receipts, prizes, and animals travel together. Each game stores changes locally first. Significant events request an immediate account checkpoint: slot outcomes and refills; pond membership, names, committed settings, and return-time growth; farm life events and animal removals; kitchen cooking actions, sales, and seed purchases; and changed meadow totals. Feeding batches into a bounded local save (900 ms in the pond, the next one-second farm rule save). Simultaneous requests share a checkpoint, and events arriving during an upload get a trailing checkpoint. Ordinary clock/animation updates keep the one-minute fallback. Slot prizes request an immediate cloud checkpoint, and a verified account's successful prize claim waits for the animal and claim receipt to upload together before entering the world. A failed claim upload keeps the local prize and offers a retry. Opening a page with pending account changes retries immediately, and hiding or leaving a page attempts a final upload. The Account link distinguishes cloud-saved progress from pending or device-only saves; the Account page also has a manual save control.
+
+A fresh verified session waits for its first successful cloud read before opening any game. If that read fails, a loading error and retry appear; no default world is opened or uploaded. Previously cached worlds remain available offline, including intentionally empty ponds. The pond keeps a green backdrop until its first complete frame, then saves its initial snapshot and timestamps; rendering failures stop further pond saves. Persisted growth timestamps and nourishment allow elapsed pond growth to be calculated on return without uploading the current clock every second.
+
+Pending changes survive ordinary offline visits in the same browser storage. Closing the last private/incognito window can discard that session's local storage, so only a confirmed cloud save is available in a fresh private session. A browser closing cannot guarantee completion of an in-flight network request. Revision conflicts retain the device save and ask the player which complete set to keep. Restoring a save or switching accounts invalidates older open world tabs, which show a reload notice before accepting more input.
+
+Before public launch, verify email delivery, password resets, and database access rules against the configured Firebase project. These cloud saves contain free, client-owned game progress; they do not enable paid top-ups or make the seed wallet authoritative.
 
 ## Check saved data and growth
 
@@ -100,9 +116,10 @@ Visit `/slots/` or choose Golden Seed from the landing page. A centered sage-and
 - When fewer than 10 seeds remain, refill to 50 at the next local midnight. Nonempty playable balances stay unchanged. Refills do not stack for missed days and cannot be repeated in one calendar day.
 - Odds per spin: triple 1/36 (2.78%), pair 90/216 (41.67%), no match 120/216 (55.56%). Outcomes do not depend on timing or past results. No 60-spin guarantee or immediate refill remains.
 - Win, then choose Welcome home. A full pond keeps Kin available to claim later. Buttercup is a saved cow who wanders, eats grain, and appears in the farm's friend selector; she does not lay eggs or count against the 16-chicken-and-egg limit. Every triple wins another animal. Wins and claims are counted separately, so leaving and returning preserves all pending prizes. Claim retries cannot duplicate the same prize.
+- If the original Kin is missing from a valid pond but the slot save records his earlier claim, **Recover Kin** offers an explicit way to bring him back when there is room. It preserves other fish, seeds, and claim counts, and uses the same cloud checkpoint before visiting. Recovery recreates Kin; it cannot recover lost feeding or growth history. Fish are never restored automatically.
 - Existing saves receive a one-time increase to at least 200 seeds; higher balances and earned prizes are preserved. Results settle before animation, claims use a stable animal ID for each win, and supported browsers serialize wallet mutations across tabs with Web Locks. Open map tabs receive newly claimed prizes before saving their own state.
 
-The seeds are free, have no cash value, and cannot be purchased. All saves are local to this browser and domain.
+The seeds are free, have no cash value, and cannot be purchased. Guest saves are local to this browser and domain. Optional accounts can synchronize a complete set of worlds and earned seeds after Firebase is configured.
 
 Reward destinations are listed in `SlotsLife.DESTINATIONS`; the dropdown and reward details grow with that registry. See `docs/slot-design-notes.md` for adding a map and its prize integration.
 

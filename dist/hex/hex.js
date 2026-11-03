@@ -1,16 +1,19 @@
 (()=>{'use strict';
+function boot(){
+const storage=globalThis.SprigganStorage||localStorage;
 const Life=HexLife,canvas=document.querySelector('#meadow'),ctx=canvas.getContext('2d'),$=s=>document.querySelector(s);
 let state=Life.create(),selected='sprout',paused=false,showRanges=false,W=1000,H=550,S=30,zoom=1,pan={x:0,y:0},hover=null,last=0,pointer=null,noteUntil=0;
 const TOTALS_KEY='spriggan.hex.totals.v1';
-function readTotals(){try{return Life.progress(localStorage.getItem(TOTALS_KEY))}catch{return Life.progress(null)}}
+function readTotals(){try{return Life.progress(storage.getItem(TOTALS_KEY))}catch{return Life.progress(null)}}
 Object.assign(state,readTotals());
-let savedProgress='';
+let savedProgress='',eventProgress=JSON.stringify({shooed:state.shooed,snacks:state.snacks,storeys:state.storeys});
 function saveTotals(){
  const serialized=JSON.stringify({shooed:state.shooed,snacks:state.snacks,storeys:state.storeys});
  if(serialized===savedProgress)return;
- try{localStorage.setItem(TOTALS_KEY,serialized);savedProgress=serialized}catch{}
+ try{storage.setItem(TOTALS_KEY,serialized);const changed=serialized!==eventProgress;savedProgress=eventProgress=serialized;if(changed)void globalThis.SprigganAccounts?.saveProgress?.().catch(()=>{})}catch{}
 }
 window.addEventListener('pagehide',saveTotals);
+window.addEventListener('spriggan:flush',saveTotals);
 let night=false;try{night=localStorage.getItem('spriggan.hex.moonlight')==='true'}catch{}
 const rain=new MapRain(document.querySelector('[data-map-rain]'),'spriggan.hex.rain.v1','hex');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -178,4 +181,14 @@ document.addEventListener('visibilitychange',()=>{last=performance.now()});new R
 for(const [q,r,type] of [[-5,-2,'sprout'],[5,2,'mochi'],[-2,4,'truffle'],[4,-1,'sprout'],[0,-4,'mochi'],[-5,-4,'puddle'],[5,4,'puddle']])Life.spawn(state,q,r,type);
 ui();note('The first visitors have caught the scent of carrots.');requestAnimationFrame(frame);
 if(globalThis.SprigganRuntime)SprigganRuntime.runBackground(dt=>Life.step(state,dt),ui,()=>paused);
+}
+if(globalThis.SprigganWorldLoading)SprigganWorldLoading.start(boot);
+else if(globalThis.SprigganAccounts){
+ let started=false;
+ SprigganAccounts.ready.then(()=>{
+  const start=()=>{const state=SprigganAccounts.state||{};if(started||state.loading||state.worldsReady===false||state.status==='changed')return;started=true;boot();if(typeof globalThis.dispatchEvent==='function'&&typeof Event==='function')globalThis.dispatchEvent(new Event('spriggan:world-ready'))};
+  if(SprigganAccounts.subscribe)SprigganAccounts.subscribe(start);
+  start();
+ });
+}else boot();
 })();

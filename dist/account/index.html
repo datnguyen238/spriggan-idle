@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#142f2b">
+  <meta name="description" content="A home for your Spriggan worlds. Sign in to keep your progress and carry it between devices.">
+  <title>Your account — Spriggan</title>
+  <link rel="stylesheet" href="../shared/account-nav.css?v=2">
+  <link rel="stylesheet" href="./account.css?v=1">
+  <script defer src="../shared/account-config.js?v=1"></script>
+  <script defer src="../shared/account-storage.js?v=2"></script>
+  <script defer src="../shared/account-firebase.js?v=1"></script>
+  <script defer src="../shared/accounts.js?v=6"></script>
+  <script defer src="./account-page.js?v=2"></script>
+</head>
+<body>
+  <div class="page-frame" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="Spriggan home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 27V12m0 8C5 21 4 9 5 5c9 0 13 5 11 15Zm0-4c0-7 4-11 12-11 0 7-4 12-12 11Z"/></svg><span>Spriggan<small>LITTLE WORLDS, SLOW DAYS</small></span></a>
+    <a class="home-link" href="../">All worlds <span aria-hidden="true">↗</span></a>
+  </header>
+  <main>
+    <section class="account-intro" aria-labelledby="page-title">
+      <p class="eyebrow">A PLACE TO COME BACK TO</p>
+      <h1 id="page-title">A little world.<br><em>Always yours.</em></h1>
+      <p>Keep your familiar faces and little beginnings,<br class="desktop-break"> wherever you settle in.</p>
+      <div class="garden-mark" aria-hidden="true"><svg viewBox="0 0 230 155"><ellipse cx="115" cy="133" rx="73" ry="9"/><path d="M114 130V58m0 34C83 95 68 74 71 48c29 0 48 17 43 44Zm0-18c-1-26 17-43 47-43 3 30-13 48-46 43Z"/><path class="small-leaf" d="M65 132V109m0 9c-17 1-22-10-21-22 16 0 23 8 21 22Zm0-6c0-15 10-22 24-21 0 15-9 23-24 21Z"/><path class="spark" d="M174 93v12m-6-6h12M59 37v9m-4-4h8m121 77v7m-3-3h6"/><circle cx="184" cy="62" r="2"/></svg></div>
+      <ul class="account-benefits">
+        <li><span aria-hidden="true">01</span><div><strong>Pick up where you left off.</strong><p>Your worlds and earned seeds travel together.</p></div></li>
+        <li><span aria-hidden="true">02</span><div><strong>Room for a fresh beginning.</strong><p>Your guest worlds stay on this device when you sign in.</p></div></li>
+      </ul>
+    </section>
+
+    <section class="account-card" aria-labelledby="card-title" aria-busy="true" id="account-card">
+      <div class="card-heading"><p class="eyebrow">YOUR SPRIGGAN ACCOUNT</p><span class="account-state" id="account-state">A moment…</span></div>
+      <div class="notice" id="account-notice" role="status" aria-live="polite" aria-atomic="true">Finding your place…</div>
+
+      <section id="setup-panel" hidden>
+        <h2 id="setup-title">A home is taking shape.</h2>
+        <p>Accounts are being set up. You can keep playing as a guest.</p>
+        <a class="primary-button" href="../">Back to your worlds <span aria-hidden="true">↗</span></a>
+      </section>
+
+      <div id="auth-panel" hidden>
+        <div class="auth-tabs" role="tablist" aria-label="Account access"><button id="signin-tab" type="button" role="tab" aria-selected="true" aria-controls="credentials-panel">Sign in</button><button id="register-tab" type="button" role="tab" aria-selected="false" aria-controls="credentials-panel" tabindex="-1">Create account</button></div>
+        <div id="credentials-panel" role="tabpanel" aria-labelledby="signin-tab">
+          <h2 id="card-title">Welcome back.</h2>
+          <p class="card-copy" id="form-copy">Your little worlds are right where you left them.</p>
+          <form id="credentials-form">
+            <fieldset id="credentials-fields">
+              <label for="account-email">Email address</label><input id="account-email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="254" spellcheck="false" autocapitalize="none">
+              <label for="account-password">Password</label><input id="account-password" name="password" type="password" autocomplete="current-password" required maxlength="4096" aria-describedby="password-help"><p class="field-help" id="password-help" hidden>Use at least 8 characters.</p>
+              <div id="confirm-password-field" hidden><label for="confirm-password">Confirm password</label><input id="confirm-password" name="confirm-password" type="password" autocomplete="new-password" maxlength="4096"></div>
+              <label class="checkbox-label" id="import-guest-field" hidden><input id="import-guest" type="checkbox"><span>Bring my guest worlds into this account.<small>This copies all worlds and earned seeds together. The guest originals stay on this device.</small></span></label>
+              <button class="primary-button" id="credentials-submit" type="submit">Sign in <span aria-hidden="true">↗</span></button>
+            </fieldset>
+          </form>
+          <button class="text-button" id="forgot-password" type="button">Forgot your password?</button>
+        </div>
+        <section id="reset-panel" hidden aria-labelledby="reset-title">
+          <h2 id="reset-title">A way back in.</h2><p class="card-copy">We’ll email you a link to choose a new password.</p>
+          <form id="reset-form"><fieldset id="reset-fields"><label for="reset-email">Email address</label><input id="reset-email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="254" spellcheck="false" autocapitalize="none"><button class="primary-button" type="submit">Send reset link <span aria-hidden="true">↗</span></button></fieldset></form>
+          <button class="text-button" id="back-to-signin" type="button">Back to sign in</button>
+        </section>
+      </div>
+
+      <section id="signedin-panel" hidden aria-labelledby="signedin-title">
+        <h2 id="signedin-title">Make yourself at home.</h2><p class="signedin-email" id="signedin-email"></p>
+        <section class="verification-panel" id="verification-panel" aria-labelledby="verification-title" hidden><h3 id="verification-title">One little check.</h3><p>Verify your email to save your worlds across devices. Follow the link in your inbox, then come back here.</p><div class="button-row"><button class="secondary-button" id="check-verification" type="button">I’ve verified my email</button><button class="text-button" id="resend-verification" type="button">Send another link</button></div></section>
+        <div class="sync-summary"><span class="sync-dot" id="sync-dot" aria-hidden="true"></span><p id="sync-summary">Your worlds stay saved on this device while your account connects.</p></div>
+        <div class="button-row account-actions"><button class="primary-button" id="sync-now" type="button">Save to account <span aria-hidden="true">↑</span></button><button class="secondary-button" id="download-save" type="button">Download a backup</button></div>
+        <section class="conflict-panel" id="conflict-panel" hidden aria-labelledby="conflict-title"><p class="eyebrow">TWO LITTLE BEGINNINGS</p><h3 id="conflict-title">Which worlds would you like to keep?</h3><p>Your account has a different save. Choose one complete set of worlds so your prizes and shop coins stay together.</p><div class="conflict-options"><button class="secondary-button" id="use-cloud" type="button">Use the account save<small>Replace this device’s account worlds.</small></button><button class="secondary-button" id="use-device" type="button">Keep this device’s save<small>Replace the save in your account.</small></button></div><p class="field-help">Download a backup before choosing if you’d like to keep a copy.</p></section>
+        <section class="guest-import"><h3>Your guest worlds</h3><p>Bring this device’s guest progress into your account. This replaces your account worlds as one set and keeps the guest originals.</p><button class="text-button" id="import-guest-button" type="button">Copy guest worlds to my account</button></section>
+        <div class="account-bottom"><button class="secondary-button" id="signout" type="button">Sign out</button><button class="text-button danger-text" id="open-delete" type="button">Delete account</button></div>
+      </section>
+
+      <p class="guest-note" id="guest-note"><a href="../">Keep playing as a guest <span aria-hidden="true">↗</span></a><span>No account needed. Guest progress stays in this browser.</span></p>
+    </section>
+  </main>
+  <footer><span>A SMALL ESCAPE BY SPRIGGAN</span><span>No rush. You’re right on time.</span></footer>
+
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-detail"><form id="confirm-form"><h2 id="confirm-title"></h2><p id="confirm-detail"></p><div class="dialog-actions"><button class="secondary-button" id="cancel-confirm" type="button">Keep things as they are</button><button class="primary-button" type="submit" id="confirm-action">Continue</button></div></form></dialog>
+  <dialog id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-detail"><form id="delete-form"><h2 id="delete-title">Leave this little home?</h2><p id="delete-detail">This deletes your account and its cloud save. Your guest worlds stay on this device. Download a backup first if you’d like one.</p><fieldset id="delete-fields"><label for="delete-password">Current password</label><input id="delete-password" type="password" autocomplete="current-password" required maxlength="4096"><label for="delete-confirmation">Type DELETE to confirm</label><input id="delete-confirmation" type="text" autocomplete="off" spellcheck="false" required pattern="DELETE"><p class="dialog-error" id="delete-error" role="alert" hidden></p><div class="dialog-actions"><button class="secondary-button" id="cancel-delete" type="button">Keep my account</button><button class="danger-button" type="submit">Delete my account</button></div></fieldset></form></dialog>
+  <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script><script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

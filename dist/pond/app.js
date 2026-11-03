@@ -1,7 +1,30 @@
 (()=>{
+ const main=document.querySelector('main'),loading=document.querySelector('#pond-loading');
+ let started=false;
+ function loadingError(message){
+  main.setAttribute('data-pond-loading','');main.setAttribute('aria-busy','false');
+  if(loading)loading.hidden=false;
+  document.querySelector('#pond-loading-title').textContent='Your saved pond could not open.';
+  document.querySelector('#pond-loading-detail').textContent=message||'Your save has not been changed. Open Account or try loading the pond again.';
+  document.querySelector('#pond-loading-actions').hidden=false;
+ }
+ const retry=document.querySelector('#pond-loading-retry');
+ if(retry)retry.onclick=async()=>{
+  const accounts=globalThis.SprigganAccounts;
+  if(!started&&accounts?.state?.worldsReady===false&&accounts.state.user?.emailVerified&&accounts.sync){
+   retry.disabled=true;
+   try{await accounts.sync()}catch(error){loadingError(error?.message)}
+   finally{retry.disabled=false}
+  }else location.reload();
+ };
+ function boot(){
+  let reportFailure=error=>{loadingError();globalThis.console?.error?.('The pond could not start.',error)};
+  try{
+  let failed=false,rendered=false;
+  const storage=globalThis.SprigganStorage||localStorage;
   const Life=globalThis.PondLife,Runtime=globalThis.SprigganRuntime;
   let stored=null;
-  try{stored=Life.decode(localStorage.getItem(Life.KEY))}catch{}
+  try{stored=Life.decode(storage.getItem(Life.KEY))}catch{}
   const pond=stored||Life.create();
   const SLOT_GOLDEN_ID='spriggan-golden-seed-koi';
   const seenSlotGolden=new Set(pond.fish.map(f=>f.id)),pendingSlotGolden=new Map();
@@ -9,7 +32,11 @@
   const koiPicker=document.querySelector('#koi-picker'),koiTag=document.querySelector('#koi-tag'),nameInput=document.querySelector('#koi-name'),renameForm=document.querySelector('#rename-koi'),renameBtn=document.querySelector('#start-rename');
   const koiLink=document.querySelector('#koi-link'),koiLinkLine=document.querySelector('#koi-link-line'),koiLinkHalo=document.querySelector('#koi-link-halo'),koiLinkDot=document.querySelector('#koi-link-dot');
   let tagPosition=null,tagSide=-1,tagPressed=false;
-  let selectedKoi=null,saveTimer=null,momentTimer=null,sceneEvent=null,surpriseIn=45+Math.random()*45;
+  let selectedKoi=null,saveTimer=null,significantSave=false,momentTimer=null,sceneEvent=null,surpriseIn=45+Math.random()*45;
+  reportFailure=error=>{
+    failed=true;clearTimeout(saveTimer);loadingError();
+    globalThis.console?.error?.('The pond stopped before it could display safely.',error);
+  };
   const canvas=document.querySelector('#pond');
   // Opaque canvas: the browser can skip alpha blending against the page.
   const mainCtx=canvas.getContext('2d',{alpha:false});
@@ -221,7 +248,7 @@
     const s=Math.min(w,h);
     decorSprites=LILY_PADS.map((pad,index)=>{
       const r=s*pad.r,padding=r+26;
-      return{...pad,kind:'pad',body:plantBodies[index],radius:r,...makeDecorSprite(padding*2,padding*2,padding,padding,()=>drawLilypad(0,0,r,0,pad.flower))};
+      return{...pad,kind:'pad',body:plantBodies[index],...makeDecorSprite(padding*2,padding*2,padding,padding,()=>drawLilypad(0,0,r,0,pad.flower))};
     });
     for(const branch of BRANCHES){
       decorSprites.push({...branch,kind:'branch',...makeDecorSprite(196,100,12,50,()=>drawBranch(0,0,0,1))});
@@ -347,6 +374,7 @@
     ctx.stroke();
   }
   function update(dt){
+    if(failed)return;
     t+=dt;PondPlants.update(plantBodies,dt,t,w,h);updateRain(dt);updateSurprises(dt);
     ambientTimer-=dt;
     if(ambientTimer<=0){ripples.push({x:rand(w*.12,w*.88),y:rand(h*.14,h*.82),r:2,life:.8,ambient:true});ambientTimer=rand(1.5,3.7)}
@@ -383,7 +411,7 @@
       f.x=clamp(f.x+Math.cos(f.a)*speed,18,w-18);
       f.y=clamp(f.y+Math.sin(f.a)*speed,18,h-18);
       if(hungry&&best<(f.size*.31)**2){
-        food.splice(food.indexOf(target),1);Life.feed(f);queueSave();
+        food.splice(food.indexOf(target),1);Life.feed(f);queueSave(true);
         if(f.id===selectedKoi)document.querySelector('#koi-tag-detail').textContent=`${f.meals} meals shared`;
         ripples.push({x:f.x+Math.cos(f.a)*f.size*.5,y:f.y+Math.sin(f.a)*f.size*.5,r:2,life:.5});
         f.burst=rand(.4,.9);
@@ -400,8 +428,18 @@
     drawSurface();
     drawRain();
     positionKoiTag();
+    if(!rendered){
+      rendered=true;main.removeAttribute('data-pond-loading');main.setAttribute('aria-busy','false');
+      if(loading)loading.hidden=true;
+      savePond(true);
+      if(typeof window.dispatchEvent==='function'){
+        const Constructor=window.Event||globalThis.Event;
+        if(Constructor)window.dispatchEvent(new Constructor('spriggan:world-ready'));
+      }
+    }
   }
   function frame(now){
+    if(failed)return;
     requestAnimationFrame(frame);
     if(document.hidden){last=now;return}
     const el=now-last;
@@ -411,6 +449,7 @@
     if(!qStamp)qStamp=now;
     // While paused nothing moves, so only redraw when something actually changed.
     if(paused&&!dirty)return;
+    try{
     if(!paused){
       update(Math.min(el/1000,.05));
       // If frames stay slow, quietly step down to a lighter rendering mode.
@@ -420,10 +459,11 @@
       }
     }
     render();dirty=false;
+    }catch(error){reportFailure(error)}
   }
   canvas.addEventListener('pointerdown',e=>{
     const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,chosen=nearestKoi(x,y);
-    if(removing){if(chosen){fish.splice(fish.indexOf(chosen),1);setRemoveMode(false);updateStatus()}}
+    if(removing){if(chosen){fish.splice(fish.indexOf(chosen),1);setRemoveMode(false);updateStatus();savePond(true)}}
     else if(chosen)showKoi(chosen);
     else{closeKoiTag();drop(x,y)}
   });
@@ -439,7 +479,7 @@
     toggleControlsBtn.querySelector('span').textContent=collapsed?'Show controls':'Hide controls';queueSave();
   };
   feedBtn.onclick=()=>drop(rand(w*.3,w*.7),rand(h*.3,h*.65),8);
-  addBtn.onclick=()=>{if(fish.length<12){spawn();if(removing)setRemoveMode(false)}else status.textContent='The pond is full (12 koi)'};
+  addBtn.onclick=()=>{if(fish.length<12){spawn();if(removing)setRemoveMode(false);savePond(true)}else status.textContent='The pond is full (12 koi)'};
   removeBtn.onclick=()=>{if(fish.length||removing)setRemoveMode(!removing);else status.textContent='No koi to remove'};
   function syncPause(){pauseBtn.querySelector('span').textContent=paused?'Resume':'Pause';pauseBtn.querySelector('svg').innerHTML=paused?'<path d="m8 5 11 7-11 7Z"/>':'<path d="M9 5v14M15 5v14"/>';pauseBtn.title=paused?'Resume pond':'Pause pond';pauseBtn.setAttribute('aria-pressed',paused);document.querySelector('#pause-badge').hidden=!paused;updateStatus()}
   pauseBtn.onclick=()=>{paused=!paused;syncPause()};
@@ -450,15 +490,22 @@
     rainFxBtn.setAttribute('aria-pressed',raining);
     rainFxBtn.querySelector('span').textContent=raining?'Remove rain':'Add rain';
     audio.toggle('rain',raining);
-    dirty=true;queueSave();
+    dirty=true;savePond(true);
   };
-  nightBtn.onclick=()=>{night=!night;nightBtn.querySelector('span').textContent=night?'Daylight':'Moonlight';nightBtn.title=night?'Switch to daylight':'Switch to moonlight';nightBtn.setAttribute('aria-pressed',night);document.querySelector('main').dataset.night=night;document.querySelector('#light-label').textContent=night?'Moonlight':'Daylight';buildLayers();queueSave();dirty=true};
+  nightBtn.onclick=()=>{night=!night;nightBtn.querySelector('span').textContent=night?'Daylight':'Moonlight';nightBtn.title=night?'Switch to daylight':'Switch to moonlight';nightBtn.setAttribute('aria-pressed',night);document.querySelector('main').dataset.night=night;document.querySelector('#light-label').textContent=night?'Moonlight':'Daylight';buildLayers();savePond(true);dirty=true};
   speedInput.oninput=()=>{pace=Number(speedInput.value);speedValue.textContent=`${pace.toFixed(1)}×`;queueSave()};
+  speedInput.onchange=()=>savePond(true);
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){if(removing)setRemoveMode(false);if(!koiTag.hidden){closeKoiTag();canvas.focus({preventScroll:true})}}
     if(e.code==='Space'&&!e.target.closest?.('button,input,select,textarea,[contenteditable=true]')){e.preventDefault();pauseBtn.click()}
   });
-  function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(savePond,900)}
+  function queueSave(significant=false){
+    if(failed)return;
+    if(significant===true)significantSave=true;
+    // Save within a bounded interval even while koi keep eating.
+    if(saveTimer!==null)return;
+    saveTimer=setTimeout(()=>{saveTimer=null;savePond()},900);
+  }
   function welcomeSlotGolden(announceArrival=false){
     for(const [id,record] of pendingSlotGolden){
       if(!fish.some(f=>f.id===id)){
@@ -478,19 +525,26 @@
     }
     return welcomeSlotGolden(announceArrival);
   }
-  function savePond(){
-    clearTimeout(saveTimer);
+  function savePond(significant=false){
+    clearTimeout(saveTimer);saveTimer=null;
+    if(significant===true)significantSave=true;
+    if(failed||!rendered)return false;
     try{
       // A suspended tab can save before its queued storage event is delivered.
-      if(!receiveSlotGolden(localStorage.getItem(Life.KEY))){
+      if(!receiveSlotGolden(storage.getItem(Life.KEY))){
         memoryLine.textContent='Kin is waiting. Remove a koi to welcome him and save your pond.';
-        return;
+        return false;
       }
       pond.savedAt=Date.now();pond.fish=fish.map(f=>Life.record(f,w,h));
       pond.settings={night,raining,pace,rainVolume:Number(rainVolInput.value),collapsed:panel.classList.contains('is-collapsed'),audio:{...audioPreferences}};
-      localStorage.setItem(Life.KEY,JSON.stringify(pond));memoryLine.textContent='Your pond is saved on this device.';
+      storage.setItem(Life.KEY,JSON.stringify(pond));memoryLine.textContent='Your pond is saved on this device.';
+      if(significantSave){
+        significantSave=false;
+        void globalThis.SprigganAccounts?.saveProgress?.().catch(()=>{});
+      }
+      return true;
     }
-    catch{memoryLine.textContent='Saving is unavailable here. Your pond will last for this visit.'}
+    catch{memoryLine.textContent='Saving is unavailable here. Your pond will last for this visit.';return false}
   }
   function refreshKoiPicker(){
     const previous=koiPicker.value;koiPicker.replaceChildren(new Option('Meet a koi…',''));
@@ -547,11 +601,12 @@
     momentLine.textContent=text;momentLine.classList.add('visible');clearTimeout(momentTimer);
     momentTimer=setTimeout(()=>momentLine.classList.remove('visible'),7000);
   }
-  function checkGrowthAndVisitors(){
+  function checkGrowthAndVisitors(significant=false){
+    if(failed)return;
     const now=Date.now();
     for(const f of fish){const old=f.growth;Life.settleGrowth(f,now);if(old!==f.growth){f.size=f.baseSize*(1+f.growth)*(w<=720?.72:1);f.grad=null;dirty=true}}
     pond.fish=fish.map(f=>Life.record(f,w,h));
-    savePond();
+    savePond(significant===true);
   }
   function decorPose(sprite){
     const phase=sprite.phase;let x=w*sprite.x,y=h*sprite.y,angle=sprite.angle;
@@ -633,6 +688,7 @@
     if(Object.values(audioPreferences).some(Boolean)&&(!Object.values(audio.enabled).some(Boolean)||audio.needsResume))resumeSavedAudio();
   });
   rainVolInput.oninput=()=>{const value=Number(rainVolInput.value);rainVolValue.textContent=`${value}%`;audio.setVolume(value);queueSave()};
+  rainVolInput.onchange=()=>savePond(true);
   koiPicker.onchange=()=>{const f=fish.find(f=>f.id===koiPicker.value);if(f)showKoi(f)};
   document.querySelector('#close-koi-tag').onclick=()=>{closeKoiTag();canvas.focus({preventScroll:true})};
   renameBtn.onclick=()=>{renameForm.hidden=false;renameBtn.hidden=true;nameInput.focus();nameInput.select()};
@@ -648,9 +704,9 @@
   renameForm.onsubmit=e=>{
     e.preventDefault();const f=fish.find(f=>f.id===selectedKoi);if(!f)return;
     const name=nameInput.value.trim();if(!name){nameInput.setCustomValidity('Give your koi a name.');nameInput.reportValidity();return}
-    f.name=Life.cleanName(name,f.name);refreshKoiPicker();showKoi(f);renameBtn.focus();savePond();
+    f.name=Life.cleanName(name,f.name);refreshKoiPicker();showKoi(f);renameBtn.focus();savePond(true);
   };
-  document.addEventListener('visibilitychange',()=>{savePond();if(Runtime.mobile)audio.visibility(document.hidden);else if(!document.hidden&&audio.needsResume)audio.resume();if(!document.hidden){last=performance.now();checkGrowthAndVisitors()}});
+  document.addEventListener('visibilitychange',()=>{savePond();if(Runtime.mobile)audio.visibility(document.hidden);else if(!document.hidden&&audio.needsResume)audio.resume();if(!document.hidden){last=performance.now();checkGrowthAndVisitors(true)}});
   window.addEventListener('storage',e=>{
     if(e.key!==Life.KEY||(e.storageArea&&e.storageArea!==localStorage))return;
     if(!receiveSlotGolden(e.newValue,true)){
@@ -659,6 +715,7 @@
     }
   });
   window.addEventListener('pagehide',()=>{savePond();audio.visibility(true)});
+  window.addEventListener('spriggan:flush',savePond);
   window.addEventListener('pageshow',()=>{audio.visibility(document.hidden&&Runtime.mobile);syncAudioRecovery()});
   window.addEventListener('focus',()=>{if(!document.hidden)audio.visibility(false)});
   let resizeRaf=0;
@@ -676,12 +733,30 @@
   if(stored)document.querySelector('.intro .eyebrow').textContent='Welcome back to your pond';
   syncPause();syncFeedingStatus();checkGrowthAndVisitors();setInterval(checkGrowthAndVisitors,30000);
   let backgroundSaveAt=0;
-  Runtime.runBackground(update,()=>{const now=performance.now();if(now-backgroundSaveAt>=1000){backgroundSaveAt=now;checkGrowthAndVisitors()}dirty=true},()=>paused);
+  Runtime.runBackground(update,()=>{const now=performance.now();if(now-backgroundSaveAt>=1000){backgroundSaveAt=now;checkGrowthAndVisitors()}dirty=true},()=>paused||failed);
   requestAnimationFrame(frame);
   if(document.modelContext?.registerTool){
     const register=tool=>{try{Promise.resolve(document.modelContext.registerTool(tool)).catch(()=>{})}catch{}};
     register({name:'feed_koi',title:'Feed the koi',description:'Drop food into the pond at a position given as percentages of its width and height, up to 100 food pieces in the pond at once.',inputSchema:{type:'object',properties:{x:{type:'number',minimum:0,maximum:100},y:{type:'number',minimum:0,maximum:100}},required:['x','y'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){if(!input||!Number.isFinite(input.x)||!Number.isFinite(input.y)||input.x<0||input.x>100||input.y<0||input.y>100)throw Error('x and y must be numbers from 0 to 100');const added=drop(w*input.x/100,h*input.y/100);return{foodPieces:food.length,added,limit:MAX_FOOD}}});
-    register({name:'add_koi',title:'Add a koi',description:'Add one koi to the pond, up to a maximum of twelve.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:false},execute(){if(fish.length>=12)throw Error('The pond is full');spawn();return{koiCount:fish.length}}});
-    register({name:'remove_koi',title:'Remove a koi',description:'Remove a koi by its position in the pond, counting from one.',inputSchema:{type:'object',properties:{number:{type:'integer',minimum:1,maximum:12}},required:['number'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){if(!input||!Number.isInteger(input.number)||input.number<1||input.number>fish.length)throw Error('Choose a koi number currently in the pond');fish.splice(input.number-1,1);if(removing)setRemoveMode(false);updateStatus();return{koiCount:fish.length}}});
+    register({name:'add_koi',title:'Add a koi',description:'Add one koi to the pond, up to a maximum of twelve.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:false},execute(){if(fish.length>=12)throw Error('The pond is full');spawn();savePond(true);return{koiCount:fish.length}}});
+    register({name:'remove_koi',title:'Remove a koi',description:'Remove a koi by its position in the pond, counting from one.',inputSchema:{type:'object',properties:{number:{type:'integer',minimum:1,maximum:12}},required:['number'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){if(!input||!Number.isInteger(input.number)||input.number<1||input.number>fish.length)throw Error('Choose a koi number currently in the pond');fish.splice(input.number-1,1);if(removing)setRemoveMode(false);updateStatus();savePond(true);return{koiCount:fish.length}}});
   }
+  }catch(error){reportFailure(error)}
+ }
+ function openPond(){
+  if(started)return;
+  const accounts=globalThis.SprigganAccounts;
+  if(accounts?.state?.loading){
+    main.setAttribute('aria-busy','true');
+    document.querySelector('#pond-loading-title').textContent='Opening your saved pond…';
+    document.querySelector('#pond-loading-detail').textContent='Your koi will appear when your saved world is ready.';
+    document.querySelector('#pond-loading-actions').hidden=true;return;
+  }
+  if(accounts?.state?.worldsReady===false){loadingError(accounts.state.message);return}
+  started=true;
+  boot();
+ }
+ if(globalThis.SprigganAccounts){
+  SprigganAccounts.ready.then(()=>{openPond();SprigganAccounts.subscribe?.(openPond)},()=>{loadingError();SprigganAccounts.subscribe?.(openPond)});
+ }else openPond();
 })();
