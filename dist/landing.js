@@ -54,7 +54,7 @@
   function overview(full = false) {
     flight = null;
     const mobile = compact.matches;
-    const scale = full ? minimumScale() : fit * 1.05;
+    const scale = full ? minimumScale() : fit * .9;
     camera = {
       scale,
       x: stage.clientWidth / 2 - (full ? W / 2 : mobile ? 410 : W * .45) * scale,
