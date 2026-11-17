@@ -1,5 +1,5 @@
 import * as T from '../claw/vendor/three.module.min.js';
-import {FishingScene, createFishModel} from './fishing-scene.js?v=1';
+import {FishingScene, createFishModel} from './fishing-scene.js?v=fish-approach-1';
 
 const Life = window.FishingLife;
 const $ = selector => document.querySelector(selector);
@@ -8,6 +8,10 @@ const SETTINGS_KEY='spriggan.fishing.settings.v1';
 const defaults={evening:false,rain:false,sound:false,method:'hold'};
 let settings={...defaults};
 try {const saved=JSON.parse(localStorage.getItem(SETTINGS_KEY));if(saved&&typeof saved==='object')settings={evening:saved.evening===true,rain:saved.rain===true,sound:saved.sound===true,method:saved.method==='toggle'?'toggle':'hold'};} catch {}
+const savedAtmosphere={rain:settings.rain,sound:settings.sound};
+const atmosphereQuery=new URLSearchParams(window.location.search);
+let previewRain=atmosphereQuery.get('weather')==='rain',previewNature=atmosphereQuery.get('nature')==='1';
+if(previewRain)settings.rain=true;if(previewNature)settings.sound=true;
 let guide=Life.createProgress();
 try {guide=Life.decodeProgress(localStorage.getItem(Life.KEY));} catch {}
 const session=Life.createSession();
@@ -17,39 +21,60 @@ let spot='open',target=spots.open,holding=false,paused=false,scene=null,last=per
 let saveFailed=false,seenCatch=null,uiElapsed=0,portrait=null,portraitModel=null,portraitHost=null,suppressReelClick=false;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const action=$('#fishing-action'),journal=$('#field-guide'),riverSettings=$('#river-settings');
-const isSuspended=()=>paused||journal.open||riverSettings.open||document.hidden;
+const controllerToggle=$('#toggle-controls'),controllerPanel=$('#fishing-panel'),controllerHome=$('#fishing-controls-view');
+let guideOpen=false;
+const isSuspended=()=>paused||riverSettings.open||document.hidden;
 const discoveries=()=>Object.keys(guide.records).length;
 const fishById=id=>Life.SPECIES.find(f=>f.id===id)||Life.SPECIES[0];
-function saveSettings(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));}catch{}}
+function saveSettings(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify({...settings,rain:previewRain?savedAtmosphere.rain:settings.rain,sound:previewNature?savedAtmosphere.sound:settings.sound}));}catch{}}
 function saveGuide(){try{localStorage.setItem(Life.KEY,Life.encodeProgress(guide));saveFailed=false;}catch{saveFailed=true;}syncSave();}
 function syncSave(){text('#save-status',saveFailed?'Your guide is in memory. This browser could not save it.':'Discoveries save in this browser.');}
 
-// A quiet loop is created only after a user gesture, never on page load.
-let soundContext=null,soundSource=null,soundGain=null;
+// Share the pond's recordings, seamless rain loop, and playback recovery rules.
+// A remembered preference shows a resume action; it never starts media on load.
+let riverAudio=null,soundAuthorized=false,audioPageHidden=false,audioMessage='';
+const audioHidden=()=>document.hidden||audioPageHidden;
+function syncAudioStatus(){
+ const status=$('#river-audio-status'),resume=$('#river-audio-resume');
+ const needsResume=settings.sound&&!audioHidden()&&(!soundAuthorized||!riverAudio||riverAudio.needsResume);
+ if(resume)resume.hidden=!needsResume;
+ const message=!settings.sound?'Nature sounds are off.':audioHidden()?'Nature sounds pause while you are away.':
+  !soundAuthorized?'Tap Resume nature sounds to listen.':audioMessage||
+  (riverAudio?.loading.size?'Nature sounds are loading…':needsResume?'Tap Resume nature sounds to continue.':settings.rain?'Nature and rain sounds are on.':'Nature sounds are on.');
+ if(status&&status.textContent!==message)status.textContent=message;
+}
+function pondAudio(){
+ if(riverAudio)return riverAudio;
+ const audio=new window.PondAudio(()=>{},message=>{
+  audioMessage=message.replace(/Tap its button to retry\./,'Tap Resume nature sounds to retry.');syncAudioStatus();
+ },()=>syncAudioStatus());
+ // PondAudio's default filenames are relative to its page. Remap before any play().
+ audio.player('ambient').src=new URL('../pond/mixkit-night-crickets-near-the-swamp-1782.wav',import.meta.url).href;
+ audio.player('rain').src=new URL('../pond/rain-seamless.wav',import.meta.url).href;
+ audio.setVolume(40);riverAudio=audio;return audio;
+}
 async function syncSound(userGesture=false){
- if(!settings.sound||document.hidden){if(soundContext?.state==='running')await soundContext.suspend().catch(()=>{});return;}
- if(!soundContext&&!userGesture)return;
  try{
-  if(!soundContext){
-   const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)throw Error('audio unavailable');
-   soundContext=new AudioContext();const buffer=soundContext.createBuffer(1,soundContext.sampleRate*3,soundContext.sampleRate),data=buffer.getChannelData(0);
-   let smooth=0;for(let i=0;i<data.length;i++){smooth=(smooth+(Math.random()*2-1)*.02)/1.02;data[i]=smooth*3;}
-   soundSource=soundContext.createBufferSource();soundSource.buffer=buffer;soundSource.loop=true;
-   const filter=soundContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=950;
-   soundGain=soundContext.createGain();soundGain.gain.value=.18;soundSource.connect(filter).connect(soundGain).connect(soundContext.destination);soundSource.start();
+  if(!settings.sound){
+   audioMessage='';
+   if(riverAudio)await Promise.all([riverAudio.toggle('ambient',false),riverAudio.toggle('rain',false)]);
+  }else if(audioHidden()){
+   if(riverAudio)await riverAudio.visibility(true);
+  }else{
+   if(userGesture)soundAuthorized=true;
+   if(!soundAuthorized){syncAudioStatus();return;}
+   audioMessage='';const audio=pondAudio(),jobs=[];
+   for(const [name,wanted] of [['ambient',true],['rain',settings.rain]])if(audio.enabled[name]!==wanted)jobs.push(audio.toggle(name,wanted));
+   if(audio.hidden)jobs.push(audio.visibility(false));
+   else if(userGesture||audio.needsResume)jobs.push(audio.resume());
+   await Promise.all(jobs);
   }
-  await soundContext.resume();
- }catch{settings.sound=false;saveSettings();text('#river-sound','River sounds unavailable');$('#river-sound').setAttribute('aria-pressed','false');}
+ }catch{audioMessage='Nature sounds could not start. Tap Resume nature sounds to retry.';}
+ syncAudioStatus();
 }
-function noteTone(kind){
- if(!settings.sound||soundContext?.state!=='running')return;
- try{
- const osc=soundContext.createOscillator(),gain=soundContext.createGain(),now=soundContext.currentTime;
- osc.type='sine';osc.frequency.setValueAtTime(kind==='bite'?660:440,now);osc.frequency.exponentialRampToValueAtTime(kind==='bite'?880:660,now+.16);
- gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(.065,now+.018);gain.gain.exponentialRampToValueAtTime(.001,now+.4);
- osc.connect(gain).connect(soundContext.destination);osc.start(now);osc.stop(now+.42);
- }catch{settings.sound=false;saveSettings();syncSettings();}
-}
+// Keep the fishing cues visual and let the nature recordings stay undisturbed.
+function noteTone(){}
+$('#river-audio-resume')?.addEventListener('click',()=>syncSound(true));
 
 function openScene(){
  try{scene?.dispose();scene=null;scene=new FishingScene($('#river-scene'));scene.aimAt(target);$('#scene-error').hidden=true;$('.river-loading').hidden=true;}
@@ -74,8 +99,8 @@ function startCast(){holding=false;scene?.aimAt(target);Life.cast(session,{spot,
 function hook(){if(Life.hook(session)){holding=false;noteTone('hook');sync();}}
 function releaseFish(){holding=false;Life.release(session);$('#catch-note').hidden=true;sync();}
 function act(){
+ if(riverSettings.open)return;
  if(paused){paused=false;last=performance.now();sync();return;}
- if(journal.open||riverSettings.open)return;
  if(session.phase==='idle')startCast();
  else if(session.phase==='bite')hook();
  else if(session.phase==='caught')releaseFish();
@@ -111,7 +136,8 @@ document.addEventListener('keydown',controlKey);
 document.addEventListener('keyup',event=>{if(event.code==='Space'||event.key==='Enter')stopHolding();});
 window.addEventListener('blur',()=>{holding=false;last=performance.now();sync();});
 document.addEventListener('visibilitychange',()=>{holding=false;last=performance.now();syncSound();sync();});
-window.addEventListener('pagehide',()=>{holding=false;saveSettings();if(soundContext?.state==='running')soundContext.suspend().catch(()=>{});});
+window.addEventListener('pagehide',()=>{holding=false;audioPageHidden=true;saveSettings();syncSound();});
+window.addEventListener('pageshow',()=>{audioPageHidden=false;last=performance.now();syncSound();});
 window.addEventListener('storage',event=>{
  if(event.key!==Life.KEY||!event.newValue)return;
  const latest=Life.decodeProgress(event.newValue);if(latest.total>=guide.total){guide=latest;syncGuide();}
@@ -121,20 +147,52 @@ function syncSettings(){
  document.body.dataset.evening=String(settings.evening);
  $('#river-evening').setAttribute('aria-pressed',String(settings.evening));text('#river-evening',settings.evening?'Daylight':'Evening');
  $('#river-rain').setAttribute('aria-pressed',String(settings.rain));text('#river-rain',settings.rain?'Remove rain':'Add rain');
- $('#river-sound').setAttribute('aria-pressed',String(settings.sound));text('#river-sound',settings.sound?'River sounds on':'River sounds off');
+ $('#river-sound').setAttribute('aria-pressed',String(settings.sound));text('#river-sound',settings.sound?'Nature sounds on':'Nature sounds off');
  $('#river-pause').setAttribute('aria-pressed',String(paused));text('#river-pause',paused?'Resume fishing':'Pause fishing');
  for(const b of document.querySelectorAll('[data-method]'))b.setAttribute('aria-pressed',String(b.dataset.method===settings.method));
  text('#river-condition',`${settings.evening?'Evening':'Daylight'} · ${settings.rain?'A passing shower':'The river is open'}`);
  text('.keyboard-note',`Space to cast · ${settings.method==='hold'?'Hold':'Tap'} Space to reel`);
+ syncAudioStatus();
 }
 $('#river-evening').onclick=()=>{settings.evening=!settings.evening;saveSettings();syncSettings();};
-$('#river-rain').onclick=()=>{settings.rain=!settings.rain;saveSettings();syncSettings();};
-$('#river-sound').onclick=()=>{settings.sound=!settings.sound;saveSettings();syncSettings();syncSound(true);};
+$('#river-rain').onclick=()=>{previewRain=false;settings.rain=!settings.rain;saveSettings();syncSettings();syncSound(true);};
+$('#river-sound').onclick=()=>{previewNature=false;settings.sound=!settings.sound;saveSettings();syncSettings();syncSound(true);};
 $('#river-pause').onclick=()=>{paused=!paused;holding=false;syncSettings();sync();};
 for(const b of document.querySelectorAll('[data-method]'))b.onclick=()=>{settings.method=b.dataset.method;holding=false;saveSettings();syncSettings();sync();};
+function setGuideView(open){
+ const wasOpen=guideOpen;guideOpen=open;journal.hidden=!open;controllerHome.hidden=open;$('#close-guide').hidden=!open;
+ if(wasOpen!==open)$('#fishing-panel-scroll').scrollTop=0;
+ text('#controller-title',open?'Field guide':'By the river');
+ if(wasOpen&&!open&&session.phase==='caught')showPortrait($('#catch-portrait'),session.fish);
+}
+function syncController(){
+ const open=riverSettings.open;
+ controllerToggle.setAttribute('aria-expanded',String(open));
+ controllerToggle.setAttribute('aria-label',open?'Close fishing controls':'Open fishing controls');
+ controllerPanel.inert=!open;controllerPanel.setAttribute('aria-hidden',String(!open));
+ if(!open&&guideOpen)setGuideView(false);
+}
+function openController(){
+ holding=false;riverSettings.open=true;last=performance.now();sync();
+}
+function closeController(restoreFocus=true){
+ const wasOpen=riverSettings.open;holding=false;riverSettings.open=false;last=performance.now();sync();
+ if(wasOpen&&restoreFocus)controllerToggle.focus({preventScroll:true});
+}
+controllerToggle.addEventListener('click',event=>{
+ event.preventDefault();if(riverSettings.open)closeController();else openController();
+});
+$('#close-fishing-controls').onclick=()=>closeController();
+// Native details toggle events are queued. An opening notification must not reset a guide just opened by the catch card.
 riverSettings.addEventListener('toggle',()=>{holding=false;last=performance.now();sync();});
-document.addEventListener('pointerdown',event=>{if(!riverSettings.contains(event.target))riverSettings.open=false;});
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&riverSettings.open){riverSettings.open=false;riverSettings.querySelector('summary').focus();}});
+document.addEventListener('pointerdown',event=>{
+ if(!riverSettings.open||riverSettings.contains(event.target))return;
+ const focusWouldStayHidden=controllerPanel.contains(document.activeElement)&&!event.target.closest?.('button,a,input,select,textarea,summary,[tabindex],[contenteditable=true]');
+ closeController(focusWouldStayHidden);
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&riverSettings.open){event.preventDefault();closeController();}
+});
 
 function makeIcon(){
  const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');
@@ -150,11 +208,14 @@ function syncGuide(){
   const icon=makeIcon(),copy=document.createElement('span'),name=document.createElement('strong'),detail=document.createElement('small');
   name.textContent=known?fish.name:`Unknown fish ${String(i+1).padStart(2,'0')}`;detail.textContent=known?`${guide.records[fish.id].count} ${guide.records[fish.id].count===1?'encounter':'encounters'}`:'Waiting to be discovered';copy.append(name,detail);b.append(icon,copy);b.onclick=()=>selectSpecimen(fish.id);list.append(b);
  });
- if(journal.open)selectSpecimen(guideSelection);
+ if(guideOpen)selectSpecimen(guideSelection);
 }
 function selectSpecimen(id){
  guideSelection=id;const fish=fishById(id),record=guide.records[id],known=!!record;
- for(const b of document.querySelectorAll('[data-species]'))b.setAttribute('aria-current',String(b.dataset.species===id));
+ for(const b of document.querySelectorAll('[data-species]')){
+  const selected=b.dataset.species===id;b.setAttribute('aria-current',String(selected));
+  if(selected&&guideOpen)b.scrollIntoView?.({block:'nearest',inline:'nearest'});
+ }
  text('#specimen-number',`${String(Life.SPECIES.indexOf(fish)+1).padStart(2,'0')} / ${String(Life.SPECIES.length).padStart(2,'0')}`);
  text('#specimen-name',known?fish.name:'A quiet silhouette');text('#specimen-note',fish.hint);
  text('#specimen-count',known?`${record.count} ${record.count===1?'time':'times'}`:'Not yet');text('#specimen-best',known?`${record.bestLength.toFixed(1)} cm`:'—');
@@ -162,16 +223,13 @@ function selectSpecimen(id){
  $('#guide-portrait').setAttribute('aria-label',known?`${fish.name}, a miniature fish specimen`:'Silhouette of an undiscovered fish');
  showPortrait($('#guide-portrait'),fish,!known);
 }
-let guideReturnFocus=null;
 function openGuide(id){
- holding=false;riverSettings.open=false;if(id)guideSelection=id;guideReturnFocus=document.activeElement;
- syncGuide();if(!journal.open)journal.showModal();selectSpecimen(guideSelection);last=performance.now();sync();
+ openController();if(id)guideSelection=id;setGuideView(true);
+ syncGuide();last=performance.now();sync();$('#close-guide').focus({preventScroll:true});
 }
-function closeGuide(){journal.close();last=performance.now();holding=false;guideReturnFocus?.focus?.({preventScroll:true});if(session.phase==='caught')showPortrait($('#catch-portrait'),session.fish);sync();}
+function closeGuide(){setGuideView(false);last=performance.now();holding=false;sync();$('#open-guide').focus({preventScroll:true});}
 $('#open-guide').onclick=()=>openGuide();$('#catch-guide').onclick=()=>openGuide(session.catch?.species);
 $('#close-guide').onclick=closeGuide;$('#return-river').onclick=closeGuide;
-journal.addEventListener('cancel',event=>{event.preventDefault();closeGuide();});
-journal.addEventListener('click',event=>{if(event.target===journal){const r=journal.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeGuide();}});
 
 function showPortrait(host,fish,silhouette=false){
  try{
@@ -210,6 +268,7 @@ function landed(){
  $('#catch-note').hidden=false;showPortrait($('#catch-portrait'),session.fish);syncGuide();noteTone('catch');
 }
 function sync(){
+ syncController();
  document.body.dataset.phase=session.phase;document.body.dataset.holding=String(holding);
  const suspended=isSuspended(),phase=session.phase;
  const labels={idle:'Cast a line',casting:'Casting…',waiting:'Watching the float…',bite:'Hook!',reeling:settings.method==='toggle'?(holding?'Give it slack':'Reel in'):'Hold to reel',caught:'Release fish',escaped:'Cast again'};
@@ -218,10 +277,10 @@ function sync(){
  if(phase==='reeling')action.setAttribute('aria-pressed',String(holding));else action.removeAttribute('aria-pressed');
  action.setAttribute('aria-label',paused?'Resume fishing':phase==='reeling'?`${labels.reeling}. Release when the line grows tight.`:labels[phase]);
  $('#lift-line').hidden=!['waiting','bite','reeling'].includes(phase);$('#reel-readout').hidden=phase!=='reeling';
- $('#cast-spots').hidden=!['idle','escaped'].includes(phase);
- for(const b of document.querySelectorAll('[data-spot]'))b.setAttribute('aria-pressed',String(b.dataset.spot===spot));
- const hints={idle:'Choose a spot, or tap the water to cast.',casting:'A small arc, a quiet splash.',waiting:'Little nibbles are a hello. Wait for the float to dip.',bite:'The float is under. Tap to set the hook!',reeling:settings.method==='toggle'?'Tap to reel. Tap again to give the fish slack.':'Hold to reel. Let go when the line tightens.',caught:'Recorded in your guide. Ready to swim another day.',escaped:session.escapeReason+' Nothing lost. Cast again.'};
- text('#action-hint',paused?'Fishing paused. Resume whenever you like.':journal.open?'Your line can wait while you read.':riverSettings.open?'A quiet moment while you adjust the river.':hints[phase]);
+ $('#cast-spots').hidden=false;
+ for(const b of document.querySelectorAll('[data-spot]')){b.setAttribute('aria-pressed',String(b.dataset.spot===spot));b.disabled=!['idle','escaped'].includes(phase);}
+ const hints={idle:'Choose a spot, or tap the water to cast.',casting:'A small arc, a quiet splash.',waiting:'Watch the fish approach. Wait for the float to dip.',bite:'The float is under. Tap to set the hook!',reeling:settings.method==='toggle'?'Tap to reel. Tap again to give the fish slack.':'Hold to reel. Let go when the line tightens.',caught:'Recorded in your guide. Ready to swim another day.',escaped:session.escapeReason+' Nothing lost. Cast again.'};
+ text('#action-hint',paused?'Fishing paused. Resume whenever you like.':guideOpen?'Your line can wait while you read.':riverSettings.open?'A quiet moment while you adjust the river.':hints[phase]);
  if(!suspended&&phase==='reeling')syncReel();
  syncSettings();
 }

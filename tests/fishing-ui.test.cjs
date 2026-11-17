@@ -1,97 +1,72 @@
-/* Run the real UI handlers with a small DOM/renderer adapter; no browser or WebGL needed. */
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const vm = require('node:vm');
 const Life = require('../dist/fishing/fishing-life.js');
-const html = fs.readFileSync(require.resolve('../dist/fishing/index.html'), 'utf8');
-const source = fs.readFileSync(require.resolve('../dist/fishing/fishing.js'), 'utf8').replace(/^import[^\n]*\n/gm, '');
+const {harness} = require('./helpers/fishing-ui.cjs');
 
-function harness({saved, settings, noStorage=false, sceneFails=false, sceneUpdateFails=false, AudioContext}={}) {
-  const nodes = [], ids = new Map(), listeners = new Map(), storage = new Map(), writes = [];
-  let now = 0, nextFrame, document;
-  function event(type, target, extra={}) {
-    return {type,target,button:0,pointerId:1,code:'',key:'',repeat:false,defaultPrevented:false,
-      preventDefault(){this.defaultPrevented=true;},...extra};
+test('the controller launcher exposes one accessible, initially closed controls panel',()=>{
+  const h=harness(),launcher=h.$('#toggle-controls'),panel=h.$('#fishing-panel');
+  assert.equal(h.$('#river-settings').open,false);assert.equal(panel.inert,true);
+  assert.equal(launcher.getAttribute('aria-expanded'),'false');
+  assert.equal(launcher.getAttribute('aria-label'),'Open fishing controls');
+  assert.equal(h.$('#field-guide').tagName,'SECTION');assert.equal(h.$('#field-guide').hidden,true);
+  assert.equal(h.$('#fishing-controls-view').hidden,false);assert.equal(h.$('#close-guide').hidden,true);
+  h.openControls();assert.equal(panel.inert,false);assert.equal(panel.getAttribute('aria-hidden'),'false');
+  assert.equal(launcher.getAttribute('aria-expanded'),'true');assert.equal(launcher.getAttribute('aria-label'),'Close fishing controls');
+  h.closeControls();assert.equal(panel.inert,true);assert.equal(h.document.activeElement,launcher);
+});
+
+test('the guide is a controller view and both back buttons return to the controls without closing the panel',()=>{
+  const h=harness();h.openControls();
+  for(const back of ['#close-guide','#return-river']){
+    h.click('#open-guide');
+    assert.equal(h.$('#field-guide').hidden,false);assert.equal(h.$('#fishing-controls-view').hidden,true);
+    assert.equal(h.$('#close-guide').hidden,false);assert.equal(h.$('#controller-title').textContent,'Field guide');
+    assert.equal(h.document.activeElement,h.$('#close-guide'));
+    assert.equal(h.$('#river-settings').contains(h.$('#field-guide')),true);
+    assert.equal(h.$('#river-settings').contains(h.$('#river-pause')),true);
+    h.click(back);assert.equal(h.$('#river-settings').open,true);assert.equal(h.$('#field-guide').hidden,true);
+    assert.equal(h.$('#fishing-controls-view').hidden,false);assert.equal(h.$('#controller-title').textContent,'By the river');
+    assert.equal(h.document.activeElement,h.$('#open-guide'));
   }
-  function dispatch(target, type, extra={}) {
-    const e = event(type,target,extra);
-    for(const fn of (target===document?listeners:target.listeners)?.get(type)||[])fn(e);
-    target['on'+type]?.(e);
-    if(target!==document && target!==window)for(const fn of listeners.get(type)||[])fn(e);
-    return e;
+});
+
+test('header close, summary, Escape, and outside input all reset the guide before the next opening',()=>{
+  for(const close of ['header','summary','escape','outside']){
+    const h=harness();h.openControls();h.click('#open-guide');
+    if(close==='header')h.click('#close-fishing-controls');
+    else if(close==='summary')h.click('#toggle-controls');
+    else if(close==='escape')h.key('keydown',{key:'Escape',code:'Escape',target:h.$('#close-guide')});
+    else h.document.fire('pointerdown',{target:h.$('#river-scene')});
+    h.drainToggles();assert.equal(h.$('#river-settings').open,false,close);
+    assert.equal(h.$('#field-guide').hidden,true,close);assert.equal(h.$('#fishing-panel').inert,true,close);
+    assert.equal(h.document.activeElement,h.$('#toggle-controls'),close);
+    h.openControls();assert.equal(h.$('#fishing-controls-view').hidden,false);assert.equal(h.$('#close-guide').hidden,true);
   }
-  function node(tag='div', attrs={}) {
-    const n = {tagName:tag.toUpperCase(),dataset:{},attributes:{},listeners:new Map(),children:[],
-      parentElement:null,isConnected:true,hidden:false,open:false,textContent:'',style:{setProperty(){}},
-      clientWidth:240,clientHeight:140,offsetHeight:180,value:0,
-      setAttribute(k,v){this.attributes[k]=String(v);},getAttribute(k){return this.attributes[k]??null;},
-      removeAttribute(k){delete this.attributes[k];},
-      addEventListener(type,fn){if(!this.listeners.has(type))this.listeners.set(type,[]);this.listeners.get(type).push(fn);},
-      append(...children){for(const child of children){child.parentElement=this;child.isConnected=true;this.children.push(child);}},
-      replaceChildren(...children){for(const child of this.children)child.isConnected=false;this.children=[];this.append(...children);},
-      contains(other){for(let at=other;at;at=at.parentElement)if(at===this)return true;return false;},
-      closest(selectors){return selectors.split(',').some(s=>s.trim()===tag||s.trim()==='[contenteditable=true]'&&this.attributes.contenteditable==='true')?this:this.parentElement?.closest(selectors)||null;},
-      querySelector(selector){return nodes.find(candidate=>candidate!==this&&this.contains(candidate)&&matches(candidate,selector))||null;},
-      focus(){document.activeElement=this;},setPointerCapture(){},
-      showModal(){this.open=true;},close(){this.open=false;},
-      getBoundingClientRect(){return {left:10,right:830,top:10,bottom:610};},
-      fire(type,extra){return dispatch(this,type,extra);}
-    };
-    for(const [key,value] of Object.entries(attrs)) {
-      if(key==='id'){n.id=value;ids.set(value,n);}
-      else if(key==='class')n.className=value;
-      else if(key.startsWith('data-'))n.dataset[key.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]=value;
-      else if(key==='hidden')n.hidden=true;
-      n.attributes[key]=value;
-    }
-    nodes.push(n);return n;
-  }
-  function matches(n,selector){
-    if(!n.isConnected)return false;
-    if(selector.startsWith('#'))return n.id===selector.slice(1);
-    if(selector.startsWith('.'))return n.className?.split(' ').includes(selector.slice(1));
-    const data=selector.match(/^\[data-([\w-]+)\]$/);
-    if(data)return Object.hasOwn(n.dataset,data[1].replace(/-([a-z])/g,(_,c)=>c.toUpperCase()));
-    return n.tagName.toLowerCase()===selector;
-  }
-  for(const match of html.matchAll(/<([a-z][\w-]*)\b([^>]*)>/g)){
-    const attrs={};for(const attr of match[2].matchAll(/([\w-]+)(?:="([^"]*)")?/g))attrs[attr[1]]=attr[2]||'';
-    node(match[1],attrs);
-  }
-  const $=selector=>nodes.find(n=>matches(n,selector))||null;
-  document={body:$('body'),hidden:false,activeElement:$('body'),querySelector:$,
-    querySelectorAll:selector=>nodes.filter(n=>matches(n,selector)),
-    createElement:tag=>node(tag),createElementNS:(_,tag)=>node(tag),
-    addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn);},
-    fire(type,extra){return dispatch(this,type,extra);}};
-  for(const id of ['river-evening','river-rain','river-sound','river-pause','save-status'])ids.get(id).parentElement=ids.get('river-settings');
-  for(const n of document.querySelectorAll('[data-method]'))n.parentElement=ids.get('river-settings');
-  const summary=nodes.find(n=>n.tagName==='SUMMARY');summary.parentElement=ids.get('river-settings');
-  for(const id of ['close-guide','return-river','fish-index','guide-portrait'])ids.get(id).parentElement=ids.get('field-guide');
-  const window={FishingLife:{...Life,createSession:()=>Life.createSession(()=>.5)},AudioContext,
-    listeners:new Map(),addEventListener(type,fn){if(!this.listeners.has(type))this.listeners.set(type,[]);this.listeners.get(type).push(fn);},
-    fire(type,extra){return dispatch(this,type,extra);}};
-  if(saved!==undefined)storage.set(Life.KEY,typeof saved==='string'?saved:Life.encodeProgress(saved));
-  if(settings)storage.set('spriggan.fishing.settings.v1',JSON.stringify(settings));
-  const localStorage={getItem(key){if(noStorage)throw Error('storage denied');return storage.get(key)||null;},
-    setItem(key,value){if(noStorage)throw Error('storage denied');storage.set(key,value);writes.push({key,value});}};
-  class FishingScene{constructor(){if(sceneFails)throw Error('no WebGL');}aimAt(){}update(){if(sceneUpdateFails)throw Error('render interrupted');}dispose(){}}
-  const context=vm.createContext({window,document,localStorage,performance:{now:()=>now},
-    matchMedia:()=>({matches:false}),ResizeObserver:class{observe(){}},
-    requestAnimationFrame:fn=>{nextFrame=fn;},FishingScene,
-    T:{WebGLRenderer:class{constructor(){throw Error('portrait fallback');}}},devicePixelRatio:1,console});
-  vm.runInContext(source,context,{filename:'fishing.js'});
-  function value(expression){return vm.runInContext(expression,context);}
-  function tick(seconds=.05){now+=seconds*1000;nextFrame(now);}
-  function advance(seconds){for(let left=seconds;left>1e-8;left-=.05)tick(Math.min(.05,left));}
-  function click(selector){const button=$(selector);button.fire('pointerdown');button.fire('pointerup');button.fire('lostpointercapture');return button.fire('click',{detail:1});}
-  function pointerDown(){return $('#fishing-action').fire('pointerdown');}
-  function pointerUp(){const button=$('#fishing-action');button.fire('pointerup');button.fire('lostpointercapture');return button.fire('click',{detail:1});}
-  function key(type,extra={}){return document.fire(type,{target:document.body,code:'Space',key:' ',...extra});}
-  function reel(){click('#fishing-action');for(let n=0;n<200&&value('session.phase')!=='bite';n++)tick();assert.equal(value('session.phase'),'bite');click('#fishing-action');assert.equal(value('session.phase'),'reeling');}
-  return {$,document,window,storage,writes,context,value,tick,advance,click,pointerDown,pointerUp,key,reel};
-}
+});
+
+test('a queued native toggle after catch-guide opens keeps the selected inline specimen intact',()=>{
+  const h=harness();h.reel();h.value('session.progress=.999;session.tension=.2;holding=true');h.tick();
+  const oldPortrait=h.$('#catch-portrait').children[0];
+  h.click('#catch-guide');
+  assert.equal(h.$('#river-settings').open,true);assert.equal(h.value('guideOpen'),true);
+  assert.equal(h.$('#field-guide').hidden,false);assert.equal(h.value('guideSelection'),h.value('session.catch.species'));
+  assert.equal(h.$('#specimen-name').textContent,h.value('session.fish.name'));
+  h.$('#river-settings').fire('toggle');assert.equal(h.value('guideOpen'),true);
+  h.closeControls();assert.notEqual(h.$('#catch-portrait').children[0],oldPortrait,'closing the guide restores the catch portrait');
+  assert.equal(h.value('session.phase'),'caught');assert.equal(h.value('guide.total'),1);
+});
+
+test('casting spots stay visible in the controller and lock only while a line is out',()=>{
+  const h=harness();h.openControls();h.click('[data-spot=deep]');
+  assert.equal(h.value('spot'),'deep');assert.equal(h.value('session.phase'),'idle');
+  h.click('#fishing-action');assert.equal(h.value('session.spot'),'deep');h.openControls();
+  assert.equal(h.$('#cast-spots').hidden,false);
+  assert(h.document.querySelectorAll('[data-spot]').every(button=>button.disabled));
+  h.click('[data-spot=reeds]');assert.equal(h.value('spot'),'deep');
+  h.closeControls();h.advance(12);assert.equal(h.value('session.phase'),'escaped');h.openControls();
+  assert(h.document.querySelectorAll('[data-spot]').every(button=>!button.disabled));
+  h.click('[data-spot=reeds]');assert.equal(h.value('spot'),'reeds');
+});
 
 test('actual cast and hook controls need a fresh action after the bite, then hold and release reel',()=>{
   const h=harness();h.click('#fishing-action');
@@ -122,8 +97,7 @@ test('Space hold and toggle handle repeats and do not hijack native buttons or s
   const summary=h.$('#river-settings').querySelector('summary');
   assert.equal(h.key('keydown',{target:summary}).defaultPrevented,false);
   assert.equal(h.value('holding'),false);
-  h.$('[data-method]').fire('click');
-  const toggle=h.document.querySelectorAll('[data-method]').find(n=>n.dataset.method==='toggle');toggle.fire('click');
+  h.openControls();h.openSectionFor('[data-method=toggle]');h.click('[data-method=toggle]');h.closeControls();
   const button=h.$('#fishing-action');
   assert.equal(h.key('keydown',{target:button}).defaultPrevented,true);assert.equal(h.value('holding'),true);
   h.key('keydown',{target:button,repeat:true});assert.equal(h.value('holding'),true);
@@ -133,22 +107,21 @@ test('Space hold and toggle handle repeats and do not hijack native buttons or s
   h.click('#fishing-action');assert.equal(h.value('holding'),false);
 });
 
-test('opening the guide or settings pauses a bite and always releases a held input',()=>{
-  const h=harness();h.reel();h.pointerDown();h.click('#open-guide');
-  assert.equal(h.value('holding'),false);assert.equal(h.$('#field-guide').open,true);
+test('the controller and its inline guide pause the line and always release a held input',()=>{
+  const h=harness();h.reel();h.pointerDown();h.openControls();h.click('#open-guide');
+  assert.equal(h.value('holding'),false);assert.equal(h.$('#field-guide').hidden,false);
   const progress=h.value('session.progress');h.advance(10);assert.equal(h.value('session.progress'),progress);
-  h.click('#close-guide');assert.equal(h.$('#field-guide').open,false);
-  h.pointerDown();h.$('#river-settings').open=true;h.$('#river-settings').fire('toggle');
+  h.click('#close-guide');assert.equal(h.$('#field-guide').hidden,true);assert.equal(h.$('#river-settings').open,true);
   assert.equal(h.value('holding'),false);const time=h.value('session.reelTime');h.advance(2);assert.equal(h.value('session.reelTime'),time);
-  h.$('#river-settings').open=false;h.$('#river-settings').fire('toggle');h.advance(.1);assert(h.value('session.reelTime')>time);
+  h.closeControls();h.advance(.1);assert(h.value('session.reelTime')>time);
 });
 
 test('a bite window lasts through a long visit to the guide and expires only after returning',()=>{
   const h=harness();h.click('#fishing-action');h.advance(6);
   assert.equal(h.value('session.phase'),'bite');const time=h.value('session.phaseTime');
-  h.click('#open-guide');h.advance(30);assert.equal(h.value('session.phase'),'bite');
+  h.openControls();h.click('#open-guide');h.advance(30);assert.equal(h.value('session.phase'),'bite');
   assert.equal(h.value('session.phaseTime'),time);
-  h.$('#field-guide').fire('cancel');assert.equal(h.$('#field-guide').open,false);
+  h.key('keydown',{key:'Escape',code:'Escape',target:h.$('#close-guide')});assert.equal(h.$('#field-guide').hidden,true);
   h.advance(2.7);assert.equal(h.value('session.phase'),'escaped');
 });
 
@@ -159,7 +132,7 @@ test('a pointer cancellation clears hold without triggering a catch action',()=>
 });
 
 test('manual pause, hidden tabs, and reopening the guide never spend absent time reeling',()=>{
-  const h=harness();h.reel();h.pointerDown();h.click('#river-pause');
+  const h=harness();h.reel();h.pointerDown();h.openControls();h.click('#river-pause');
   const before=h.value('session.reelTime');h.advance(5);assert.equal(h.value('session.reelTime'),before);
   h.click('#fishing-action');assert.equal(h.value('paused'),false);assert.equal(h.value('holding'),false);
   h.pointerDown();h.document.hidden=true;h.document.fire('visibilitychange');h.advance(100);
@@ -191,8 +164,8 @@ test('the real landing handler records exactly once before release and survives 
   h.advance(5);assert.equal(h.value('guide.total'),1);
   assert.equal(h.writes.filter(w=>w.key===Life.KEY).length,1);
   const restored=harness({saved});assert.equal(restored.value('guide.total'),1);assert.equal(restored.value('session.phase'),'idle');
-  h.click('#catch-guide');assert.equal(h.$('#field-guide').open,true);assert.equal(h.value('guide.total'),1);
-  h.click('#return-river');h.click('#fishing-action');assert.equal(h.value('session.phase'),'idle');assert.equal(h.$('#catch-note').hidden,true);
+  h.click('#catch-guide');assert.equal(h.$('#field-guide').hidden,false);assert.equal(h.$('#river-settings').open,true);assert.equal(h.value('guide.total'),1);
+  h.click('#return-river');assert.equal(h.$('#river-settings').open,true);h.closeControls();h.click('#fishing-action');assert.equal(h.value('session.phase'),'idle');assert.equal(h.$('#catch-note').hidden,true);
 });
 
 test('unavailable storage keeps the playable guide in memory and reports the save failure',()=>{
@@ -222,25 +195,4 @@ test('an interrupted renderer enters the control fallback without breaking the a
   assert.equal(h.$('#scene-error').hidden,false);assert.doesNotThrow(()=>h.tick());
   h.click('#fishing-action');assert.equal(h.value('session.phase'),'casting');h.advance(1);
   assert.equal(h.value('session.phase'),'waiting');
-});
-
-test('unsupported audio degrades to muted play without an unhandled rejection',async()=>{
-  const h=harness();h.click('#river-sound');await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(h.value('settings.sound'),false);h.reel();assert.equal(h.value('session.phase'),'reeling');
-});
-
-test('sound effect failures cannot interrupt hook and landing UI',async()=>{
-  class FailingNotes{
-    constructor(){this.state='running';this.sampleRate=1;this.currentTime=0;this.destination={};}
-    createBuffer(){return {getChannelData:()=>new Float32Array(3)};}
-    createBufferSource(){return {connect(){return this;},start(){}};}
-    createBiquadFilter(){return {frequency:{value:0},connect(){return this;}};}
-    createGain(){return {gain:{value:0},connect(){return this;}};}
-    resume(){return Promise.resolve();}suspend(){return Promise.resolve();}
-    createOscillator(){throw Error('audio device unavailable');}
-  }
-  const h=harness({AudioContext:FailingNotes});h.click('#river-sound');await new Promise(resolve=>setImmediate(resolve));
-  assert.doesNotThrow(()=>h.reel());
-  h.value("session.progress=.999;session.tension=.2;holding=true");assert.doesNotThrow(()=>h.tick());
-  assert.equal(h.$('#catch-note').hidden,false);assert.equal(h.value('guide.total'),1);
 });
