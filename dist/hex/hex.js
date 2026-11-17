@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const Life=HexLife,canvas=document.querySelector('#meadow'),ctx=canvas.getContext('2d'),$=s=>document.querySelector(s);
+const Life=HexLife,Art=HexCreatures,canvas=document.querySelector('#meadow'),ctx=canvas.getContext('2d'),$=s=>document.querySelector(s);
 let state=Life.create(),selected='sprout',paused=false,showRanges=false,W=1000,H=550,S=30,zoom=1,pan={x:0,y:0},hover=null,last=0,pointer=null,noteUntil=0;
 const TOTALS_KEY='spriggan.hex.totals.v1';
 function readTotals(){try{return Life.progress(localStorage.getItem(TOTALS_KEY))}catch{return Life.progress(null)}}
@@ -99,31 +99,8 @@ function tower(t){at(t.q,t.r,()=>{
  text(['I','II','III','IV'][t.id],7,-28,7,'#7c8e76');
  })}
 function creature(c){at(c.q,c.r,()=>{
- ctx.scale(1.16,1.16);
- const moving=!c.chew&&!paused&&!reduced,bob=moving?Math.abs(Math.sin(state.time*5+c.phase))*3:0,chew=c.chew?Math.sin(state.time*16)*1.5:0;
- ellipse(0,2,12,4.5,'#263f4228');if(c.type==='puddle'){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle='#e4fff2';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,1,17+Math.sin(state.time*2),6,0,0,Math.PI*2);ctx.stroke();ctx.restore()}ctx.translate(0,c.type==='puddle'?-bob*.35:-bob);
- const body=Life.TYPES[c.type].color;
- // Body parts are filled only, with no outline stroke.
- const shape=(x,y,rx,ry,fill)=>ellipse(x,y,rx,ry,fill);
- if(c.type==='mochi'){shape(-5,-21,3,10,body);shape(4,-22,3,11,body);ellipse(-5,-22,1.3,6,'#c96c86');ellipse(4,-23,1.3,7,'#c96c86')}
- const stride=moving?Math.sin(state.time*8+c.phase):0;
- ellipse(-7,Math.max(0,stride)*1.5,4,2.5,body);ellipse(7,Math.max(0,-stride)*1.5,4,2.5,body);
- const silhouette={sprout:[11,12],mochi:[10.5,12.5],truffle:[14,10.5],puddle:[13,9]}[c.type];
- shape(0,-10+chew,silhouette[0],silhouette[1],c.hit>0?'#f8edcf':body);ellipse(-3,-14,5,4,'#fff8e62b');
- if(c.type==='puddle'){ellipse(-13,-9,5,3,'#478cb4');ellipse(13,-9,5,3,'#478cb4');for(const side of [-1,1]){line([[side*10,-16],[side*17,-21]],'#b4d7cd',2.5);line([[side*12,-14],[side*19,-15]],'#b4d7cd',2.5);line([[side*12,-11],[side*17,-8]],'#b4d7cd',2.5)}line([[-7,-20],[-11,-25],[-7,-24],[0,-27],[7,-24],[11,-25],[7,-20]],'#a1dced',2)}
- if(c.type==='sprout'){line([[0,-20],[0,-27]],'#6f9766',2);ctx.save();ctx.translate(0,-26);ctx.rotate(-.4);ellipse(-5,0,6,2.8,'#398955');ellipse(4,-2,5,2.6,'#4ea56b');ctx.restore()}
- if(c.type==='truffle'){shape(0,-20,16,7,'#ae704f');ellipse(-4,-24,7,3,'#e6d1a9');ellipse(7,-21,3,2,'#ecdabc');ellipse(-9,-19,2,1.5,'#ecdabc')}
- // A pale bib, little hands and bright eyes make each visitor readable at map scale.
- ellipse(0,-5,6.5,4.5,c.type==='puddle'?'#c2e2d7':c.type==='truffle'?'#e7cca5':'#fff4d0');
- ellipse(-10,-7,3,4,body);ellipse(10,-7,3,4,body);
- if(c.type==='mochi'){line([[-8,-3],[7,-3]],'#b17b79',3);poly([[5,-3],[11,-1],[7,3]],'#b17b79')}
- if(c.type==='truffle'){ellipse(-10,-21,2.5,1.8,'#fff1cd');ellipse(6,-24,2.3,1.6,'#fff1cd');ellipse(11,-20,1.8,1.2,'#fff1cd')}
- const blink=!reduced&&(state.time+c.phase)%5.8>5.64;
- for(const side of [-1,1]){if(blink)line([[side*4-1.4,-11],[side*4+1.4,-11]],'#344d40',1.2);else{ellipse(side*4,-11,1.5,2,'#344d40');ellipse(side*4-.35,-11.7,.45,.6,'#fff8e3')}}
- ellipse(-8,-7,2.5,1.2,'#dba79599');ellipse(8,-7,2.5,1.2,'#dba79599');
- line([[-1.5,-6],[0,-5],[1.5,-6]],'#707b60',.8);
- if(c.chew){poly([[8,-8],[17,-10],[12,-1]],'#e0a478');line([[16,-9],[20,-13],[17,-12],[17,-15]],'#86a16e',1.5);text('♥',0,-31,10,'#cfaa88')}
- else if(c.hp<c.maxHp)for(let i=0;i<c.maxHp;i++)ellipse((i-(c.maxHp-1)/2)*5,-36,1.6,1.6,i<c.hp?'#789663':'#78966333');
+ Art.draw(ctx,c.type,{time:state.time,phase:c.phase,moving:!c.chew,chewing:c.chew>0,
+  hit:c.hit,paused,reducedMotion:reduced,hp:c.hp,maxHp:c.maxHp,night});
  })}
 function torch(t){at(t.q,t.r,()=>{
  const flicker=reduced||paused?0:Math.sin(state.time*7+t.id*2)*.9+Math.sin(state.time*11+t.id)*.4;
@@ -174,8 +151,10 @@ canvas.addEventListener('pointermove',e=>{const p=point(e);if(pointer&&pointer.i
 canvas.addEventListener('pointerup',e=>{if(!pointer||pointer.id!==e.pointerId)return;const moved=pointer.moved;pointer=null;canvas.style.cursor='crosshair';if(!moved){hover=tileAt(point(e));if(hover)invite(hover.q,hover.r);else note('Tap one of the hex tiles to invite a friend.')}hover=null;render();if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId)});
 canvas.addEventListener('pointercancel',()=>{pointer=null;canvas.style.cursor='crosshair'});canvas.addEventListener('pointerleave',()=>{if(!pointer){hover=null;render()}});
 canvas.addEventListener('keydown',e=>{const directions={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,1],ArrowRight:[0,-1]};if(directions[e.key]){e.preventDefault();const [q,r]=directions[e.key];hover||={q:3,r:0};hover={q:Math.max(-Life.SIZE,Math.min(Life.SIZE,hover.q+q)),r:Math.max(-Life.SIZE,Math.min(Life.SIZE,hover.r+r))};render()}else if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!e.repeat){hover||={q:3,r:0};invite(hover.q,hover.r)}}});
-const icons={puddle:'<path d="m15 27-7-6 3 13m34-7 7-6-3 13M20 20l-3-8 8 5 5-8 5 8 8-5-3 8" fill="#a1dced" stroke="#478cb4"/>',sprout:'<path d="M30 22v-9m0 1c-12 0-13-9-13-9 10 0 13 6 13 9Zm0 0c0-9 12-11 12-11 0 10-12 11-12 11" fill="#4ea56b" stroke="#398955"/>',mochi:'<ellipse cx="22" cy="18" rx="5" ry="13" fill="#ed9caa"/><ellipse cx="38" cy="16" rx="5" ry="14" fill="#ed9caa"/><path d="M22 11v10m16-12v11" stroke="#c96c86" stroke-width="2"/>',truffle:'<ellipse cx="30" cy="23" rx="23" ry="12" fill="#ae704f"/><ellipse cx="24" cy="18" rx="8" ry="4" fill="#e6d1a9"/><ellipse cx="42" cy="24" rx="4" ry="3" fill="#e6d1a9"/>'};
-for(const el of document.querySelectorAll('[data-icon]')){const type=el.dataset.icon;el.innerHTML=`<svg viewBox="0 0 60 60" aria-hidden="true"><ellipse cx="30" cy="49" rx="20" ry="5" fill="#71866420"/>${type==='mochi'?icons[type]:''}<ellipse cx="30" cy="35" rx="19" ry="17" fill="${Life.TYPES[type].color}"/>${type!=='mochi'?icons[type]:''}<g fill="#435949"><ellipse cx="24" cy="34" rx="1.7" ry="2.2"/><ellipse cx="36" cy="34" rx="1.7" ry="2.2"/></g><path d="m28 41 2 1 2-1" fill="none" stroke="#66745b" stroke-linecap="round"/><g fill="#dba79599"><ellipse cx="18" cy="40" rx="4" ry="1.8"/><ellipse cx="42" cy="40" rx="4" ry="1.8"/></g></svg>`}
+for(const el of document.querySelectorAll('[data-icon]')){
+ const portrait=document.createElement('canvas');portrait.setAttribute('aria-hidden','true');
+ Art.portrait(portrait,el.dataset.icon,devicePixelRatio||1);el.replaceChildren(portrait);
+}
 for(const button of document.querySelectorAll('[data-creature]'))button.onclick=()=>{selected=button.dataset.creature;document.querySelectorAll('[data-creature]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));note(`${Life.TYPES[selected].name} is ready. Pick a ${Life.TYPES[selected].aquatic?'river':'grass'} tile.`);render()};
 const controls=$('.hex-controls'),trigger=$('#toggle-controls'),panel=$('#hex-panel');
 function setControls(open){trigger.setAttribute('aria-expanded',String(open));trigger.setAttribute('aria-label',`${open?'Close':'Open'} meadow controls`);controls.classList.toggle('is-open',open);panel.inert=!open}
