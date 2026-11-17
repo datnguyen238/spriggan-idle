@@ -1,154 +1,53 @@
-# Spriggan — Little worlds
+# Spriggan
 
-A small interactive koi pond built with plain HTML, CSS, JavaScript, and the Canvas API. No build step or packages are needed.
+Little worlds, slow days. Spriggan is a quiet browser park for short breaks and ambient play beside work or study. Explore the park, choose an attraction, and return to the progress saved in your browser.
+
+The park’s **Choose a world** guide shows the current attractions. Their names, descriptions, and routes are maintained in [`dist/landing-places.js`](dist/landing-places.js).
 
 ## Run locally
 
-1. Download and unzip the project.
-2. Start a local server from the project folder (needed for sound files):
+From the repository root, start a static server:
 
-```bash
-python3 -m http.server 8000 -d dist
+```sh
+python3 -m http.server 8000 --directory dist
 ```
 
-Then visit http://localhost:8000. Stop the server with Ctrl+C.
+Open [localhost:8000](http://localhost:8000). Stop the server with **Ctrl+C**. Use the server instead of opening HTML files directly so browser modules and audio load correctly.
 
-## Interact
+There is no build step or package installation. The application is plain HTML, CSS, and JavaScript; 3D dependencies are vendored with the worlds that use them. Keep their license files alongside them.
 
-- Click or tap water to drop food. The koi swim toward it. The pond holds up to 100 food pieces at once; feeding becomes available again as food is eaten or fades away.
-- Tap a koi to see its name and rename it, or use the koi selector in the controls.
-- Add a koi (up to 12), or choose **Remove a koi** and click the fish to remove. Escape cancels removal.
-- Pause or resume, switch between daylight and moonlight, and adjust the swimming pace.
-- Soft lily pads and lotus blossoms follow broad, gentle currents; leafy branches gently sway. Plain and flowering pads gently bounce away from one another and the pond edges instead of overlapping. Pause freezes their movement too.
-- Toggle rain visuals and sound together with **Add rain**. Use **Remove rain** to stop both, or set rain volume to zero for silent rain.
-- **Nature sounds** plays the included cricket recording in both daylight and moonlight. **Gentle music** adds a soft, original generated melody. These layers work alongside rain and start only after a click.
-- Space pauses or resumes when focus is outside the controls.
-- Hide or show the control panel without losing your pond settings.
+## Find your way around the source
 
-Your koi, names, feeding progress, and pond settings are saved automatically in this browser. Returning shows a welcome message; saved sounds resume on your first tap, or with **Resume saved sounds**. Returning from the background attempts to resume automatically; if the browser requires a gesture, tap the pond. Clearing browser data resets the pond, and saves do not sync across devices. If storage is unavailable, the pond still works for the current visit.
+| Location | Purpose |
+| --- | --- |
+| `dist/index.html`, `landing*.js`, `landing.css`, `park.css` | Park artwork, attraction registry, walking paths, camera, and destination controls |
+| `dist/<world>/` | Each world’s scene, controls, rules, saves, and assets |
+| `dist/shared/` | Shared navigation, interface styles, entry flow, and reusable controls |
+| `dist/previews/` | Artwork shown when choosing a destination |
+| `tests/` | Node.js tests for game rules, persistence, and navigation |
+| `PRODUCT.md` | Product purpose and constraints |
+| `vercel.json` | Static deployment configuration |
 
-Fed koi gradually grow with elapsed time, including time away. Ten eaten food pieces support roughly one day of growth; each koi stores up to three days of nourishment, grows by 12% of its original size per fed day, and can grow up to 75% larger. Kin is now a collectible won in Golden Seed; golden koi no longer arrive through random pond events. Existing golden koi remain, within the 12-koi pond limit.
+Edit the files in `dist` and refresh the browser; these are the deployed source files. Keep world assets with their world and use relative URLs. The attraction registry, map landmarks and paths, and shared world menu work together to connect a destination to the park.
 
-Occasional groups visit for about a minute: four frogs, six dragonflies (daylight only), twelve drifting leaves, or thirty-two sakura petals. Frogs and dragonflies take individually randomized routes between lily pads, resting and hopping or flying onward. Leaves and petals follow varied curved paths. One group visits at a time, with quiet gaps between visits. Pause freezes these animations too. Golden koi remain permanent, within the 12-koi pond limit.
+## Preserve local progress
 
-Page markup and styles are in `dist/pond/index.html`; animation and controls are in `dist/pond/app.js`, saved data and growth in `dist/pond/pond-life.js`, ambient audio in `dist/pond/pond-audio.js`, plant collisions in `dist/pond/pond-plants.js`, and visitor routes in `dist/pond/pond-surprises.js`. Edit these files and refresh the page to see your changes. Keep the entire `dist` folder, including all WAV files, together when deploying. The font loads from Google Fonts when online; a system font is used offline.
+Individual worlds save progress and preferences in browser storage. Saves belong to that browser and origin; a different port or domain has separate storage. Clearing site data clears those saves.
 
-## Publish with Vercel
+Keep existing storage keys and support existing saved values when changing a world. Preserve earned items, balances, timers, and preferences. Use a separate browser profile or test context for checks that create or remove progress.
 
-Import this GitHub repository into Vercel. The included `vercel.json` serves the `dist` folder directly, with no build step. After deploying, share the production URL.
+## Run tests
 
-## Check saved data and growth
+With Node.js installed:
 
-With Node.js installed, run `node --test tests/*.test.cjs`.
-
-The canvas renders at up to 2× pixel density. On slower devices, decorative effects simplify while canvas resolution stays sharp.
-
-## Visitor analytics
-
-Vercel Web Analytics is included in `dist/pond/index.html` using the plain HTML integration; no npm package or React component is needed. Enable **Analytics** for this project in Vercel, push and deploy, then visit the live site. Visitor and page-view counts appear in the project's Analytics dashboard after collection begins.
-
-The `/_vercel/insights/script.js` endpoint is provided by Vercel. A simple local server does not provide that endpoint; its local 404 does not affect the pond. Live collection must be verified after deployment; content blockers may prevent tracking.
-
-Crickets use a persistent native audio player. Rain uses a decoded continuous loop. On desktop, rain, crickets, and enabled music continue when switching tabs. On phones and tablets, sounds pause in the background and restart on return. A rejected restart shows the resume control; browser autoplay policy may still require a tap. Generated music continues to use Web Audio.
-
-Rain uses one continuously looping AudioBufferSource, with no JavaScript timers or media-player handoffs at loop boundaries. `dist/pond/rain-seamless.wav` blends the original recording’s tail into its head with a 1.2-second equal-power overlap, producing a 13.8-second cyclic recording without fade-to-silence. On mobile, its decoded buffer is retained across background pauses; its playback context is recreated on return. Keep this file and `pond-rain-loop.js` in the deployed folder.
-
-## Pomodoro timer
-
-The bottom-center timer offers 50-minute focus, 5-minute rest, and 15-minute long breaks. Start, pause, resume, reset, or minimize it. Completing a focus session prepares a short break; every fourth completed focus session prepares a long break. Each next session starts when you choose. Its progress ring and four session dots show your progress, and completion is announced visually with a quiet three-note chime. The bell button mutes the chime and remembers your preference. Starting the timer enables audio; a restored timer needs a tap or keyboard interaction before it can sound. Chimes stay silent while the pond is hidden on mobile. The countdown uses a saved deadline, so it remains accurate across background tabs and reloads. Timer state stays in this browser independently of pond animation. Files: `dist/pond/pond-timer.js`, `dist/pond/pond-timer-chime.js`, and `dist/pond/pond-timer.css`.
-
-## Map folders
-
-```text
-dist/
-├── index.html    # Map selection landing page
-├── pond/         # Current koi pond, including its Pomodoro timer and audio
-├── pixel/        # Sunny Side pixel chicken farm
-└── slots/        # Golden Seed pastel lottery mini-game
+```sh
+node --test tests/*.test.cjs
 ```
 
-The homepage at `/` groups Stillwater Pond at `/pond/` and Sunny Side Farm at `/pixel/` with an Incoming map tile. Golden Seed at `/slots/` appears separately above them in a mini-game section. Keep map-specific scripts and assets inside their map folder and use relative asset URLs.
+Run a specific file with `node --test tests/<name>.test.cjs`. Check interface changes in the browser as well, including keyboard controls and a narrow viewport.
 
-Vercel's output directory remains `dist`; no deployment setting changes are needed. Browser saves use the same origin and storage keys, so moving the pond to `/pond/` preserves existing pond and timer data on the same domain.
+## Deploy
 
-## Sunny Side pixel farm
+Import the repository into Vercel. [`vercel.json`](vercel.json) specifies no framework, no build command, and `dist` as the output directory. Deploy the complete directory so relative scripts, audio, previews, and vendored dependencies remain available.
 
-Visit `/pixel/` (locally, `http://localhost:8000/pixel/`) for the chicken farm. It starts with Clover the hen and Bramble the rooster. Tap the yard or use Scatter feed to drop grain. Tap birds and eggs to inspect their progress. Each hen needs 100 eaten grains (meals) and an adult rooster to lay an egg. Her laying progress resets after each egg. Eggs hatch after three minutes; chicks become adults after 200 meals, without an additional age requirement. The flock is capped at 16 birds and eggs combined. New adult hens can lay too.
-
-Farm state saves separately from the pond in `spriggan.farm.v1`. Egg timers continue while away; chicks need their meals to grow, and food is only eaten while the farm is open and moving. Pausing animation stops wandering and eating but keeps egg timers running. Clearing browser storage clears this farm. Map artwork and interaction are in `dist/pixel/farm.js`; lifecycle and storage validation are in `farm-life.js`.
-
-The farm fills the viewport, with a collapsible control panel and expandable growth guide. Pixel artwork renders on an integer grid at up to 2× screen density for crisp edges on desktop and mobile.
-
-Farm saves migrate automatically to the meal-based lifecycle, preserving existing birds and feeding progress. Existing eggs use the three-minute incubation measured from their original laying time. The landing page links to the farm.
-
-To remove a chicken or chick, tap it or choose it under Your flock, then choose Remove from farm and confirm. Eggs stay in the farm. An empty farm stays empty after reload; once there are no birds or eggs, Start a new flock adds a fresh hen and rooster.
-
-Chickens and chicks follow independent random routes with gentle turns, varied walking speeds, and occasional brief pauses, with small steps, blinks, and pecking motions. Eggs stay in their nests and hatch independently while parents roam.
-
-## Map selection page
-
-The homepage is `dist/index.html`, styled by `dist/landing.css`. Square previews in `dist/previews/` are static captures of the real map canvases, so choosing a map does not start simulations or load audio in the background. The Incoming tile is not interactive. Map saves remain separate and keep their existing browser storage keys. Vercel continues serving `dist` with no build step.
-
-Both maps open with compact controls: a round launcher for the pond and a square launcher for the farm. Click to expand, tap outside or press Escape to close. The full-size panels animate above their buttons, keep their scrollable controls, and exclude hidden controls from keyboard focus. Shared styling and dismissal behavior live in `dist/shared/map-controls.css` and `map-controls.js`.
-
-## Golden Seed mini-game
-
-Visit `/slots/` or choose Golden Seed from the landing page. A centered sage-and-cream machine uses six equally likely symbols on three independent reels. Select Stillwater Pond for Kin or Sunny Side Farm for Buttercup before spinning.
-
-- New players start with 200 virtual seeds. Each spin costs 10.
-- Exactly two matching symbols award 20 (a net gain of 10 after the spin cost). Any triple unlocks the selected collectible, with no extra seed payout. Different symbols return zero.
-- When fewer than 10 seeds remain, refill to 50 at the next local midnight. Nonempty playable balances stay unchanged. Refills do not stack for missed days and cannot be repeated in one calendar day.
-- Odds per spin: triple 1/36 (2.78%), pair 90/216 (41.67%), no match 120/216 (55.56%). Outcomes do not depend on timing or past results. No 60-spin guarantee or immediate refill remains.
-- Win, then choose Welcome home. A full pond keeps Kin available to claim later. Buttercup is a saved cow who wanders, eats grain, and appears in the farm's friend selector; she does not lay eggs or count against the 16-chicken-and-egg limit. Every triple wins another animal. Wins and claims are counted separately, so leaving and returning preserves all pending prizes. Claim retries cannot duplicate the same prize.
-- Existing saves receive a one-time increase to at least 200 seeds; higher balances and earned prizes are preserved. Results settle before animation, claims use a stable animal ID for each win, and supported browsers serialize wallet mutations across tabs with Web Locks. Open map tabs receive newly claimed prizes before saving their own state.
-
-The seeds are free, have no cash value, and cannot be purchased. All saves are local to this browser and domain.
-
-Reward destinations are listed in `SlotsLife.DESTINATIONS`; the dropdown and reward details grow with that registry. See `docs/slot-design-notes.md` for adding a map and its prize integration.
-
-Direct visits to `/pond/` and `/pixel/` first redirect to the landing page. Map cards open the selected world using `dist/shared/map-entry.js`; ordinary refreshes after entering from home remain in that world. This is a navigation flow, not an access restriction, and leaves browser saves intact.
-
-## Farm music
-
-Sunny Side offers generated gentle music and a volume slider in its controller. The 38.4-second chord progression uses soft overlapping chords, bell notes, a quiet echo, and alternating melody variations. It schedules notes against the audio clock to avoid timing drift. No MP3 or WAV is required.
-
-Music preference and volume are stored separately in `spriggan.farm.music.v1`. A saved preference waits for a tap or keyboard interaction before starting after reload; Resume music is available when a browser blocks playback. Desktop tab switches keep the farm and music active. Mobile tab switches suspend music and animation, with playback retried on return. Page navigation suspends music. Browsers may still freeze or discard inactive pages. These changes do not modify animal saves, feeding, laying, hatching, or growth rules.
-
-### Fox visits
-
-While the farm is visible and animation is running, a fox visits after two minutes with eligible adult chickens in the yard. It enters from a random position on any of the four sides, automatically catches and permanently removes one adult, then visibly carries the chicken out of the yard at a slower pace, retracing its exact approach route. There is no warning or dismissal interaction. The last adult hen and rooster, chicks, eggs, and cows are protected. The active countdown is saved with the farm; hidden tabs and time away do not advance it or cause offline losses. A visit in progress restarts its waiting period on reload.
-
-## Rain in the farm and meadow
-
-Sunny Side Farm and Clover Keep have an Add rain toggle and separate volume slider in their controllers. The farm uses pixel raindrops and small ground splashes; the meadow uses fine diagonal rain and river ripples, with colors adjusted for moonlight. Reduced-motion settings keep only the subtle rain tint. Pausing a map freezes its rain animation.
-
-Both maps use `shared/map-rain.js` and the pond’s existing `pond-rain-loop.js` and `rain-seamless.wav`; there is no duplicate recording. Preferences save separately as `spriggan.farm.rain.v1` and `spriggan.hex.rain.v1`. Saved sound waits for an interaction after reload, with a Resume rain button if needed. Rain continues across desktop tab switches, pauses on mobile when hidden, and retries on return. Browsers may require a tap to resume audio. Rain does not change feeding, growth, combat, or other game rules.
-
-## Farm and meadow Pomodoro
-
-Both maps include a minimized focus timer at the bottom center. Expand it for 50-minute focus, 5-minute rest, and 15-minute unwind sessions; every fourth completed focus selects the longer break. Breaks wait for you to start them. The farm uses square edges, monospace digits, and a wheat motif; Clover Keep uses a rounded green card and leaf motif. Both reuse the pond’s deadline-based timer and gentle completion chime with a mute control.
-
-Each map saves its timer independently (`spriggan.farm.timer.v1` and `spriggan.hex.timer.v1`), including paused/running state, session count, minimization, and chime preference. The pond retains `spriggan.timer.v1`. Reloads preserve deadlines. On mobile, background completion is processed on return; desktop timers continue updating when hidden, subject to browser suspension. Starting a timer unlocks its chime. No game progress is changed.
-
-## Little Folds
-
-`/dumplings/` replaces the capybara experiment with a quiet neighborhood dumpling shop. Lay a wrapper, choose mushroom/greens/ginger/meat filling, and make three gentle folds to shape a crescent gyoza with a pleated seam. Up to six dumplings fit in a basket. Start steaming any size batch; it takes 35 seconds of active kitchen time and never burns or expires. Lift the lid to serve. You can prepare the next basket while the current one steams. Buttons and tapping the board/steamer offer the same actions.
-
-Up to three neighbors arrive, wait patiently, and buy one ready dumpling for three shop coins. Serving adds a batch to the counter (up to 24); it never replaces unsold stock. Each customer pays once, carries their plate to a seat, eats with chopsticks for 22 active seconds, then leaves. New guests take their place. Sales, visitors, and their meal phases persist; there is no impatience or offline customer simulation. The controller lets you buy 10 Golden Seed seeds for 10 coins; sales never convert automatically. The header shows unspent coins, and the exchange links to your slot balance. Purchases save the spent-coin receipt and seed balance in one write under the same browser lock used by slots. Reloads, spins, and prize claims preserve the purchase. Old unconverted shop earnings remain available as coins; earnings already converted by the previous automatic version stay credited as seeds and cannot be spent twice.
-
-An after-hours Japanese-style counter uses muted cyan and pink neon, split noren curtains, amber paper lanterns, a tiled wall, a city window, and dark lacquered wood. The larger customer counter and work area fill the screen. A single collapsible shop controller groups filling choices, laying wrappers, folding, and steaming above the atmosphere settings; the cooking board and steamer also remain tappable. The worktop has warm walnut grain, a rounded front edge, a maple prep board on folded linen, and a trivet under the lowered steamer. A separate tray holds the next six gyoza while a batch cooks. The foreground tea cup and dipping dish are removed. Lantern glow / late-night lighting, rain at the window using the pond’s seamless audio file, rain volume, and pause live in a collapsible controller. Neon is steady; there are no flashing effects. Static walls, counter grain, lighting, board, and reusable gyoza/lid artwork are cached at canvas density; moving customers, steam, rain, and folds remain animated. Caches refresh on size or lighting changes, and a paused kitchen only redraws when its appearance changes. The independent 50/5/15-minute Pomodoro retains the shared completion chime.
-
-Recipe stage, filling, baskets, remaining cooking time, served plate, and preferences save under `spriggan.dumplings.v1`; the timer uses `spriggan.dumplings.timer.v1`. Pausing freezes cooking. Time away does not cook or discard a batch. Desktop background tabs follow the shared simulation/audio policy; mobile backgrounding pauses the kitchen and audio with a resume fallback. Reduced motion removes decorative motion and the transfer animation. Previous capybara saves remain untouched. `/capybara/` and `/camp/` redirect to the new map through the existing landing entry flow. Vercel Analytics is included.
-
-
-## Little Arcade
-
-`/claw/` is a fullscreen 3D map, listed first among the landing page worlds. A bottom-right controller opens the play controls and a compact grouped plush inventory inside a fixed-height scrolling panel (480 px on desktop, up to 300 px on mobile, constrained by the viewport); outside clicks and Escape collapse it. There are no below-scene collection cards or separate collection modal. The two action buttons share a fixed grid, height, and baseline; redundant turn-state, repeated instructions, and pricing paragraphs are removed from the panel. Players start with 10 saved coins (including existing shelves migrating to the economy). Insert costs 1 coin and starts an automatic horizontal sweep. The 30-second aiming countdown begins after insertion and automatically drops once on expiry. Each regular plush row has a Sell 1 action worth 2 coins; selling removes that individual, updates counts, and preserves other copies. Zero balances survive reload and do not refill automatically. Desktop shows a compact “↑ ↓ to aim · Space to catch” hint instead of the Back/Front buttons. Held keys accelerate continuously at the fixed simulation rate, independent of OS key repeat; release stops movement. Small taps provide fine nudges. Phones retain floating tap/hold arrows. Blur, backgrounding, pausing, and turn completion clear held input. Press Catch (or Space) to stop both axes and lower the claw. Enter inserts a coin when focus is on the page. The cabinet's coin slot and button also work, with padded touch targets. Drag/swipe horizontally to orbit the cabinet. The separate view toolbar and reset button are removed. View rotation works while paused. The cabinet top is unlettered. Drop begins on pointer-down or key-down; busy machines reject repeated inputs. Arcade coins are separate from slot seeds. They have no cash value.
-
-The scene uses locally vendored Three.js 0.180.0 (MIT) and Rapier 0.21.0 (Apache-2.0), with license files under `dist/claw/vendor/`. No CDN or build step is needed. Cabinet and plush models remain procedural 3D geometry. The controller inventory uses plush artwork beside grouped counts, with accessible names. Artwork view boxes center the visible drawing; fixed grid columns align pictures, counts, and sell buttons. Inventory changes never change the expanded panel dimensions. Rapier uses convex toy colliders, moving finger colliders, a floor, walls, and an open delivery chute. A precisely centered grab receives a spherical joint for gentle assistance while allowing rotation. The regular horizontal grip tolerance is 0.22 world units (previously 0.34), with a 0.30 vertical tolerance; the secret uses 0.10 and 0.22 respectively. Edge grabs can miss; there is no random win roll. Physics runs at a fixed 60 Hz independently of render frequency. The claw lowers over the chute before releasing the toy. Delivered toys are automatically saved as individual friends, and the pile replenishes. Lune, a small lavender moon-fox plush with a moon stitch, has a 2% chance to replace a starting toy and a 2% chance per refill when no other moon fox is in the machine. Its narrower physical grip tolerance (0.10 world units versus 0.22 for regular toys) makes precise centering necessary, with no random failure after a good grip. Lune has a soft lavender/gold halo, gentle sparkles, and lightly emissive fabric in the machine, while held, and in the prize hatch; its inventory picture also glows. The aura remains visible in a crowded pile. Reduced motion and pause freeze the decorative effect. Lune appears as a grouped inventory row and can be sold for 8 coins. Production supplies the random source; tests inject it to exercise rare appearances deterministically.
-
-`spriggan.claw.v1` saves coins, species counts, individual IDs, names, placement, the last kept type, and optional sound. Existing count-only shelves migrate without losing friends. Duplicate catches remain separate individuals in storage but appear together as plush pictures beside ×2, ×3, etc. The room illustration, placement tabs, rename editor, and separate shelf navigation are removed. Sell 1 removes the most recent copy of that type and credits coins in the same save; earlier copies and their existing saved names remain intact. The latest prize reappears in the hatch on later visits. Animals are collectibles here and do not transfer into other maps.
-
-Pause and hidden tabs freeze play and the aiming countdown. Using the inventory does not stop a paid turn. Reduced motion applies view rotation immediately while retaining the functional claw movement. Idle rendering stops after the pile and camera settle. Active rendering follows requestAnimationFrame, with time-based camera easing; only idle decorative glow targets 30 fps. On touch devices, opaque static parts and each plush are batched by material, tiny curves use fewer segments, pixel density is capped at 1.35, and 1024 px shadows refresh at most 15 times per second while objects move. Desktop retains its geometry detail, 1.6 pixel-density cap, and 1536 px shadows. The UI only updates when its displayed values change, and fully sleeping idle physics is skipped. Physics and catch timing remain fixed at 60 Hz. WebGL/WASM are required; a startup failure leaves the saved inventory accessible. Rendering interruptions pause physics until the view recovers. Storage errors keep the collection in memory and show a notice. Sound starts off. Vercel Analytics uses the same static integration as the other maps.
-
-Run `node --test tests/claw-life.test.cjs tests/claw-physics.test.cjs` for coin gating, rail/depth movement, turn locking, physical grabs of all twelve starting toys, wrong-depth misses, toy collisions, save migration, individual naming/placement, duplicate catch protection, starter-coin migration, spending, selling, and countdown expiry. Browser checks should use an isolated profile/context so real saves remain untouched.
+The same files can be served by another static host. Vercel’s analytics endpoint is supplied by Vercel; it is absent from the local Python server.
