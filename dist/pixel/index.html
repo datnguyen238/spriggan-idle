@@ -12,7 +12,8 @@
 <script defer src="../shared/background.js?v=1"></script>
 <link rel="stylesheet" href="../shared/map-rain.css?v=2">
 <link rel="stylesheet" href="../pond/pond-timer.css?v=chime-1"><link rel="stylesheet" href="../shared/map-timer.css?v=4">
-<link rel="stylesheet" href="../shared/spriggan.css?v=little-places-3"><script defer src="../shared/world-ui.js?v=atlas-1"></script><link rel="icon" type="image/svg+xml" href="../shared/favicon.svg"><link rel="stylesheet" href="../shared/atlas.css?v=atlas-3"></head>
+<link rel="stylesheet" href="../shared/spriggan.css?v=little-places-3"><script defer src="../shared/world-ui.js?v=atlas-1"></script><link rel="icon" type="image/svg+xml" href="../shared/favicon.svg"><link rel="stylesheet" href="../shared/atlas.css?v=atlas-3">
+<link rel="stylesheet" href="./farm-controls.css?v=controller-1"></head>
 <body data-world="farm">
 <header><div class="brand"><svg class="spriggan-symbol" viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 19a11 11 0 0 0 22 0M16 26V14"/><path d="M16 17C9 17 5 13 5 7c7 0 11 4 11 10ZM16 12C16 5 21 2 28 3c0 6-5 10-12 9Z"/></svg> <span>Spriggan</span></div><a class="worlds-link" href="../">All worlds <svg class="nav-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg></a></header>
 
@@ -71,19 +72,24 @@
       </svg>
     </button>
 
-    <div id="farm-controls">
+    <div id="farm-controls" role="region" aria-labelledby="farm-controls-title">
+      <div class="farm-panel-heading">
+        <h2 id="farm-controls-title">Farm controls</h2>
+        <button id="close-farm-controls" type="button" aria-label="Close farm controls"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </div>
+      <div class="farm-panel-scroll">
       <div class="stats">
         <div>
           <strong id="adults">2</strong>
-          <span>CHICKENS</span>
+          <span>Chickens</span>
         </div>
         <div>
           <strong id="chicks">0</strong>
-          <span>LITTLE CHICKS</span>
+          <span>Chicks</span>
         </div>
         <div>
           <strong id="eggs">0</strong>
-          <span>WARM EGGS</span>
+          <span>Eggs</span>
         </div>
       </div>
 
@@ -100,15 +106,8 @@
         Scatter feed
       </button>
 
-      <div class="control-bottom">
-        <button
-          id="motion"
-          class="motion"
-          aria-pressed="false"
-          aria-label="Pause farm animation"
-        >Ⅱ</button>
-
-      </div>
+      <details class="farm-atmosphere">
+        <summary>Weather &amp; sound<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary>
       <div class="farm-audio" aria-label="Farm music controls">
         <button id="music" type="button" aria-pressed="false">Gentle music</button>
         <button id="resume-audio" type="button" hidden>Resume music</button>
@@ -129,30 +128,36 @@
       </div>
 
 <section class="map-rain" data-map-rain aria-label="Rain controls"><button data-rain-toggle type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 13a4 4 0 1 1 1-8 5 5 0 0 1 9 1 3.5 3.5 0 1 1 2 7ZM8 16l-1 3m6-3-1 3m6-3-1 3"/></svg><span>Add rain</span></button><button data-rain-resume type="button" hidden>Resume rain</button><label>Rain volume<input data-rain-volume type="range" min="0" max="100" step="5" value="20"><output>20%</output></label><p data-rain-status role="status"></p></section>
+      </details>
       <details class="field-notes">
-        <summary>Raising your flock</summary>
+        <summary>Raising your flock<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary>
 
         <div class="steps">
           <p>
-            <b>01 <span>Feed and wander</span></b>
+            <b>Feed and wander</b>
             Each hen lays an egg after 100 meals, with an adult rooster in the
             yard. One eaten grain counts as one meal.
           </p>
 
           <p>
-            <b>02 <span>A little arrival</span></b>
+            <b>A little arrival</b>
             Eggs hatch on their own in 3 minutes while the chickens roam. Tap an
             egg to see how soon your chick will arrive.
           </p>
 
           <p>
-            <b>03 <span>Room to grow</span></b>
+            <b>Room to grow</b>
             After 200 meals, a chick grows into an adult. There is room for 16
             birds and eggs.
           </p>
-          <p><b>04 <span>A passing fox</span></b>Every two active minutes, a fox visits and carries one adult chicken away. The loss is permanent. The last hen and rooster are protected; fox visits pause when you leave the farm or pause its animation.</p>
+          <p><b>A passing fox</b>Every two active minutes, a fox visits and carries one adult chicken away. The loss is permanent. The last hen and rooster are protected; fox visits pause when you leave the farm or pause its animation.</p>
         </div>
       </details>
+      </div>
+      <div class="control-bottom farm-panel-actions">
+        <span>Farm animation</span>
+        <button id="motion" class="motion" type="button" aria-pressed="false" aria-label="Pause farm animation">Pause</button>
+      </div>
     </div>
   </section>
 
@@ -171,7 +176,7 @@
 
 <script src="./farm-life.js?v=carried-sprite-8" defer></script>
 <script src="./farm-audio.js?v=lullaby-3" defer></script>
-<script defer src="../pond/pond-rain-loop.js?v=1"></script><script defer src="../shared/map-rain.js?v=2"></script><script src="./farm.js?v=atlas-3" defer></script>
+<script defer src="../pond/pond-rain-loop.js?v=1"></script><script defer src="../shared/map-rain.js?v=2"></script><script src="./farm.js?v=controller-1" defer></script>
 <script src="../shared/map-controls.js" defer></script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script><script defer src="/_vercel/insights/script.js"></script>
 <script defer src="../pond/pond-timer-chime.js?v=1"></script><script defer src="../pond/pond-timer.js?v=map-timers-4"></script>

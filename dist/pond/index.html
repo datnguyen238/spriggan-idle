@@ -74,7 +74,8 @@
 <link rel="stylesheet" href="../shared/map-controls.css">
 <script defer src="../shared/background.js?v=1"></script>
 <link rel="stylesheet" href="../shared/icons.css?v=1">
-<link rel="stylesheet" href="../shared/spriggan.css?v=little-places-3"><script defer src="../shared/world-ui.js?v=atlas-1"></script><link rel="icon" type="image/svg+xml" href="../shared/favicon.svg"><link rel="stylesheet" href="../shared/atlas.css?v=atlas-3"></head>
+<link rel="stylesheet" href="../shared/spriggan.css?v=little-places-3"><script defer src="../shared/world-ui.js?v=atlas-1"></script><link rel="icon" type="image/svg+xml" href="../shared/favicon.svg"><link rel="stylesheet" href="../shared/atlas.css?v=atlas-3">
+<link rel="stylesheet" href="./pond-controls.css?v=controller-1"></head>
 <body data-world="pond">
 <main>
   <canvas id="pond" tabindex="0" aria-label="Animated koi pond. Tap water to feed, or tap a koi to see its name. Use the Meet a koi menu for keyboard access."></canvas>
@@ -91,28 +92,38 @@
   <div class="bottom">
     <section class="panel" aria-label="Pond controls">
       <button class="control panel-toggle" id="toggle-controls" type="button" aria-expanded="true" aria-controls="panel-content"><span>Hide controls</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h5m4 0h7M4 17h9m4 0h3"/><circle cx="11" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg></button>
-      <div class="panel-content" id="panel-content">
-      <div class="panel-content-inner">
-    <div class="instruction" id="instruction"><strong>Touch the water</strong> to feed. Tap a koi to meet them.</div>
-
-      <div class="panel-heading"><h3>Pond controls</h3><span class="status" id="status" aria-live="polite">5 koi swimming</span><label class="koi-picker-label" for="koi-picker">Your koi</label><select class="koi-picker" id="koi-picker"><option value="">Meet a koi…</option></select></div>
-      <div class="controls">
+      <div class="panel-content" id="panel-content" role="region" aria-labelledby="pond-controls-title">
+        <div class="pond-panel-heading">
+          <div><h2 id="pond-controls-title">Pond controls</h2><span class="status" id="status" aria-live="polite">5 koi swimming</span></div>
+          <button id="close-pond-controls" type="button" aria-label="Close pond controls"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+        </div>
+        <div class="panel-content-inner">
+          <div class="instruction" id="instruction"><strong>Touch the water</strong> to feed. Tap a koi to meet them.</div>
+          <label class="koi-picker-label" for="koi-picker">Your koi</label>
+          <select class="koi-picker" id="koi-picker"><option value="">Meet a koi…</option></select>
+          <div class="controls pond-koi-actions">
         <button class="control primary" id="feed" type="button" aria-describedby="feeding-status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c4-5 11-5 16 0-5 5-12 5-16 0Z"/><path d="m4 15-2-3v6l2-3"/><circle cx="16" cy="14" r=".6"/><path d="M10 5v2m5-4v2m-9 3v1"/></svg><span>Feed the koi</span></button>
         <button class="control" id="add" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add a koi</span></button>
         <button class="control" id="remove" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg><span>Remove a koi</span></button>
-        <span class="divider" aria-hidden="true"></span>
-        <button class="control icon-only" id="pause" type="button" aria-pressed="false" title="Pause pond"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg><span>Pause</span></button>
-        <button class="control" id="night" type="button" aria-pressed="false" title="Switch to moonlight"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14A8.5 8.5 0 0 1 10 4a8.5 8.5 0 1 0 10 10Z"/></svg><span>Moonlight</span></button>
+          </div>
+          <p class="feeding-status" id="feeding-status">Food in pond: 0 / 100</p>
+          <div class="range-line"><svg class="pace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c3-5 6 5 9 0s6 5 9 0M3 15c3-5 6 5 9 0s6 5 9 0"/></svg><label for="speed">Swimming pace</label><input id="speed" type="range" min="0.4" max="2" value="1" step="0.1"><output id="speed-value" for="speed">1.0×</output></div>
+          <details class="pond-atmosphere">
+            <summary>Weather &amp; sound<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary>
+            <div class="controls pond-sound-actions">
         <button class="control" id="rainfx" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 15a3.5 3.5 0 0 1-.4-6.98A5.5 5.5 0 0 1 16.6 7.4 3.8 3.8 0 0 1 17 15Z"/><path d="M8 18v2.5M12 18v2.5M16 18v2.5"/></svg><span>Add rain</span></button>
-        <button class="control" id="ambient" type="button" aria-pressed="false"><span>Nature sounds</span></button>
-        <button class="control" id="music" type="button" aria-pressed="false"><span>Gentle music</span></button>
+        <button class="control" id="ambient" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20C5 10 10 4 20 4c0 10-5 15-12 13M5 20 16 9"/></svg><span>Nature sounds</span></button>
+        <button class="control" id="music" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></svg><span>Gentle music</span></button>
         <button class="control" id="resume-audio" type="button" hidden>Resume saved sounds</button>
       </div>
       <p class="audio-status" id="audio-status" role="status"></p>
-      <p class="feeding-status" id="feeding-status">Food in pond: 0 / 100</p>
-      <div class="range-line"><svg class="pace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c3-5 6 5 9 0s6 5 9 0M3 15c3-5 6 5 9 0s6 5 9 0"/></svg><label for="speed">Swimming pace</label><input id="speed" type="range" min="0.4" max="2" value="1" step="0.1"><output id="speed-value" for="speed">1.0×</output></div>
       <div class="range-line"><svg class="pace-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg><label for="rainvol">Rain volume</label><input id="rainvol" type="range" min="0" max="100" value="40" step="5"><output id="rainvol-value" for="rainvol">40%</output></div>
-      </div>
+          </details>
+        </div>
+        <div class="pond-panel-actions">
+          <button class="control icon-only" id="pause" type="button" aria-pressed="false" title="Pause pond"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg><span>Pause</span></button>
+          <button class="control" id="night" type="button" aria-pressed="false" title="Switch to moonlight"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14A8.5 8.5 0 0 1 10 4a8.5 8.5 0 1 0 10 10Z"/></svg><span>Moonlight</span></button>
+        </div>
       </div>
     </section>
   </div>
@@ -139,7 +150,7 @@
 <script src="./pond-audio.js" defer></script>
 <script src="./pond-plants.js" defer></script>
 <script src="./pond-surprises.js" defer></script>
-<script src="./app.js?v=atlas-3" defer></script>
+<script src="./app.js?v=controller-1" defer></script>
 <script src="./pond-timer-chime.js?v=1" defer></script>
 <script src="./pond-timer.js?v=map-timers-4" defer></script>
 <!-- Vercel Web Analytics: served by Vercel after Analytics is enabled. -->

@@ -1,0 +1,61 @@
+/* Keep the collection title and quiet controls in reach as the shelf grows. */
+body[data-world=claw] {--arcade-controls-bottom:28px;}
+body[data-world=claw] .arcade-controller {bottom:var(--arcade-controls-bottom);}
+body[data-world=claw] .arcade-controller #controller-body {
+ display:flex;flex-direction:column;gap:0;width:320px;height:auto;min-height:0;
+ max-height:min(480px,calc(100dvh - var(--arcade-controls-bottom) - 148px - var(--sg-safe-top,0px)));
+ padding:0;overflow:hidden;border:0;border-radius:16px;
+ background:var(--sg-paper);color:var(--sg-ink);backdrop-filter:none;
+}
+body[data-world=claw] #controller-body .controller-heading {
+ display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;
+ padding:12px 12px 12px 20px;margin:0;border-bottom:1px solid var(--sg-line);
+}
+body[data-world=claw] #controller-body .controller-heading h2 {
+ margin:0;font:500 22px/1.2 var(--sg-display);letter-spacing:-.025em;
+}
+body[data-world=claw] #controller-body #close-controls {
+ display:flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;
+ padding:0;border:0;background:transparent;color:var(--sg-ink);
+}
+body[data-world=claw] #controller-body #close-controls svg {display:block;width:20px;height:20px;}
+body[data-world=claw] #main-controls {display:flex;flex-direction:column;flex:1 1 auto;min-height:0;}
+body[data-world=claw] #controller-body .plush-inventory {
+ flex:1 1 auto;min-height:0;padding:6px 16px;margin:0;border:0;overflow-y:auto;
+ overscroll-behavior:contain;scroll-padding-block:8px;
+ scrollbar-width:thin;scrollbar-color:var(--sg-line) transparent;
+}
+body[data-world=claw] #controller-body .plush-inventory::-webkit-scrollbar {width:5px;}
+body[data-world=claw] #controller-body .plush-inventory::-webkit-scrollbar-thumb {background:var(--sg-line);border-radius:3px;}
+body[data-world=claw] #controller-body .plush-row {
+ grid-template-columns:56px minmax(24px,1fr) auto;gap:8px;min-height:78px;height:auto;
+}
+body[data-world=claw] #controller-body .plush-quantity {font:600 14px/1.4 var(--sg-ui);color:var(--sg-ink);}
+body[data-world=claw] #controller-body .plush-row button {
+ min-height:44px;padding:8px 10px;gap:6px;background:var(--sg-well);border:0;
+ color:var(--sg-ink);font:600 12px/1.4 var(--sg-ui);
+}
+body[data-world=claw] #controller-body .plush-row button small {font:400 11px/1.4 var(--sg-ui);color:var(--sg-muted);}
+body[data-world=claw] #controller-body .plush-row button:hover {background:var(--sg-selected);}
+body[data-world=claw] #controller-body .inventory-empty {padding:20px 4px;margin:0;font:400 13px/1.6 var(--sg-ui);color:var(--sg-muted);}
+body[data-world=claw] #controller-body .arcade-panel-actions {flex:none;padding:12px 16px 16px;border-top:1px solid var(--sg-line);}
+body[data-world=claw] #controller-body .quiet-controls {display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0;}
+body[data-world=claw] #controller-body .quiet-controls button {
+ min-width:0;min-height:44px;padding:8px;border:0;border-radius:8px;
+ background:var(--sg-well);color:var(--sg-ink);font:600 12px/1.4 var(--sg-ui);
+}
+body[data-world=claw] #controller-body .quiet-controls button:hover {background:var(--sg-selected);}
+body[data-world=claw] #controller-body .quiet-controls button[aria-pressed=true] {background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world=claw] #controller-body #save-note {margin:10px 0 0;font:400 11px/1.5 var(--sg-ui);color:var(--sg-muted);text-align:center;}
+body[data-world=claw] #controller-body [hidden] {display:none!important;}
+@media(max-width:720px) {
+ body[data-world=claw] {--arcade-controls-bottom:max(18px,env(safe-area-inset-bottom));}
+ body[data-world=claw] .arcade-controller #controller-body {width:min(320px,calc(100vw - 32px));}
+}
+@media(max-height:540px) and (orientation:landscape) {
+ body[data-world=claw] {--arcade-controls-bottom:16px;}
+ body[data-world=claw] .arcade-controller #controller-body {max-height:calc(100dvh - var(--arcade-controls-bottom) - 136px);}
+ body[data-world=claw] #controller-body .controller-heading {padding-block:8px;}
+ body[data-world=claw] #controller-body .arcade-panel-actions {padding-block:8px;}
+ body[data-world=claw] #controller-body #save-note {margin-top:6px;}
+}

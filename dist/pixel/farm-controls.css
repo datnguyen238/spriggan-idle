@@ -1,0 +1,97 @@
+/* A small farm ledger with a steady heading and pause control. */
+body[data-world=farm] {--farm-controls-bottom:28px;}
+body[data-world=farm] .dashboard #farm-controls {
+ display:flex;flex-direction:column;gap:0;width:320px;height:auto;max-width:calc(100vw - 32px);
+ max-height:calc(100dvh - var(--farm-controls-bottom) - 148px - var(--sg-safe-top,0px));
+ padding:0;overflow:hidden;border:0;border-radius:16px;background:var(--sg-paper);color:var(--sg-ink);
+}
+body[data-world=farm] #farm-controls .farm-panel-heading {
+ display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;
+ padding:12px 12px 12px 20px;border-bottom:1px solid var(--sg-line);
+}
+body[data-world=farm] #farm-controls .farm-panel-heading h2 {
+ margin:0;font:500 22px/1.2 var(--sg-display);letter-spacing:-.025em;
+}
+body[data-world=farm] #farm-controls #close-farm-controls {
+ display:flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;
+ min-height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--sg-ink);
+}
+body[data-world=farm] #farm-controls #close-farm-controls:hover {background:var(--sg-well);}
+body[data-world=farm] #farm-controls .farm-panel-scroll {
+ flex:0 1 auto;min-height:0;padding:14px 20px 0;overflow-x:hidden;overflow-y:auto;
+ overscroll-behavior:contain;scroll-padding-block:12px;scrollbar-width:thin;scrollbar-color:var(--sg-line) transparent;
+}
+body[data-world=farm] #farm-controls .farm-panel-scroll::-webkit-scrollbar {width:5px;}
+body[data-world=farm] #farm-controls .farm-panel-scroll::-webkit-scrollbar-thumb {background:var(--sg-line);border-radius:3px;}
+body[data-world=farm] #farm-controls .stats {
+ display:flex;justify-content:space-between;gap:12px;margin:0 0 14px;padding:0 0 14px;
+ border:0;border-bottom:1px solid var(--sg-line);
+}
+body[data-world=farm] #farm-controls .stats strong {display:block;font:500 24px/1.2 var(--sg-display);font-variant-numeric:tabular-nums;color:var(--sg-ink);}
+body[data-world=farm] #farm-controls .stats span {font:400 11px/1.5 var(--sg-ui);text-transform:none;letter-spacing:0;color:var(--sg-muted);}
+body[data-world=farm] #farm-controls .flock-label {margin:0 0 6px;font:700 12px/1.5 var(--sg-ui);color:var(--sg-ink);}
+body[data-world=farm] #farm-controls #flock-picker {
+ min-height:44px;margin:0 0 14px;padding:10px 34px 10px 12px;border-radius:8px;
+ font:600 12px/1.4 var(--sg-ui);background-color:var(--sg-paper);color:var(--sg-ink);border-color:var(--sg-line);
+}
+body[data-world=farm] #farm-controls #restart-flock {min-height:44px;font:600 12px/1.4 var(--sg-ui);}
+body[data-world=farm] #farm-controls :is(.farm-atmosphere,.field-notes) {margin:0;padding:0;border-top:1px solid var(--sg-line);}
+body[data-world=farm] #farm-controls :is(.farm-atmosphere,.field-notes) summary {
+ display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:8px 0;
+ list-style:none;cursor:pointer;border-radius:0;font:600 12px/1.5 var(--sg-ui);color:var(--sg-ink);
+}
+body[data-world=farm] #farm-controls summary::-webkit-details-marker {display:none;}
+body[data-world=farm] #farm-controls details[open]>summary svg {transform:rotate(180deg);}
+body[data-world=farm] #farm-controls .farm-audio {margin:0;padding:0 0 14px;border:0;}
+body[data-world=farm] #farm-controls :is(.farm-audio,.map-rain) button {
+ min-height:44px;padding:8px 10px;border:1px solid var(--sg-line);border-radius:8px;
+ background:transparent;color:var(--sg-ink);font:600 12px/1.4 var(--sg-ui);
+}
+body[data-world=farm] #farm-controls :is(.farm-audio,.map-rain) button:hover {background:var(--sg-well);}
+body[data-world=farm] #farm-controls :is(.farm-audio,.map-rain) button[aria-pressed=true] {background:var(--sg-selected);color:var(--sg-ink);}
+body[data-world=farm] #farm-controls :is(.farm-audio,.map-rain) label {
+ display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:center;gap:6px 8px;
+ margin-top:10px;font:400 12px/1.5 var(--sg-ui);color:var(--sg-muted);
+}
+body[data-world=farm] #farm-controls :is(.farm-audio,.map-rain) input {
+ grid-column:1;width:100%;min-width:0;height:24px;min-height:24px;margin:0;
+}
+body[data-world=farm] #farm-controls :is(.farm-audio,.map-rain) output {
+ grid-column:2;grid-row:2;font:600 12px/1.5 var(--sg-ui);font-variant-numeric:tabular-nums;text-align:right;color:var(--sg-muted);
+}
+body[data-world=farm] #farm-controls :is(.farm-audio,.map-rain) p {margin:8px 0 0;font:400 11px/1.5 var(--sg-ui);color:var(--sg-muted);}
+body[data-world=farm] #farm-controls .map-rain {margin:0;padding:14px 0;border-top:1px solid var(--sg-line);color:var(--sg-ink);font-family:var(--sg-ui);}
+body[data-world=farm] #farm-controls .map-rain [data-rain-resume] {width:100%;}
+body[data-world=farm] #farm-controls .steps {padding:0 0 4px;}
+body[data-world=farm] #farm-controls .steps p {margin:0 0 14px;font:400 12px/1.6 var(--sg-ui);color:var(--sg-muted);}
+body[data-world=farm] #farm-controls .steps b {display:block;margin:0 0 4px;font:700 12px/1.5 var(--sg-ui);color:var(--sg-ink);}
+body[data-world=farm] #farm-controls .farm-panel-actions {
+ display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;margin:0;
+ padding:12px 16px 12px 20px;border-top:1px solid var(--sg-line);background:var(--sg-paper);
+}
+body[data-world=farm] #farm-controls .farm-panel-actions>span {font:400 12px/1.5 var(--sg-ui);color:var(--sg-muted);}
+body[data-world=farm] #farm-controls #motion {
+ min-width:96px;min-height:44px;height:auto;margin:0;padding:8px 16px;border:0;border-radius:8px;
+ background:var(--sg-well);color:var(--sg-ink);font:600 12px/1.4 var(--sg-ui);
+}
+body[data-world=farm] #farm-controls #motion:hover {background:var(--sg-selected);}
+body[data-world=farm] #farm-controls #motion[aria-pressed=true] {background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world=farm] #farm-controls svg {
+ display:block;flex:none;width:18px;height:18px;fill:none;stroke:currentColor;
+ stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
+}
+body[data-world=farm] #farm-controls #close-farm-controls svg {width:20px;height:20px;}
+body[data-world=farm] #farm-controls [hidden] {display:none!important;}
+@media(min-width:721px) and (max-width:1100px) and (min-height:541px) {
+ body[data-world=farm] {--farm-controls-bottom:var(--sg-controls-bottom);}
+}
+@media(max-width:720px) {
+ body[data-world=farm] {--farm-controls-bottom:var(--sg-controls-bottom);}
+ body[data-world=farm] .dashboard #farm-controls {width:min(320px,calc(100vw - 32px));}
+}
+@media(max-height:540px) and (orientation:landscape) {
+ body[data-world=farm] {--farm-controls-bottom:16px;}
+ body[data-world=farm] .dashboard #farm-controls {max-height:calc(100dvh - 120px);}
+ body[data-world=farm] #farm-controls .farm-panel-heading {padding-block:8px;}
+ body[data-world=farm] #farm-controls .farm-panel-actions {padding-block:8px;}
+}

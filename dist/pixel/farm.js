@@ -193,6 +193,7 @@ canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect(),x=(e.
 document.querySelector('#feed').onclick=()=>scatter();document.querySelector('#close-card').onclick=()=>{selected=null;card.hidden=true;draw()};
 const controlsToggle=document.querySelector('#toggle-controls'),controls=document.querySelector('#farm-controls');
 controlsToggle.onclick=()=>{const expanded=controlsToggle.getAttribute('aria-expanded')==='true';controlsToggle.setAttribute('aria-expanded',String(!expanded));controls.inert=expanded;controls.setAttribute('aria-hidden',String(expanded));document.querySelector('.dashboard').classList.toggle('collapsed',expanded)};
+document.querySelector('#close-farm-controls').onclick=()=>{controlsToggle.click();controlsToggle.focus({preventScroll:true})};
 const motion=document.querySelector('#motion');function syncMotion(){motion.setAttribute('aria-pressed',String(paused));motion.setAttribute('aria-label',paused?'Resume farm animation':'Pause farm animation');motion.textContent=paused?'Resume':'Pause'}motion.onclick=()=>{paused=!paused;syncMotion();if(paused)notice('Farm paused. Egg timers keep running.');draw()};syncMotion();
 const picker=document.querySelector('#flock-picker'),restart=document.querySelector('#restart-flock');let flockOptions='';
 picker.onchange=()=>{selected=picker.value||null;card.hidden=!selected;inspect();draw()};

@@ -1,0 +1,120 @@
+/* The kitchen keeps its filling choices close and its settings within reach. */
+body[data-world=kitchen] {--kitchen-controls-bottom:28px;}
+body[data-world=kitchen] .ambience #ambience-controls {
+ display:flex;flex-direction:column;align-items:stretch;gap:0;
+ right:0;left:auto;bottom:66px;width:320px;height:auto;
+ max-width:calc(100vw - 32px);
+ max-height:calc(100dvh - var(--kitchen-controls-bottom) - 148px - var(--sg-safe-top,0px));
+ padding:0;overflow:hidden;border:0;border-radius:16px;
+ background:var(--sg-paper);color:var(--sg-ink);backdrop-filter:none;
+}
+body[data-world=kitchen] #ambience-controls .kitchen-panel-heading {
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ flex:none;padding:16px 12px 14px 20px;border-bottom:1px solid var(--sg-line);
+}
+body[data-world=kitchen] #ambience-controls .kitchen-panel-heading h2 {
+ margin:0;font:500 22px/1.2 var(--sg-display);letter-spacing:-.025em;
+}
+body[data-world=kitchen] #ambience-controls .control-copy {
+ margin:5px 0 0;font:400 12px/1.5 var(--sg-ui);color:var(--sg-muted);
+}
+body[data-world=kitchen] #ambience-controls #close-kitchen-controls {
+ display:flex;align-items:center;justify-content:center;flex:none;
+ width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--sg-ink);
+}
+body[data-world=kitchen] #ambience-controls .kitchen-panel-scroll {
+ min-height:0;padding:16px 20px 12px;overflow-y:auto;overscroll-behavior:contain;
+ scrollbar-width:thin;scrollbar-color:var(--sg-line) transparent;scroll-padding-block:12px;
+}
+body[data-world=kitchen] #ambience-controls .kitchen-panel-scroll::-webkit-scrollbar {width:5px;}
+body[data-world=kitchen] #ambience-controls .kitchen-panel-scroll::-webkit-scrollbar-thumb {background:var(--sg-line);border-radius:3px;}
+body[data-world=kitchen] #ambience-controls .recipe {margin:0 0 16px;}
+body[data-world=kitchen] #ambience-controls .control-label {
+ margin:0 0 8px;font:700 12px/1.5 var(--sg-ui);letter-spacing:0;text-transform:none;color:var(--sg-ink);
+}
+body[data-world=kitchen] #ambience-controls .fillings {gap:6px;margin:0;}
+body[data-world=kitchen] #ambience-controls .fillings button {
+ justify-content:flex-start;gap:8px;min-width:0;min-height:44px;padding:9px 10px;
+ border:1px solid var(--sg-line);border-radius:8px;background:transparent;
+ font:600 12px/1.4 var(--sg-ui);color:var(--sg-ink);
+}
+body[data-world=kitchen] #ambience-controls .fillings button:hover {background:var(--sg-well);}
+body[data-world=kitchen] #ambience-controls .fillings button[aria-pressed=true] {
+ background:var(--sg-selected);border-color:var(--sg-ink);
+}
+body[data-world=kitchen] #ambience-controls .fillings i {width:7px;height:7px;}
+body[data-world=kitchen] #ambience-controls #kitchen-status {
+ margin:10px 0 0;padding:0;border:0;font:400 12px/1.5 var(--sg-ui);color:var(--sg-muted);
+}
+body[data-world=kitchen] #ambience-controls :is(.kitchen-exchange,.kitchen-atmosphere) {border-top:1px solid var(--sg-line);}
+body[data-world=kitchen] #ambience-controls summary {
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ cursor:pointer;list-style:none;min-height:48px;padding:10px 0;border-radius:0;
+ font:600 12px/1.5 var(--sg-ui);color:var(--sg-ink);
+}
+body[data-world=kitchen] #ambience-controls summary::-webkit-details-marker {display:none;}
+body[data-world=kitchen] #ambience-controls details[open]>summary svg {transform:rotate(180deg);}
+body[data-world=kitchen] #ambience-controls .shop-earnings {
+ margin:0;padding:0 0 14px;border:0;border-radius:0;background:none;
+}
+body[data-world=kitchen] #ambience-controls .shop-earnings p {
+ margin:0 0 10px;font:400 12px/1.5 var(--sg-ui);color:var(--sg-muted);
+}
+body[data-world=kitchen] #ambience-controls .shop-earnings .shop-wallet {
+ margin:0 0 6px;font-weight:700;color:var(--sg-ink);font-variant-numeric:tabular-nums;
+}
+body[data-world=kitchen] #ambience-controls #buy-seeds {
+ width:100%;min-height:44px;margin:0;padding:10px 8px;
+ border:0;border-radius:8px;background:var(--sg-ink);color:var(--sg-paper);font:600 12px/1.4 var(--sg-ui);
+}
+body[data-world=kitchen] #ambience-controls #seed-status {
+ margin:8px 0 4px;font:400 11px/1.5 var(--sg-ui);color:var(--sg-muted);
+}
+body[data-world=kitchen] #ambience-controls .shop-earnings a {
+ display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;
+ font:600 12px/1.5 var(--sg-ui);color:var(--sg-ink);text-underline-offset:4px;
+}
+body[data-world=kitchen] #ambience-controls .kitchen-sound-options {display:grid;gap:8px;padding-bottom:16px;}
+body[data-world=kitchen] #ambience-controls .kitchen-sound-options button {
+ width:100%;min-height:44px;padding:10px;border:1px solid var(--sg-line);border-radius:8px;
+ background:transparent;color:var(--sg-ink);font:600 12px/1.4 var(--sg-ui);
+}
+body[data-world=kitchen] #ambience-controls #rainfx[aria-pressed=true] {background:var(--sg-selected);}
+body[data-world=kitchen] #ambience-controls label {
+ gap:8px;margin:4px 0 0;font:400 12px/1.5 var(--sg-ui);color:var(--sg-muted);
+}
+body[data-world=kitchen] #ambience-controls output {font:600 12px/1.5 var(--sg-ui);font-variant-numeric:tabular-nums;}
+body[data-world=kitchen] #ambience-controls input[type=range] {height:44px;margin:0;}
+body[data-world=kitchen] #ambience-controls #audio-status {margin:0;font:400 11px/1.5 var(--sg-ui);}
+body[data-world=kitchen] #ambience-controls #memory {
+ margin:8px 0 0;font:400 11px/1.5 var(--sg-ui);color:var(--sg-muted);
+}
+body[data-world=kitchen] #ambience-controls .kitchen-panel-actions {
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:none;
+ padding:12px 16px;border-top:1px solid var(--sg-line);background:var(--sg-paper);
+}
+body[data-world=kitchen] #ambience-controls .kitchen-panel-actions button {
+ min-width:0;min-height:44px;margin:0;padding:8px 4px;border:0;border-radius:8px;
+ background:var(--sg-well);color:var(--sg-ink);font:600 12px/1.4 var(--sg-ui);
+}
+body[data-world=kitchen] #ambience-controls .kitchen-panel-actions button:hover {background:var(--sg-selected);}
+body[data-world=kitchen] #ambience-controls .kitchen-panel-actions button[aria-pressed=true] {background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world=kitchen] #ambience-controls svg {
+ display:block;width:18px;height:18px;flex:none;fill:none;stroke:currentColor;
+ stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
+}
+body[data-world=kitchen] #ambience-controls #close-kitchen-controls svg {width:20px;height:20px;}
+body[data-world=kitchen] #ambience-controls [hidden] {display:none!important;}
+@media(min-width:721px) and (max-width:1100px) and (min-height:541px) {
+ body[data-world=kitchen] {--kitchen-controls-bottom:var(--sg-controls-bottom);}
+}
+@media(max-width:720px) {
+ body[data-world=kitchen] {--kitchen-controls-bottom:var(--sg-controls-bottom);}
+ body[data-world=kitchen] .ambience #ambience-controls {width:min(320px,calc(100vw - 32px));}
+}
+@media(max-height:540px) and (orientation:landscape) {
+ body[data-world=kitchen] {--kitchen-controls-bottom:16px;}
+ body[data-world=kitchen] .ambience #ambience-controls {max-height:calc(100dvh - 120px);}
+ body[data-world=kitchen] #ambience-controls .kitchen-panel-heading {padding-block:10px;}
+ body[data-world=kitchen] #ambience-controls .kitchen-panel-actions {padding-block:8px;}
+}

@@ -463,6 +463,7 @@
     toggleControlsBtn.setAttribute('aria-expanded',String(!collapsed));
     toggleControlsBtn.querySelector('span').textContent=collapsed?'Show controls':'Hide controls';queueSave();
   };
+  document.querySelector('#close-pond-controls').onclick=()=>{toggleControlsBtn.click();toggleControlsBtn.focus({preventScroll:true})};
   feedBtn.onclick=()=>drop(rand(w*.3,w*.7),rand(h*.3,h*.65),8);
   addBtn.onclick=()=>{if(fish.length<12){spawn();if(removing)setRemoveMode(false)}else status.textContent='The pond is full (12 koi)'};
   removeBtn.onclick=()=>{if(fish.length||removing)setRemoveMode(!removing);else status.textContent='No koi to remove'};
@@ -481,7 +482,7 @@
   speedInput.oninput=()=>{pace=Number(speedInput.value);speedValue.textContent=`${pace.toFixed(1)}×`;queueSave()};
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){if(removing)setRemoveMode(false);if(!koiTag.hidden){closeKoiTag();canvas.focus({preventScroll:true})}}
-    if(e.code==='Space'&&!e.target.closest?.('button,input,select,textarea,[contenteditable=true]')){e.preventDefault();pauseBtn.click()}
+    if(e.code==='Space'&&!e.target.closest?.('button,input,select,textarea,summary,[contenteditable=true]')){e.preventDefault();pauseBtn.click()}
   });
   function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(savePond,900)}
   function welcomeSlotGolden(announceArrival=false){
