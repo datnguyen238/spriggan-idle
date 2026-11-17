@@ -1,8 +1,11 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { readFileSync, existsSync } = require('node:fs');
+const { resolve } = require('node:path');
+const vm = require('node:vm');
 const { createNetwork, polyline, pointAt, smoothPath } = require('../dist/landing-paths.js');
 const network = createNetwork();
-const destinations = ['slots', 'claw', 'dumplings', 'hex', 'pixel', 'pond', 'incoming'];
+const destinations = ['slots', 'claw', 'dumplings', 'hex', 'pixel', 'pond', 'fishing', 'incoming'];
 const gap = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
 
 test('every destination can be reached from every other place without a position jump', () => {
@@ -76,4 +79,51 @@ test('the main entrance is centered on the park square and connects to the road 
   const points=network.plan(network.nodes.entry,'claw');
   assert.deepEqual(points[0],network.nodes.entry);
   assert.deepEqual(points.at(-1),network.nodes.claw);
+});
+
+test('the fishing road reaches the landward end of the dock', () => {
+  const branches = network.edges.filter(edge => edge.a === 'fishing' || edge.b === 'fishing');
+  assert.equal(branches.length, 1);
+  assert.equal(branches[0].a, 'hex');
+  assert.deepEqual(branches[0].points.at(-1), { x: 1296, y: 555 });
+  const points = network.plan(network.nodes.entry, 'fishing');
+  assert.deepEqual(points.at(-1), network.nodes.fishing);
+});
+
+test('the dock is registered in the map, directory, and world navigation', () => {
+  const read = file => readFileSync(resolve(__dirname, '../dist', file), 'utf8');
+  const context = { window: {} };
+  vm.runInNewContext(read('landing-places.js'), context);
+  const places = context.window.SPRIGGAN_PLACES;
+  assert.equal(places.filter(place => place.href).length, 7);
+  const fishing = places.find(place => place.id === 'fishing');
+  assert.equal(fishing.name, 'The Fishing Dock');
+  assert.equal(fishing.href, './fishing/');
+  assert.equal(fishing.x, network.nodes.fishing.x);
+  assert.equal(fishing.y, network.nodes.fishing.y);
+  assert.ok(existsSync(resolve(__dirname, '../dist', fishing.image.split('?')[0])));
+  const html = read('index.html');
+  assert.match(html, /<button[^>]*data-place="fishing"[^>]*aria-label="Select The Fishing Dock"/);
+  assert.match(html, /href="\.\/fishing\/">The Fishing Dock<\/a>/);
+  assert.match(read('landing.js'), /fishing:'Cast & discover'/);
+  assert.match(read('shared/world-ui.js'), /\['fishing','fishing','The Fishing Dock',/);
+});
+
+test('ordinary world links accept the Fishing Dock as their referrer', () => {
+  const script = readFileSync(resolve(__dirname, '../dist/shared/map-entry.js'), 'utf8');
+  for (const referrer of ['fishing/', 'fishing/index.html']) {
+    let redirected = false;
+    const context = {
+      URL,
+      document: {
+        currentScript: { src: 'https://spriggan.test/park/shared/map-entry.js', hasAttribute: () => true },
+        referrer: `https://spriggan.test/park/${referrer}`,
+        documentElement: { style: {} }
+      },
+      sessionStorage: { getItem: () => null, removeItem() {} },
+      location: { pathname: '/park/pond/', replace: () => { redirected = true; } }
+    };
+    vm.runInNewContext(script, context);
+    assert.equal(redirected, false, referrer);
+  }
 });

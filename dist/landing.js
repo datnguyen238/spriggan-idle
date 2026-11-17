@@ -14,8 +14,8 @@
     if(guide && !guide.contains(event.target) && !guideToggle.contains(event.target))setGuide(false);
   });
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&guide?.classList.contains('is-open')){setGuide(false);guideToggle.focus();}});
-  const invitations = {pond:'Feed & unwind',pixel:'Raise a little flock',hex:'A meadow to protect',dumplings:'Fold, steam & serve',claw:'Catch a new friend',slots:'A little garden luck'};
-  if (directory) for (const id of ['pond','pixel','hex','dumplings','claw','slots']) {
+  const invitations = {pond:'Feed & unwind',pixel:'Raise a little flock',hex:'A meadow to protect',dumplings:'Fold, steam & serve',claw:'Catch a new friend',slots:'A little garden luck',fishing:'Cast & discover'};
+  if (directory) for (const id of ['pond','pixel','hex','dumplings','claw','slots','fishing']) {
     const place = places.find(item => item.id === id);
     const link = document.createElement('a');
     link.className = 'place-link world';
@@ -198,7 +198,7 @@
     const to = {
       scale,
       x: targetX - place.x * scale,
-      y: targetY - (place.y - (place.id === 'pond' ? 70 : place.id === 'slots' ? 45 : 80)) * scale
+      y: targetY - (place.y - (place.id === 'pond' ? 70 : place.id === 'slots' ? 45 : place.id === 'fishing' ? 35 : 80)) * scale
     };
     constrain(to);
     if (reduced.matches || !smooth) { camera = to; flight = null; render(); }

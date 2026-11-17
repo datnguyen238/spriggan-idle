@@ -9,7 +9,8 @@
       ['hex','hex','Clover Keep','M4 20V9h4V4h3v5h2V4h3v5h4v11ZM8 20v-5h8v5M3 9h18'],
       ['kitchen','dumplings','Little Folds','M3 14c1-9 17-9 18 0-3 7-15 7-18 0Zm3-3 2 3m2-5 1 4m3-4-1 4m4-3-2 4M9 3v2m6-2v2'],
       ['claw','claw','Little Arcade','M5 21V3h14v18ZM5 15h14M12 3v5m-3 3 3-3 3 3m-6 0 1 2m5-2-1 2M9 18h6'],
-      ['slots','slots','Golden Seed','M5 21V4h14v17ZM5 15h14M9 7v5m6-5v5m-7 6h8M12 3V1']
+      ['slots','slots','Golden Seed','M5 21V4h14v17ZM5 15h14M9 7v5m6-5v5m-7 6h8M12 3V1'],
+      ['fishing','fishing','The Fishing Dock','M3 17h13m-11 0v4m9-4v4M7 17V5c7 0 11 4 12 9m0 0v3a2 2 0 0 1-4 0m4-3h2M3 12l4-7']
     ];
     const svg = path => {
       const node = document.createElementNS('http://www.w3.org/2000/svg','svg');

@@ -11,7 +11,7 @@
   }catch{}
   // The park and world switcher both support ordinary links and opening a new tab.
   let fromHome=false;
-  try{const previous=new URL(document.referrer);const relative=previous.pathname.slice(home.pathname.length);fromHome=previous.origin===home.origin&&(relative===''||relative==='index.html'||/^(pond|pixel|hex|dumplings|slots|claw)\/(index\.html)?$/.test(relative))}catch{}
+  try{const previous=new URL(document.referrer);const relative=previous.pathname.slice(home.pathname.length);fromHome=previous.origin===home.origin&&(relative===''||relative==='index.html'||/^(pond|pixel|hex|dumplings|slots|claw|fishing)\/(index\.html)?$/.test(relative))}catch{}
   if(!selected&&!fromHome){
    document.documentElement.style.visibility='hidden';
    location.replace(home.href);

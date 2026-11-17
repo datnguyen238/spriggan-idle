@@ -7,7 +7,7 @@
   const baseNodes = {
     midway: { x: 692.875, y: 305 }, slots: { x: 700, y: 290 }, entry: { x: 550, y: 640 }, square: { x: 550, y: 380 }, north: { x: 560, y: 355 }, south: { x: 580, y: 440 },
     claw: { x: 275, y: 240 }, dumplings: { x: 583, y: 240 }, hex: { x: 813, y: 240 },
-    pixel: { x: 249, y: 466.6666666666667 }, pond: { x: 630, y: 464 }, incoming: { x: 970, y: 466.6666666666667 }
+    pixel: { x: 249, y: 466.6666666666667 }, pond: { x: 630, y: 464 }, fishing: { x: 864, y: 370 }, incoming: { x: 970, y: 466.6666666666667 }
   };
   const nodes = Object.fromEntries(Object.entries(baseNodes).map(([id, point]) => [id, { x: point.x * 1.5, y: point.y * 1.5 }]));
   const definitions = [
@@ -16,6 +16,7 @@
     ['square', 'north', [551, 371, 556, 363]],
     ['north', 'midway', [605, 335, 650, 321.25]],
     ['midway', 'hex', [735.75, 288.75, 776.5, 270]],
+    ['hex', 'fishing', [810, 285, 818, 350]],
     ['midway', 'slots', [695, 299, 698, 295]],
     ['north', 'dumplings', [562, 312, 580, 275]],
     ['square', 'south', [552, 402, 565, 427]],

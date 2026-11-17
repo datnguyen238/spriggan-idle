@@ -1,0 +1,232 @@
+/* A quiet river in front; a little paper notebook within reach. */
+body[data-world=fishing] {
+  --sg-paper:#faf3e4;--sg-ink:#314e43;--sg-muted:#5c6c5b;--sg-line:#c9cbb5;
+  --sg-selected:#e0e7d1;--sg-well:#e9ead8;--sg-clay:#aa634b;
+  --fishing-controls-bottom:28px;--fishing-tension-ink:#738d74;
+  margin:0;min-width:280px;height:100dvh;overflow:hidden;background:#b7cebc;color:var(--sg-ink);
+  font:400 14px/1.5 var(--sg-ui);
+}
+body[data-world=fishing] *,body[data-world=fishing] *::before,body[data-world=fishing] *::after {box-sizing:border-box;}
+body[data-world=fishing] [hidden] {display:none!important;}
+body[data-world=fishing] :is(button,summary,a) {-webkit-tap-highlight-color:transparent;}
+body[data-world=fishing] :is(button,summary) {color:inherit;font:700 13px/1.4 var(--sg-ui);}
+body[data-world=fishing] button {cursor:pointer;}
+body[data-world=fishing] button:disabled {cursor:default;opacity:.5;}
+body[data-world=fishing] :is(button,a,summary):focus-visible {outline:3px solid #99543f;outline-offset:3px;}
+body[data-world=fishing] :is(button,summary) svg {width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+body[data-world=fishing] ::selection {background:#d6bb82;color:#314e43;}
+body[data-world=fishing] * {scrollbar-width:thin;scrollbar-color:#8b9b7a transparent;}
+body[data-world=fishing] #river-world {position:fixed;inset:0;isolation:isolate;}
+body[data-world=fishing] #river-scene {position:absolute;inset:0;overflow:hidden;touch-action:manipulation;}
+body[data-world=fishing] #river-scene>canvas {display:block;width:100%;height:100%;outline:none;}
+body[data-world=fishing] .river-loading {position:absolute;left:50%;top:48%;translate:-50% -50%;margin:0;width:max-content;max-width:calc(100% - 40px);padding:12px 18px;background:var(--sg-paper);border-radius:6px;font-size:13px;}
+body[data-world=fishing] .scene-vignette {position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#c9dcc12b,transparent 28%,transparent 70%,#314b3b0c);}
+body[data-world=fishing] .river-header {z-index:8;color:var(--sg-ink);}
+body[data-world=fishing] .river-header .brand {background:var(--sg-paper);padding:8px 12px;border-radius:6px;}
+body[data-world=fishing] .river-header-actions {display:flex;align-items:center;gap:8px;pointer-events:auto;}
+body[data-world=fishing] .world-nav summary {background:var(--sg-paper);}
+body[data-world=fishing] .world-nav[open] summary {background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world=fishing] .river-intro {position:absolute;top:108px;left:var(--sg-gutter);max-width:330px;padding:13px 16px 12px;background:var(--sg-paper);border-radius:6px;pointer-events:none;}
+body[data-world=fishing] .river-intro h1 {font:500 clamp(28px,2.7vw,36px)/1.12 var(--sg-display);letter-spacing:-.035em;margin:0;text-wrap:balance;}
+body[data-world=fishing] .river-intro p {margin:7px 0 0;font-size:12px;color:var(--sg-muted);}
+body[data-world=fishing] #river-condition {display:block;margin-top:11px;font-size:11px;color:var(--sg-muted);}
+body[data-world=fishing] .fishing-action {position:absolute;z-index:4;left:var(--sg-gutter);bottom:var(--fishing-controls-bottom);width:340px;padding:14px 16px 12px;background:var(--sg-paper);border-radius:8px;box-shadow:0 8px 28px #183e2e24;}
+body[data-world=fishing] .cast-spots {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:3px;border-radius:6px;background:var(--sg-well);}
+body[data-world=fishing] .cast-spots button {min-width:0;min-height:44px;padding:7px 4px;border:0;border-radius:4px;background:transparent;font-size:12px;}
+body[data-world=fishing] .cast-spots button:hover:not(:disabled) {background:#dce3cc;}
+body[data-world=fishing] .cast-spots button[aria-pressed=true] {background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world=fishing] .cast-spots button[aria-pressed=true]:hover {background:#416751;color:var(--sg-paper);}
+body[data-world=fishing] .action-hint {min-height:36px;margin:11px 0 10px;color:var(--sg-muted);font-size:12px;line-height:1.5;text-wrap:pretty;}
+body[data-world=fishing] .action-buttons {display:flex;align-items:stretch;gap:8px;}
+body[data-world=fishing] #fishing-action {display:flex;align-items:center;justify-content:center;gap:10px;flex:1;min-width:0;min-height:50px;padding:12px 15px;border:0;border-radius:6px;background:var(--sg-ink);color:var(--sg-paper);user-select:none;-webkit-user-select:none;touch-action:none;}
+body[data-world=fishing] #fishing-action:hover:not(:disabled) {background:#416751;}
+body[data-world=fishing] #fishing-action:active:not(:disabled),body[data-world=fishing] #fishing-action[aria-pressed=true] {background:#6b7d56;}
+body[data-world=fishing][data-phase=bite] #fishing-action {background:#9b563e;}
+body[data-world=fishing] #lift-line {min-height:50px;padding:10px 12px;background:transparent;border:1px solid var(--sg-line);border-radius:6px;font-size:12px;}
+body[data-world=fishing] #lift-line:hover:not(:disabled) {background:var(--sg-well);}
+body[data-world=fishing] .keyboard-note {margin:9px 0 0;text-align:center;font-size:11px;color:var(--sg-muted);}
+body[data-world=fishing] .reel-readout {padding:2px 0 0;}
+body[data-world=fishing][data-phase=reeling] .cast-spots {display:none;}
+body[data-world=fishing] .line-caption {display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:9px;font-size:11px;}
+body[data-world=fishing] .line-caption strong {font-size:13px;}
+body[data-world=fishing] #line-feel {color:var(--sg-muted);text-align:right;font-size:11px;}
+body[data-world=fishing] .reel-readout[data-tight=true] {--fishing-tension-ink:#aa634b;}
+body[data-world=fishing] .reel-readout[data-tight=true] #line-feel {color:#975039;}
+body[data-world=fishing] #line-tension {display:block;width:100%;height:8px;appearance:none;-webkit-appearance:none;border:0;border-radius:6px;background:linear-gradient(90deg,var(--fishing-tension-ink) var(--line-tension,20%),var(--sg-well) 0);overflow:hidden;}
+body[data-world=fishing] #line-tension::-webkit-meter-bar {height:8px;background:linear-gradient(90deg,var(--fishing-tension-ink) var(--line-tension,20%),var(--sg-well) 0);border:0;border-radius:6px;}
+body[data-world=fishing] #line-tension::-webkit-meter-optimum-value,body[data-world=fishing] #line-tension::-webkit-meter-suboptimum-value,body[data-world=fishing] #line-tension::-webkit-meter-even-less-good-value {background:transparent;}
+body[data-world=fishing] #line-tension::-moz-meter-bar {background:var(--fishing-tension-ink);border-radius:6px;}
+body[data-world=fishing] .reel-progress {display:flex;align-items:center;gap:10px;margin-top:10px;font-size:11px;color:var(--sg-muted);}
+body[data-world=fishing] #reel-progress {appearance:none;-webkit-appearance:none;flex:1;min-width:0;height:4px;border:0;border-radius:4px;overflow:hidden;background:var(--sg-well);accent-color:var(--sg-ink);}
+body[data-world=fishing] #reel-progress::-webkit-progress-bar {background:var(--sg-well);}
+body[data-world=fishing] #reel-progress::-webkit-progress-value {background:var(--sg-ink);border-radius:4px;}
+body[data-world=fishing] #reel-progress::-moz-progress-bar {background:var(--sg-ink);border-radius:4px;}
+body[data-world=fishing] .guide-launcher {position:absolute;z-index:4;right:var(--sg-gutter);bottom:var(--fishing-controls-bottom);display:flex;align-items:center;gap:11px;min-height:60px;padding:12px 18px;border:0;border-radius:7px;background:var(--sg-paper);box-shadow:0 6px 24px #183e2e24;text-align:left;}
+body[data-world=fishing] .guide-launcher>svg {width:26px;height:26px;}
+body[data-world=fishing] .guide-launcher span {font-size:13px;}
+body[data-world=fishing] .guide-launcher small {display:block;margin-top:2px;font:400 11px/1.5 var(--sg-ui);color:var(--sg-muted);font-variant-numeric:tabular-nums;}
+body[data-world=fishing] .guide-launcher:hover {background:#ecebd7;}
+body[data-world=fishing] .catch-note {position:absolute;z-index:5;right:var(--sg-gutter);bottom:112px;display:grid;grid-template-columns:140px minmax(0,1fr);align-items:center;gap:14px;width:420px;max-width:calc(100% - 420px);max-height:calc(100dvh - 220px);padding:18px;background:var(--sg-paper);border-radius:8px;box-shadow:0 10px 36px #183e2e26;overflow:auto;}
+body[data-world=fishing] #catch-portrait {width:140px;height:140px;}
+body[data-world=fishing] .specimen-host {position:relative;min-width:0;overflow:hidden;}
+body[data-world=fishing] .specimen-host canvas {display:block;width:100%;height:100%;}
+body[data-world=fishing] #catch-discovery {margin:0 0 6px;font-size:11px;color:#945239;}
+body[data-world=fishing] #catch-name {margin:0;font:500 25px/1.08 var(--sg-display);letter-spacing:-.03em;text-wrap:balance;}
+body[data-world=fishing] #catch-size {margin:7px 0 0;font-size:11px;font-variant-numeric:tabular-nums;color:var(--sg-muted);}
+body[data-world=fishing] #catch-description {margin:9px 0 0;font-size:11px;line-height:1.55;color:var(--sg-muted);}
+body[data-world=fishing] #catch-guide {display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 0 0;background:none;border:0;font-size:12px;text-align:left;}
+body[data-world=fishing] #catch-guide:hover {color:#945239;}
+body[data-world=fishing] #catch-guide svg {width:17px;}
+body[data-world=fishing] .river-settings {position:relative;}
+body[data-world=fishing] .river-settings>summary {display:grid;place-items:center;min-width:44px;width:44px;height:44px;padding:10px;list-style:none;cursor:pointer;background:var(--sg-paper);border-radius:6px;}
+body[data-world=fishing] .river-settings>summary::-webkit-details-marker {display:none;}
+body[data-world=fishing] .river-settings[open]>summary {background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world=fishing] .river-settings-body {position:absolute;right:0;top:56px;width:286px;max-height:calc(100dvh - 104px);overflow:auto;overscroll-behavior:contain;padding:21px;background:var(--sg-paper);border-radius:8px;box-shadow:0 12px 40px #183e2e33;}
+body[data-world=fishing] .river-settings-body h2 {font:500 23px/1.15 var(--sg-display);margin:0 0 20px;}
+body[data-world=fishing] .river-settings-body button {min-height:44px;padding:10px 12px;border:1px solid var(--sg-line);border-radius:5px;background:transparent;}
+body[data-world=fishing] .river-settings-body button:hover {background:var(--sg-well);}
+body[data-world=fishing] .river-settings-body button[aria-pressed=true] {background:var(--sg-selected);border-color:#8e9f80;}
+body[data-world=fishing] .setting-pair {display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+body[data-world=fishing] #river-sound,body[data-world=fishing] #river-pause {width:100%;margin-top:8px;}
+body[data-world=fishing] .reel-method {margin-top:20px;padding-top:18px;border-top:1px solid var(--sg-line);}
+body[data-world=fishing] .reel-method>span {font-size:12px;font-weight:700;}
+body[data-world=fishing] .reel-method>div {display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+body[data-world=fishing] .reel-method p,body[data-world=fishing] #save-status {font-size:11px;line-height:1.6;color:var(--sg-muted);margin:10px 0 0;}
+body[data-world=fishing] #save-status {margin-top:18px;}
+body[data-world=fishing] #field-guide {width:840px;max-width:calc(100vw - 48px);height:min(620px,calc(100dvh - 48px));max-height:calc(100dvh - 48px);padding:0;border:0;border-radius:8px;background:var(--sg-paper);color:var(--sg-ink);overflow:hidden;box-shadow:0 24px 90px #122f4160;}
+body[data-world=fishing] #field-guide[open] {display:flex;flex-direction:column;}
+body[data-world=fishing] #field-guide:not([open]) {display:none;}
+body[data-world=fishing] #field-guide::backdrop {background:#183c3d8a;}
+body[data-world=fishing] .journal-heading {display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex:none;padding:24px 28px 20px;border-bottom:1px solid var(--sg-line);}
+body[data-world=fishing] #guide-title {font:500 32px/1.1 var(--sg-display);letter-spacing:-.03em;margin:0;}
+body[data-world=fishing] #journal-progress {margin:8px 0 0;color:var(--sg-muted);font-size:12px;}
+body[data-world=fishing] .icon-button {display:grid;place-items:center;flex:none;width:44px;height:44px;min-width:44px;min-height:44px;padding:10px;border:0;border-radius:6px;background:transparent;}
+body[data-world=fishing] .icon-button:hover {background:var(--sg-well);}
+body[data-world=fishing] .journal-pages {display:grid;grid-template-columns:240px minmax(0,1fr);flex:1;min-height:0;}
+body[data-world=fishing] #fish-index {min-width:0;overflow:auto;overscroll-behavior:contain;padding:12px 10px;background:#eeecdb;}
+body[data-world=fishing] #fish-index button {display:flex;align-items:center;gap:8px;width:100%;min-height:52px;padding:10px 13px;border:0;border-radius:4px;background:transparent;text-align:left;font-size:12px;}
+body[data-world=fishing] #fish-index button+button {margin-top:3px;}
+body[data-world=fishing] #fish-index button:hover {background:#e2e5ce;}
+body[data-world=fishing] #fish-index button:is([aria-current=true],[aria-current=page],[aria-pressed=true],.is-selected) {background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world=fishing] #fish-index button :is(strong,span) {display:block;}
+body[data-world=fishing] #fish-index button small {display:block;margin-top:3px;font-size:11px;font-weight:400;color:var(--sg-muted);}
+body[data-world=fishing] #fish-index button:is([aria-current=true],[aria-current=page],[aria-pressed=true],.is-selected) small {color:#e0e8d3;}
+body[data-world=fishing] #fish-index button svg {display:block;flex:none;width:26px;height:22px;margin:0;}
+body[data-world=fishing] .journal-specimen {position:relative;display:grid;grid-template-rows:minmax(150px,1fr) auto;min-width:0;min-height:0;margin:0;border-left:1px solid #d2cfb8;box-shadow:inset 9px 0 16px -14px #72694370;overflow:auto;overscroll-behavior:contain;}
+body[data-world=fishing] .specimen-number {position:absolute;z-index:1;top:18px;right:25px;font-size:11px;font-variant-numeric:tabular-nums;color:var(--sg-muted);letter-spacing:.06em;}
+body[data-world=fishing] #guide-portrait {width:100%;height:100%;min-height:150px;}
+body[data-world=fishing] .specimen-copy {padding:0 30px 24px;}
+body[data-world=fishing] #specimen-name {font:500 30px/1.1 var(--sg-display);letter-spacing:-.035em;margin:0;text-wrap:balance;}
+body[data-world=fishing] #specimen-note {max-width:46ch;margin:12px 0 0;font-size:13px;line-height:1.65;color:var(--sg-muted);}
+body[data-world=fishing] #specimen-records {display:flex;gap:32px;margin:18px 0 0;padding-top:15px;border-top:1px solid var(--sg-line);}
+body[data-world=fishing] #specimen-records dt {font-size:11px;color:var(--sg-muted);}
+body[data-world=fishing] #specimen-records dd {margin:3px 0 0;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;}
+body[data-world=fishing] #specimen-habitat {margin:14px 0 0;font-size:11px;color:var(--sg-muted);}
+body[data-world=fishing] .journal-footer {display:flex;align-items:center;justify-content:space-between;gap:16px;flex:none;min-height:68px;padding:10px 24px;border-top:1px solid var(--sg-line);}
+body[data-world=fishing] .journal-footer>span {font-size:11px;color:var(--sg-muted);}
+body[data-world=fishing] #return-river {display:flex;align-items:center;justify-content:center;gap:10px;min-height:44px;padding:10px 15px;border:0;border-radius:5px;background:var(--sg-ink);color:var(--sg-paper);font-size:12px;}
+body[data-world=fishing] #return-river:hover {background:#416751;}
+body[data-world=fishing] .scene-error {position:absolute;z-index:5;top:50%;left:50%;translate:-50% -50%;width:340px;max-width:calc(100% - 40px);padding:24px;background:var(--sg-paper);border-radius:8px;box-shadow:0 10px 36px #183e2e26;}
+body[data-world=fishing] .scene-error h2 {margin:0;font:500 26px/1.15 var(--sg-display);}
+body[data-world=fishing] .scene-error p {margin:13px 0;font-size:13px;color:var(--sg-muted);}
+body[data-world=fishing] #retry-scene {min-height:44px;padding:10px 14px;border:0;border-radius:5px;background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world=fishing][data-evening=true] {background:#476b68;}
+body[data-world=fishing][data-evening=true] .scene-vignette {background:linear-gradient(180deg,#183d4520,transparent 35%,transparent 65%,#152f3d26);}
+body[data-world=fishing] .pomodoro {z-index:6;}
+@media (min-width:721px) and (max-width:1100px) and (min-height:541px) {
+  body[data-world=fishing] {--fishing-controls-bottom:calc(var(--sg-timer-height,56px) + 52px);}
+  body[data-world=fishing] .catch-note {bottom:calc(var(--fishing-controls-bottom) + 85px);width:390px;max-width:calc(100% - 405px);grid-template-columns:120px minmax(0,1fr);}
+  body[data-world=fishing] #catch-portrait {width:120px;height:140px;}
+}
+@media (max-width:720px) {
+  body[data-world=fishing] {--fishing-controls-bottom:calc(var(--sg-timer-height,56px) + max(18px,env(safe-area-inset-bottom)) + 12px);}
+  body[data-world=fishing] .river-header .brand {padding:6px 9px;gap:7px;font-size:21px;}
+  body[data-world=fishing] .river-header-actions {gap:6px;}
+  body[data-world=fishing] .river-intro {top:calc(84px + var(--sg-safe-top));left:16px;max-width:calc(100% - 32px);padding:10px 13px;}
+  body[data-world=fishing] .river-intro h1 {font-size:28px;}
+  body[data-world=fishing] .river-intro p {font-size:11px;margin-top:5px;}
+  body[data-world=fishing] #river-condition {font-size:11px;margin-top:6px;}
+  body[data-world=fishing] .fishing-action {left:16px;max-width:calc(100% - 94px);padding:10px 11px;}
+  body[data-world=fishing] .cast-spots {gap:1px;padding:2px;}
+  body[data-world=fishing] .cast-spots button {padding:5px 2px;font-size:11px;line-height:1.2;}
+  body[data-world=fishing] .action-hint {min-height:30px;margin:8px 0;font-size:11px;line-height:1.4;}
+  body[data-world=fishing] .action-buttons {gap:6px;}
+  body[data-world=fishing] #fishing-action {padding:10px 8px;gap:6px;min-height:50px;font-size:12px;}
+  body[data-world=fishing] #fishing-action svg {width:17px;height:17px;}
+  body[data-world=fishing] #lift-line {min-height:50px;padding:8px;font-size:11px;}
+  body[data-world=fishing] .keyboard-note {display:none;}
+  body[data-world=fishing] .guide-launcher {right:16px;width:50px;height:50px;min-height:50px;padding:12px;justify-content:center;border-radius:7px;}
+  body[data-world=fishing] .guide-launcher>span {display:none;}
+  body[data-world=fishing] .guide-launcher>svg {width:25px;height:25px;}
+  body[data-world=fishing] .line-caption {gap:5px;margin-bottom:7px;}
+  body[data-world=fishing] .line-caption strong {font-size:12px;}
+  body[data-world=fishing] #line-feel {font-size:11px;}
+  body[data-world=fishing] .reel-progress {gap:7px;font-size:11px;margin-top:8px;}
+  body[data-world=fishing] .catch-note {left:16px;right:16px;bottom:calc(var(--fishing-controls-bottom) + var(--fishing-action-height,190px) + 10px);width:auto;max-width:none;max-height:min(240px,calc(100dvh - var(--fishing-controls-bottom) - var(--fishing-action-height,190px) - 90px));grid-template-columns:110px minmax(0,1fr);gap:12px;padding:14px;}
+  body[data-world=fishing] #catch-portrait {width:110px;height:140px;}
+  body[data-world=fishing] #catch-name {font-size:23px;}
+  body[data-world=fishing] #catch-description {font-size:11px;}
+  body[data-world=fishing] .river-settings-body {position:fixed;top:calc(68px + var(--sg-safe-top));right:16px;max-height:calc(100dvh - 90px - var(--sg-safe-top));max-width:calc(100vw - 32px);}
+  body[data-world=fishing] #field-guide {width:calc(100vw - 20px);max-width:none;height:min(720px,calc(100dvh - 20px));max-height:calc(100dvh - 20px);margin:auto;border-radius:7px;}
+  body[data-world=fishing] .journal-heading {padding:16px 15px 14px;gap:10px;}
+  body[data-world=fishing] #guide-title {font-size:25px;}
+  body[data-world=fishing] #journal-progress {font-size:11px;max-width:30ch;margin-top:5px;}
+  body[data-world=fishing] .journal-pages {display:flex;flex-direction:column;}
+  body[data-world=fishing] #fish-index {display:flex;gap:5px;flex:none;max-height:78px;padding:8px;overflow-x:auto;overflow-y:hidden;border-bottom:1px solid var(--sg-line);}
+  body[data-world=fishing] #fish-index button {flex:none;width:auto;max-width:160px;min-width:104px;min-height:44px;padding:8px 11px;font-size:11px;}
+  body[data-world=fishing] #fish-index button+button {margin-top:0;}
+  body[data-world=fishing] #fish-index button small {font-size:11px;}
+  body[data-world=fishing] .journal-specimen {display:block;flex:1;min-height:0;border-left:0;box-shadow:none;overflow:auto;}
+  body[data-world=fishing] .specimen-number {top:12px;right:19px;font-size:11px;}
+  body[data-world=fishing] #guide-portrait {height:150px;min-height:150px;}
+  body[data-world=fishing] .specimen-copy {padding:0 21px 22px;}
+  body[data-world=fishing] #specimen-name {font-size:27px;}
+  body[data-world=fishing] #specimen-note {font-size:12px;margin-top:9px;}
+  body[data-world=fishing] #specimen-records {margin-top:16px;padding-top:12px;}
+  body[data-world=fishing] .journal-footer {min-height:62px;padding:9px 13px;gap:10px;}
+  body[data-world=fishing] .journal-footer>span {font-size:11px;}
+  body[data-world=fishing] #return-river {font-size:11px;padding:10px 12px;gap:7px;}
+}
+@media (pointer:coarse) {body[data-world=fishing] .keyboard-note {display:none;}}
+@media (max-width:360px) {
+  body[data-world=fishing] .river-header .brand {font-size:18px;padding-inline:7px;}
+  body[data-world=fishing] .river-header .brand svg {width:22px;height:22px;}
+  body[data-world=fishing] .world-nav summary {font-size:11px;padding-inline:9px;gap:5px;}
+  body[data-world=fishing] .catch-note {grid-template-columns:90px minmax(0,1fr);gap:8px;padding:12px;}
+  body[data-world=fishing] #catch-portrait {width:90px;}
+  body[data-world=fishing] #catch-name {font-size:21px;}
+}
+@media (max-height:540px) and (orientation:landscape) {
+  body[data-world=fishing] {--fishing-controls-bottom:16px;}
+  body[data-world=fishing] .river-intro {top:74px;padding:9px 13px;}
+  body[data-world=fishing] .river-intro h1 {font-size:24px;}
+  body[data-world=fishing] .river-intro p,body[data-world=fishing] #river-condition,body[data-world=fishing] .keyboard-note {display:none;}
+  body[data-world=fishing] .fishing-action {left:16px;width:245px;max-width:calc(50% - 48px);padding:8px 10px;}
+  body[data-world=fishing] .pomodoro,body[data-world=fishing] .pomodoro.is-minimized {left:auto;right:82px;transform:none;width:calc(50% - 56px);max-width:260px;}
+  body[data-world=fishing] .cast-spots button {font-size:11px;min-height:44px;}
+  body[data-world=fishing] .action-hint {font-size:11px;min-height:26px;margin:6px 0;}
+  body[data-world=fishing] #fishing-action,body[data-world=fishing] #lift-line {min-height:44px;font-size:11px;}
+  body[data-world=fishing] .guide-launcher {right:16px;width:50px;height:50px;min-height:50px;justify-content:center;padding:12px;}
+  body[data-world=fishing] .guide-launcher>span {display:none;}
+  body[data-world=fishing] .catch-note {left:auto;right:16px;bottom:82px;width:300px;max-width:calc(50% - 10px);max-height:calc(100dvh - 160px);grid-template-columns:90px minmax(0,1fr);gap:8px;padding:12px;}
+  body[data-world=fishing] #catch-portrait {width:90px;height:110px;}
+  body[data-world=fishing] #catch-name {font-size:21px;}
+  body[data-world=fishing] #catch-description {display:none;}
+  body[data-world=fishing] #field-guide {height:calc(100dvh - 20px);max-height:calc(100dvh - 20px);max-width:calc(100vw - 20px);}
+  body[data-world=fishing] .journal-heading {padding:12px 18px;}
+  body[data-world=fishing] #guide-title {font-size:24px;}
+  body[data-world=fishing] #journal-progress {margin-top:4px;font-size:11px;}
+  body[data-world=fishing] .journal-pages {display:grid;grid-template-columns:180px minmax(0,1fr);}
+  body[data-world=fishing] #fish-index {display:block;max-height:none;padding:7px;overflow:auto;}
+  body[data-world=fishing] #fish-index button {width:100%;max-width:none;min-height:44px;padding:8px 10px;}
+  body[data-world=fishing] #fish-index button+button {margin-top:3px;}
+  body[data-world=fishing] .journal-specimen {display:grid;grid-template-columns:140px minmax(0,1fr);grid-template-rows:1fr;align-items:center;}
+  body[data-world=fishing] #guide-portrait {width:140px;height:150px;min-height:150px;}
+  body[data-world=fishing] .specimen-copy {padding:20px 18px 16px 0;}
+  body[data-world=fishing] #specimen-name {font-size:23px;}
+  body[data-world=fishing] #specimen-note {font-size:11px;line-height:1.5;margin-top:8px;}
+  body[data-world=fishing] #specimen-records {margin-top:9px;padding-top:8px;gap:20px;}
+  body[data-world=fishing] #specimen-habitat {font-size:11px;margin-top:8px;}
+  body[data-world=fishing] .journal-footer {min-height:54px;padding:5px 18px;}
+}
+@media (prefers-reduced-motion:reduce) {body[data-world=fishing] *,body[data-world=fishing] *::before,body[data-world=fishing] *::after {animation:none!important;transition:none!important;scroll-behavior:auto!important;}}

@@ -27,6 +27,9 @@ body[data-world=park] .shop-claw .shop-name::before {background:#a27ba1;}
 body[data-world=park] .shop-dumplings .shop-name::before {background:#bf7956;}
 body[data-world=park] .shop-pond .shop-name::before {background:#4f9690;}
 body[data-world=park] .shop-slots .shop-name::before {background:#be9a4c;}
+body[data-world=park] .shop-fishing {width:190px;height:170px;transform:translate(-50%,-66%);}
+body[data-world=park] .shop-fishing .shop-art {width:190px;height:142.5px;}
+body[data-world=park] .shop-fishing .shop-name::before {background:#728c9b;}
 body[data-world=park] .map-shop[aria-pressed=true] .shop-name {background:#294b3e;color:#fff8e9;}
 body[data-world=park] .shop-enter {display:none;}
 body[data-world=park] .shop-incoming {opacity:.6;}
