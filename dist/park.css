@@ -59,6 +59,12 @@ body[data-world=park] .guide-foot {display:flex;gap:10px;align-items:center;padd
 body[data-world=park] .guide-foot svg {flex:none;color:#6c8557;}
 body[data-world=park] .destination {left:32px;bottom:96px;width:305px;display:block;border:0;border-radius:14px;background:#faf5e9;color:#294b3e;box-shadow:0 12px 38px #233e302b;}
 body[data-world=park] .destination>img {width:100%;height:144px;object-fit:cover;}
+body[data-world=park] .destination[data-preview=map] {display:flex;flex-direction:column;max-height:calc(100dvh - 184px - var(--park-safe-top,0px) - var(--park-safe-bottom,0px));}
+body[data-world=park] .destination-preview {position:relative;flex:none;width:100%;height:144px;overflow:hidden;background:#dce5cf;}
+body[data-world=park] .destination-preview iframe {position:absolute;inset:0;display:block;width:100%;height:100%;border:0;pointer-events:none;opacity:0;}
+body[data-world=park] .destination-preview[data-state=ready] iframe {opacity:1;}
+body[data-world=park] .destination-preview-status {position:absolute;inset:0;display:grid;place-content:center;margin:0;padding:18px;text-align:center;font:400 12px/1.5 var(--sg-ui);color:#3f5848;}
+body[data-world=park] .destination[data-preview=map] .destination-copy {flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#8b9b7a #faf5e9;}
 body[data-world=park] .destination-copy {padding:20px;}
 body[data-world=park] .destination-kind {display:none;}
 body[data-world=park] .destination h2 {font:500 26px/1.15 var(--sg-display);letter-spacing:-.03em;margin:0;}
@@ -93,6 +99,7 @@ body[data-world=park][data-light=evening] .site-header .brand,body[data-world=pa
  body[data-world=park] .place-link {min-height:60px;}
  body[data-world=park] .destination {left:16px;right:16px;bottom:140px;width:auto;max-width:360px;max-height:none;display:flex;min-height:0;}
  body[data-world=park] .destination>img {width:85px;height:auto;flex:none;}
+ body[data-world=park] .destination[data-preview=map] {max-height:calc(100dvh - 220px - var(--park-safe-top,0px) - var(--park-safe-bottom,0px));}
  body[data-world=park] .destination-copy {padding:16px;flex:1;min-width:0;}
  body[data-world=park] .destination h2 {font-size:22px;padding-right:28px;}
  body[data-world=park] #destination-description {font-size:12px;margin-top:7px;line-height:1.5;}
@@ -104,4 +111,6 @@ body[data-world=park][data-light=evening] .site-header .brand,body[data-world=pa
  body[data-world=park] .park-guide {bottom:80px;max-height:calc(100dvh - 100px);}
  body[data-world=park] .guide-foot,body[data-world=park] .map-intro {display:none;}
  body[data-world=park] .destination {left:24px;bottom:24px;max-width:300px;}
+ body[data-world=park] .destination[data-preview=map] {max-height:calc(100dvh - 104px - var(--park-safe-top,0px) - var(--park-safe-bottom,0px));}
+ body[data-world=park] .destination-preview {height:120px;}
 }

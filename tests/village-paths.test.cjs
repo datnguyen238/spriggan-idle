@@ -101,7 +101,9 @@ test('the dock is registered in the map, directory, and world navigation', () =>
   assert.equal(fishing.href, './fishing/');
   assert.equal(fishing.x, network.nodes.fishing.x);
   assert.equal(fishing.y, network.nodes.fishing.y);
-  assert.ok(existsSync(resolve(__dirname, '../dist', fishing.image.split('?')[0])));
+  assert.equal(fishing.image, null);
+  assert.equal(fishing.preview, './fishing/preview.html?v=river-preview-1');
+  assert.ok(existsSync(resolve(__dirname, '../dist', fishing.preview.split('?')[0])));
   const html = read('index.html');
   assert.match(html, /<button[^>]*data-place="fishing"[^>]*aria-label="Select The Fishing Dock"/);
   assert.match(html, /href="\.\/fishing\/">The Fishing Dock<\/a>/);

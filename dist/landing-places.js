@@ -68,7 +68,8 @@ window.SPRIGGAN_PLACES = [
     "description": "Cast a line, meet the river’s fish, and fill your field guide.",
     "x": 1296,
     "y": 555,
-    "image": "./previews/fishing.svg?v=fishing-dock-1",
+    "image": null,
+    "preview": "./fishing/preview.html?v=river-preview-1",
     "href": "./fishing/",
     "artX": 1320,
     "artY": 560

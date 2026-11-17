@@ -66,6 +66,59 @@
   let gestureMoved = false, suppressShopClick = false;
   let avatarPoint = { ...network.nodes.square };
   let avatarDestination = null;
+  let previewFrame = null, previewHost = null, previewTimer = 0;
+
+  function clearPreview() {
+    clearTimeout(previewTimer); previewTimer = 0;
+    const frame = previewFrame; previewFrame = null;
+    if (frame) { frame.src = 'about:blank'; frame.remove(); }
+    previewHost?.remove(); previewHost = null;
+    delete panel.dataset.preview;
+  }
+  function showPreview(place) {
+    if (!place.preview) return;
+    const host = document.createElement('div'), message = document.createElement('p');
+    host.className = 'destination-preview'; host.dataset.state = 'loading'; host.setAttribute('aria-busy','true');
+    message.className = 'destination-preview-status'; message.setAttribute('role','status');
+    message.textContent = 'Finding a quiet spot…'; host.append(message);
+    panel.insertBefore(host, document.querySelector('#destination-image'));
+    panel.dataset.preview = 'map'; previewHost = host;
+    const unavailable = frame => {
+      if (previewHost !== host || (frame && previewFrame !== frame)) return;
+      clearTimeout(previewTimer); previewTimer = 0;
+      previewFrame = null;
+      if (frame) { frame.src = 'about:blank'; frame.remove(); }
+      host.dataset.state = 'unavailable'; host.setAttribute('aria-busy','false');
+      message.hidden = false; message.textContent = 'Map preview unavailable. Enter The Fishing Dock to see the river.';
+    };
+    let url;
+    try { url = new URL(place.preview, document.baseURI); if (url.origin !== window.location.origin) throw Error('External preview'); }
+    catch { unavailable(); return; }
+    const frame = document.createElement('iframe');
+    frame.title = `${place.name} map preview`; frame.loading = 'lazy'; frame.tabIndex = -1;
+    frame.setAttribute('aria-hidden','true'); frame.inert = true;
+    frame.referrerPolicy = 'same-origin';
+    frame.addEventListener('error', () => unavailable(frame));
+    previewFrame = frame; host.prepend(frame); frame.src = url.href;
+    // A failed module request may never reach the preview's own error handler.
+    previewTimer = setTimeout(() => unavailable(frame), 15000);
+  }
+  window.addEventListener('message', event => {
+    const frame = previewFrame, host = previewHost;
+    if (!frame || !host || panel.hidden || !selected?.preview || event.source !== frame.contentWindow ||
+      event.origin !== window.location.origin || event.data?.type !== 'spriggan-fishing-preview') return;
+    if (event.data.state !== 'ready' && event.data.state !== 'unavailable') return;
+    clearTimeout(previewTimer); previewTimer = 0;
+    host.dataset.state = event.data.state; host.setAttribute('aria-busy','false');
+    const message = host.querySelector('.destination-preview-status');
+    message.hidden = event.data.state === 'ready';
+    if (event.data.state === 'unavailable') {
+      previewFrame = null; frame.src = 'about:blank'; frame.remove();
+      message.textContent = 'Map preview unavailable. Enter The Fishing Dock to see the river.';
+    }
+  });
+  window.addEventListener('pagehide', clearPreview);
+  window.addEventListener('pageshow', () => { if (selected?.preview && !panel.hidden && !previewHost) showPreview(selected); });
 
   function render() {
     world.style.transform = `translate(${camera.x}px,${camera.y}px) scale(${camera.scale})`;
@@ -207,6 +260,8 @@
   function selectPlace(id, source) {
     const place = places.find(item => item.id === id);
     if (!place) return;
+    const keepPreview = selected?.id === id && previewFrame && previewHost && !panel.hidden;
+    if (!keepPreview) clearPreview();
     setGuide(false);
     selected = place;
     restoreFocus = source;
@@ -231,6 +286,7 @@
     enter.setAttribute('aria-label', `${id === 'slots' ? 'Play' : 'Enter'} ${place.name}`);
     document.querySelector('#coming-soon').hidden = !!place.href;
     panel.hidden = false;
+    if (!keepPreview) showPreview(place);
     status.textContent = place.href ? `${place.name} selected. Enter when you’re ready.` : 'This destination is still being made.';
     startJourney(id);
     focusPlace(place);
@@ -238,6 +294,7 @@
   }
   markers.forEach(marker => marker.addEventListener('click', () => selectPlace(marker.dataset.place, marker)));
   function clearSelection() {
+    clearPreview();
     selected = null;
     panel.hidden = true;
     if (!journey) route.style.strokeDashoffset = '1';
