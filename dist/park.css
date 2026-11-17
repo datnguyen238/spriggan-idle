@@ -32,6 +32,8 @@ body[data-world=park] .shop-enter {display:none;}
 body[data-world=park] .shop-incoming {opacity:.6;}
 body[data-world=park] .terrain .road-edge {stroke:#b7a477;}
 body[data-world=park] .terrain .road {stroke:#f0dcad;}
+body[data-world=park] .entrance-apron-edge {fill:#b7a477;}
+body[data-world=park] .entrance-apron-surface {fill:#f0dcad;}
 body[data-world=park] .road-junction-outer {fill:#b7a477;}
 body[data-world=park] .road-junction-inner {fill:#f0dcad;}
 body[data-world=park] .guide-toggle {position:absolute;left:32px;bottom:28px;z-index:7;display:flex;align-items:center;gap:9px;background:#faf5e9;color:#294b3e;border:0;border-radius:10px;min-height:50px;padding:12px 17px;box-shadow:0 5px 22px #243d3024;font:700 13px var(--sg-ui);}
@@ -66,6 +68,8 @@ body[data-world=park][data-light=evening] {--ground:#3f6454;}
 body[data-world=park][data-light=evening] .land-base {fill:#3f6454;}
 body[data-world=park][data-light=evening] .terrain .road {stroke:#b8b18b;}
 body[data-world=park][data-light=evening] .terrain .road-edge {stroke:#6d7c5c;}
+body[data-world=park][data-light=evening] .entrance-apron-edge {fill:#6d7c5c;}
+body[data-world=park][data-light=evening] .entrance-apron-surface {fill:#b8b18b;}
 body[data-world=park][data-light=evening] .road-junction-inner {fill:#b8b18b;}
 body[data-world=park][data-light=evening] .road-junction-outer {fill:#6d7c5c;}
 body[data-world=park][data-light=evening] .shop-art {filter:brightness(.87) saturate(.85) drop-shadow(4px 8px 2px #142f3529);}
