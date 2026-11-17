@@ -1,0 +1,386 @@
+@import url('./fonts.css');
+
+/* One interface; the living worlds keep their own rendering and materials. */
+:root {
+ --sg-paper:#f4eedf; --sg-ink:#304a40; --sg-muted:#57685b; --sg-line:#c4c7b6;
+ --sg-sage:#748f79; --sg-clay:#b76f54; --sg-blue:#8ca2a0; --sg-straw:#d5ba79;
+ --sg-display:'Bricolage Grotesque',sans-serif; --sg-ui:'Nunito Sans',sans-serif;
+ --sg-radius:12px; --sg-shadow:0 12px 32px #152d2624;
+ --sg-gutter:28px; --sg-safe-top:env(safe-area-inset-top,0px);
+ --sg-ease:cubic-bezier(.16,1,.3,1);
+}
+body[data-world] {font-family:var(--sg-ui);font-synthesis:none;-webkit-font-smoothing:antialiased;}
+body[data-world] :is(button,input,select,summary,output) {font-family:var(--sg-ui);letter-spacing:0;}
+body[data-world] :is(button,a,input,select,summary):focus-visible {outline:2px solid var(--sg-straw);outline-offset:4px;}
+body[data-world] ::selection {background:#d5ba79;color:#233d34;}
+body[data-world] :is(input,select) {accent-color:var(--sg-sage);caret-color:var(--sg-ink);}
+body[data-world] button {touch-action:manipulation;}
+body[data-world] :is(h1,h2,h3) {font-family:var(--sg-display);letter-spacing:-.025em;font-weight:500;}
+body[data-world] :is(h1,h2) em {font-style:normal;color:inherit;text-shadow:none;}
+body[data-world] > header,body[data-world] main > header {
+ position:absolute;inset:0 0 auto;z-index:6;display:flex;align-items:center;justify-content:space-between;
+ height:82px;padding:16px var(--sg-gutter);gap:16px;pointer-events:none;background:none;border:0;max-width:none;
+}
+body[data-world] .brand {display:flex;align-items:center;gap:10px;font:500 25px/1 var(--sg-display);letter-spacing:-.03em;text-decoration:none;text-shadow:none;min-height:44px;pointer-events:auto;color:inherit;}
+body[data-world] .brand :is(span,div,h1) {font:inherit;letter-spacing:inherit;margin:0;}
+body[data-world] .brand svg {width:26px;height:26px;flex:none;}
+body[data-world] .brand-mark {font:inherit;}
+body[data-world] .brand .mark {width:28px;height:28px;border:0;border-radius:0;}
+body[data-world] :is(.worlds,.worlds-link,header .back) {
+ display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:8px 13px;
+ border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;text-decoration:none;
+ font:600 12px/1.3 var(--sg-ui);letter-spacing:0;pointer-events:auto;text-shadow:none;
+}
+body[data-world] header .header-actions {gap:14px;}
+body[data-world] .nav-arrow {width:15px;height:15px;}
+body[data-world] :is(.intro,.heading,.introduction) {top:105px;left:var(--sg-gutter);right:auto;text-shadow:none;}
+body[data-world] :is(.intro,.heading,.introduction) :is(h1,h2) {font:500 clamp(25px,2.4vw,36px)/1.15 var(--sg-display);letter-spacing:-.03em;text-shadow:none;}
+body[data-world] :is(.intro-copy,.subtitle,.introduction p:last-child) {font:400 13px/1.6 var(--sg-ui);margin-top:10px;max-width:30ch;}
+body[data-world] :is(.day-badge,.memory-line,.intro .memory-line,.intro .eyebrow,.heading .eyebrow,.introduction .eyebrow,.intro .intro-copy~.memory-line) {display:none;}
+body[data-world] .frame {display:none;}
+body[data-world] footer {font:500 10px/1.5 var(--sg-ui);letter-spacing:.02em;opacity:.8;text-shadow:none;}
+body[data-world] footer > span:last-child:not(:first-child) {display:none;}
+body[data-world] :is(#toggle-controls,.panel #toggle-controls,.dashboard #toggle-controls) {
+ display:flex;align-items:center;justify-content:center;width:48px;height:48px;min-height:48px;padding:0;
+ border:1px solid var(--sg-line);border-radius:12px;background:var(--sg-paper);color:var(--sg-ink);box-shadow:none;
+}
+body[data-world=farm] #toggle-controls {border-radius:4px;}
+body[data-world] :is(#toggle-controls,.panel #toggle-controls,.dashboard #toggle-controls) svg {display:block;width:22px;height:22px;margin:0;flex:none;}
+body[data-world] :is(#toggle-controls,.panel #toggle-controls,.dashboard #toggle-controls):hover {background:#e4e5d5;}
+body[data-world] :is(.panel .panel-content,main[data-night=true] .panel .panel-content,.dashboard #farm-controls,#hex-panel,#ambience-controls,#controller-body) {
+ width:300px;max-width:calc(100vw - 32px);border:0;border-radius:12px;padding:22px;background:var(--sg-paper);color:var(--sg-ink);
+ box-shadow:var(--sg-shadow);backdrop-filter:none;-webkit-backdrop-filter:none;font:400 13px/1.5 var(--sg-ui);
+}
+body[data-world] :is(.dashboard #farm-controls,#hex-panel,#ambience-controls,#controller-body) {height:min(520px,calc(100dvh - 220px));max-height:calc(100dvh - 220px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#8f9d84 transparent;}
+body[data-world] .panel .panel-content-inner {max-height:min(480px,calc(100dvh - 265px));overflow-y:auto;scrollbar-width:thin;scrollbar-color:#8f9d84 transparent;}
+body[data-world] :is(#farm-controls,#hex-panel,#ambience-controls,#controller-body,.panel-content-inner) :is(button,select,summary) {font:600 13px/1.4 var(--sg-ui);min-height:44px;}
+body[data-world] :is(#farm-controls,#hex-panel,#ambience-controls,#controller-body,.panel-content-inner) :is(p,label,output,small,.status,.flock-label,.feeding-status,.range-line,.keep-rule,.instructions,.control-copy) {font-family:var(--sg-ui);font-size:12px;line-height:1.6;color:var(--sg-muted);letter-spacing:0;}
+body[data-world] :is(.panel-heading h3,.control-heading>span,.controller-heading>span,#ambience-controls h2) {font:500 22px/1.2 var(--sg-display);text-transform:none;letter-spacing:-.02em;color:var(--sg-ink);}
+body[data-world] :is(.control,.farm-audio button,.map-rain button,#motion,#pause,#night,#rainfx,#light-mode,#ranges,#reset) {border:1px solid var(--sg-line);border-radius:6px;background:transparent;color:var(--sg-ink);box-shadow:none;}
+body[data-world] :is(.control.primary,#feed,#crowd,#make,#buy-seeds) {background:var(--sg-ink);color:var(--sg-paper);border:0;border-radius:6px;box-shadow:none;}
+body[data-world] :is(.control.primary,#feed,#crowd,#make,#buy-seeds):hover:not(:disabled) {background:var(--sg-ink);filter:brightness(.94);transform:none;}
+body[data-world] :is(.control[aria-pressed=true],.farm-audio button[aria-pressed=true],#light-mode[aria-pressed=true],#ranges[aria-pressed=true]) {background:#dbe2cf;color:#304a40;border-color:#90a17f;}
+body[data-world] :is(#remove-bird,#restart-flock) {background:#e9d6c9;color:#75472f;border-color:#c4a591;box-shadow:none;}
+body[data-world] :is(.range-line,.farm-audio,.field-notes,.stats,.map-rain,.atmosphere-label,.controller-heading,.plush-inventory) {border-color:var(--sg-line);}
+body[data-world] .range-line :is(input,output,label),body[data-world] .farm-audio label {color:var(--sg-muted);}
+body[data-world] :is(.section-label,.control-label) {font:600 13px/1.5 var(--sg-ui);text-transform:none;letter-spacing:0;color:var(--sg-ink);}
+body[data-world] .stats :is(strong,span) {color:var(--sg-ink);}
+body[data-world] .stats span {font:400 12px var(--sg-ui);letter-spacing:0;text-transform:none;}
+body[data-world] #flock-picker {color:var(--sg-ink);background:#e5e7d8;border-color:var(--sg-line);}
+body[data-world] #feed small {font:400 12px var(--sg-ui);color:#e1e6d6;}
+body[data-world] .steps :is(p,b,b span),body[data-world] .control-bottom {font:400 12px/1.6 var(--sg-ui);color:var(--sg-muted);}
+body[data-world] .steps b span {display:block;margin:4px 0;font-weight:700;color:var(--sg-ink);}
+body[data-world] :is(#moment,.map-note,#status) {font:400 13px/1.5 var(--sg-ui);border:0;border-radius:6px;padding:10px 13px;background:var(--sg-paper);color:var(--sg-ink);box-shadow:none;}
+body[data-world] .world-actions {position:fixed;z-index:4;left:var(--sg-gutter);bottom:52px;display:flex;gap:8px;max-width:calc(100vw - 112px);}
+body[data-world] .world-actions button {min-height:48px;padding:12px 18px;border:0;border-radius:6px;background:var(--sg-paper);color:var(--sg-ink);font:700 13px/1.4 var(--sg-ui);box-shadow:0 3px 12px #102d2514;}
+body[data-world] .world-actions button:first-child {background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world] .world-actions button:disabled {opacity:.55;cursor:default;}
+body[data-world] :is(.pomodoro,.pomodoro[data-world],.pomodoro[data-world].is-minimized) {width:320px;padding:12px 16px;border:0;border-radius:12px;background:var(--sg-paper);color:var(--sg-ink);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;}
+body[data-world] .pomodoro .timer-heading {font:600 12px/1.5 var(--sg-ui);color:var(--sg-ink);text-transform:none;letter-spacing:0;max-width:none;}
+body[data-world] .pomodoro :is(#timer-label,#timer-summary,.timer-icon) {color:var(--sg-muted);font-family:var(--sg-ui);font-size:12px;}
+body[data-world] .pomodoro .timer-icon {width:36px;height:36px;min-height:36px;}
+body[data-world] .pomodoro .timer-orbit {display:none;}
+body[data-world] .pomodoro .timer-modes {border-radius:6px;background:#e4e5d5;margin:10px 0 16px;}
+body[data-world] .pomodoro .timer-modes button {font:600 12px/1.3 var(--sg-ui);min-height:40px;color:var(--sg-muted);border-radius:4px;}
+body[data-world] .pomodoro .timer-modes button[aria-pressed=true] {background:var(--sg-paper);color:var(--sg-ink);box-shadow:none;}
+body[data-world] .pomodoro #timer-time {font:500 36px/1.1 var(--sg-display);letter-spacing:-.03em;color:var(--sg-ink);}
+body[data-world] .pomodoro .timer-action {min-height:40px;border:0;border-radius:6px;background:var(--sg-ink);color:var(--sg-paper);font:600 12px var(--sg-ui);}
+body[data-world] .pomodoro .timer-dot {background:#b0bba1;box-shadow:none;}
+body[data-world] .pomodoro .timer-dot.is-done {background:#637e61;}
+body[data-world] .pomodoro #timer-status {color:#76542c;font:400 12px/1.5 var(--sg-ui);}
+body[data-world] .pomodoro #timer-chime[aria-pressed=true] {color:var(--sg-ink);}
+
+/* The park: a clear arrival and painted place signs, rather than card navigation. */
+body[data-world=park] {--ground:#d5dabe;--ink:#304a40;--muted:#485b4a;--panel:#f4eedf;}
+body[data-world=park] .site-header {padding-inline:var(--sg-gutter);}
+body[data-world=park] .motto {font:400 13px var(--sg-ui);color:var(--ink);}
+body[data-world=park] .map-intro {top:95px;left:var(--sg-gutter);max-width:300px;}
+body[data-world=park] .map-intro h1 {font-size:23px;}
+body[data-world=park] .map-intro p {font:400 13px/1.5 var(--sg-ui);color:var(--ink);}
+body[data-world=park] .map-tools {top:24px;right:var(--sg-gutter);gap:8px;}
+body[data-world=park] :is(.light-controls,.zoom-controls) {border:1px solid #a6b293;border-radius:6px;background:var(--sg-paper);}
+body[data-world=park] .light-controls button {font:600 12px var(--sg-ui);color:#304a40;min-height:40px;padding:8px 12px;}
+body[data-world=park] .zoom-controls button {height:44px;width:44px;color:#304a40;}
+body[data-world=park] .shop-name {font:600 13px/1.3 var(--sg-ui);border:0;border-radius:3px;background:#f4eedf;color:#304a40;padding:6px 10px;box-shadow:0 2px 4px #3e583423;}
+body[data-world=park] .shop-slots .shop-name,body[data-world=park] .shop-pond .shop-name {font-size:12px;}
+body[data-world=park] .shop-enter {font:600 11px var(--sg-ui);}
+body[data-world=park] .shop-art {filter:drop-shadow(2px 6px 2px #304a401a);}
+body[data-world=park] .destination {border:0;box-shadow:var(--sg-shadow);border-radius:12px;background:var(--sg-paper);color:#304a40;}
+body[data-world=park] .destination h2 {font:500 25px/1.15 var(--sg-display);}
+body[data-world=park] .destination-kind {display:none;}
+body[data-world=park] #destination-description {font:400 13px/1.6 var(--sg-ui);color:#57685b;}
+body[data-world=park] .enter-world {min-height:44px;font:700 13px var(--sg-ui);background:#304a40;color:#f4eedf;border-radius:6px;}
+body[data-world=park] .close-button {width:44px;height:44px;border:0;background:var(--sg-paper);color:#304a40;}
+body[data-world=park] .map-footer {font:500 12px var(--sg-ui);color:var(--ink);}
+body[data-world=park] .gesture-hint {padding:8px 10px;background:var(--sg-paper);border-radius:4px;}
+body[data-world=park][data-light=evening] {--ink:#f4eedf;--ground:#42594e;--muted:#d7ddc7;}
+body[data-world=park][data-light=evening] .land-base {fill:#526d59;}
+body[data-world=park][data-light=evening] .map-tools {color:#304a40;}
+
+/* World-specific hierarchy without promotional overlays. */
+body[data-world=pond] header,body[data-world=pond] .intro {color:#f4eedf;}
+body[data-world=pond] .intro {max-width:250px;}
+body[data-world=pond] .intro h2 {color:#f4eedf;}
+body[data-world=pond] .intro .intro-copy {color:#e2ebdc;}
+body[data-world=pond] .header-right {gap:18px;}
+body[data-world=pond] .top-note {font:500 12px var(--sg-ui);color:#e2ebdc;}
+body[data-world=pond] .vignette {background:radial-gradient(ellipse at 50% 50%,transparent 50%,#0a262c38 100%);}
+body[data-world=pond] .instruction {display:none;}
+body[data-world=pond] .bottom {right:var(--sg-gutter);bottom:52px;}
+body[data-world=pond] .controls {gap:8px;}
+body[data-world=farm] .heading {color:#fff5df;}
+body[data-world=farm] .heading :is(h1,.subtitle) {color:inherit;}
+body[data-world=farm] .dashboard {right:var(--sg-gutter);bottom:52px;}
+body[data-world=farm] #moment {left:var(--sg-gutter);bottom:116px;max-width:340px;}
+body[data-world=farm] #bird-card {border:0;border-radius:8px;box-shadow:var(--sg-shadow);background:var(--sg-paper);color:var(--sg-ink);font-family:var(--sg-ui);}
+body[data-world=farm] #bird-card :is(strong,span,#close-card) {color:var(--sg-ink);font-family:var(--sg-ui);}
+body[data-world=hex] .introduction {display:block;color:#f4eedf;}
+body[data-world=hex] .scoreboard {margin-top:20px;gap:22px;}
+body[data-world=hex] .scoreboard strong {font:500 24px var(--sg-display);}
+body[data-world=hex] .scoreboard span {font:600 11px/1.4 var(--sg-ui);text-transform:none;letter-spacing:0;color:#f4eedf;}
+body[data-world=hex] .compass {display:none;}
+body[data-world=hex] .map-note {left:var(--sg-gutter);bottom:116px;max-width:340px;}
+body[data-world=hex] .view-controls {right:var(--sg-gutter);bottom:116px;display:flex;gap:4px;}
+body[data-world=hex] .view-controls button {height:44px;width:44px;border:0;border-radius:6px;background:var(--sg-paper);color:var(--sg-ink);}
+body[data-world=hex] .hex-controls {right:var(--sg-gutter);bottom:52px;}
+body[data-world=hex] .creature-options button {background:transparent;border:1px solid var(--sg-line);color:var(--sg-ink);border-radius:6px;}
+body[data-world=hex] .creature-options button[aria-pressed=true] {background:#dbe2cf;border-color:#7d9575;}
+body[data-world=hex] .creature-options strong {font:600 13px var(--sg-ui);color:var(--sg-ink);}
+body[data-world=hex] .creature-options small {color:var(--sg-muted);}
+body[data-world=hex] #keep-storeys {font:500 16px var(--sg-display);color:var(--sg-ink);}
+body[data-world=kitchen] .intro {color:#f4eedf;}
+body[data-world=kitchen] .intro h1 {color:inherit;}
+body[data-world=kitchen] .ambience {right:var(--sg-gutter);bottom:52px;}
+body[data-world=kitchen] :is(#kitchen-status,.shop-earnings,#memory) {border:0;padding-left:0;color:var(--sg-muted);}
+body[data-world=kitchen] .shop-earnings {border-bottom:1px solid var(--sg-line);padding:0 0 18px;margin-bottom:22px;}
+body[data-world=kitchen] .shop-earnings>span {display:none;}
+body[data-world=kitchen] .shop-earnings a {font:600 13px var(--sg-ui);color:#4e6b57;}
+body[data-world=kitchen] .fillings button {background:transparent;border:1px solid var(--sg-line);color:var(--sg-ink);}
+body[data-world=kitchen] .fillings button[aria-pressed=true] {background:#dbe2cf;color:var(--sg-ink);border-color:#7d9575;}
+body[data-world=kitchen] :is(#steamer,#night,#rainfx,#pause) {background:transparent;border:1px solid var(--sg-line);color:var(--sg-ink);}
+body[data-world=kitchen] :is(.kitchen-note,.sales-count,#shop-status) {font-family:var(--sg-ui);letter-spacing:0;}
+body[data-world=kitchen] .kitchen-note {top:100px;right:var(--sg-gutter);border:0;border-radius:6px;background:#f4eedf;color:var(--sg-ink);font-size:13px;min-height:44px;}
+body[data-world=kitchen] .sales-count {top:148px;right:var(--sg-gutter);font-size:12px;color:#f4eedf;}
+body[data-world=kitchen] #shop-status {top:175px;right:var(--sg-gutter);font-size:12px;color:#d7ddd1;}
+body[data-world=claw] .arcade-controller {right:var(--sg-gutter);bottom:52px;}
+body[data-world=claw] .arcade-hud {top:100px;right:var(--sg-gutter);gap:0;border-block:1px solid #bbc2ac;}
+body[data-world=claw] .arcade-hud>span {border:0;border-radius:0;background:transparent;font:600 13px var(--sg-ui);}
+body[data-world=claw] .arcade-hud small {font:400 12px var(--sg-ui);color:var(--sg-muted);}
+body[data-world=claw] .keyboard-hint {font:400 12px var(--sg-ui);bottom:22px;color:var(--sg-ink);}
+body[data-world=claw] .keyboard-hint kbd {font:600 12px var(--sg-ui);border-radius:4px;}
+body[data-world=claw] #status {left:var(--sg-gutter);bottom:116px;max-width:330px;}
+body[data-world=claw] :is(.plush-quantity,.plush-row button,.plush-row small,#save-note,.quiet-controls button) {font-family:var(--sg-ui);color:var(--sg-muted);}
+body[data-world=claw] .plush-row {grid-template-columns:56px 1fr auto;gap:12px;min-height:76px;}
+body[data-world=claw] .plush-row button {border:1px solid var(--sg-line);border-radius:6px;background:transparent;gap:6px;padding:8px;}
+body[data-world=claw] .plush-row small {font-size:11px;}
+body[data-world=claw] :is(#insert,#drop) {font:700 13px/1.4 var(--sg-ui);border-radius:6px;box-shadow:none;}
+body[data-world=claw] #insert {background:#304a40;color:#f4eedf;border:0;}
+body[data-world=claw] #drop {background:#d5ba79;color:#304a40;border:0;}
+body[data-world=claw] .depth-control {background:var(--sg-paper);backdrop-filter:none;border:0;border-radius:6px;}
+body[data-world=claw] .depth-control button {font:600 12px var(--sg-ui);border:0;background:transparent;}
+body[data-world=claw] .scene-stage:after {box-shadow:none;}
+
+@media(max-width:720px) {
+ :root {--sg-gutter:18px;}
+ body[data-world] > header,body[data-world] main > header {height:calc(76px + var(--sg-safe-top));padding-top:calc(12px + var(--sg-safe-top));}
+ body[data-world] .brand {font-size:22px;gap:8px;}
+ body[data-world] .brand svg {width:23px;height:23px;}
+ body[data-world] :is(.worlds,.worlds-link,header .back) {font-size:12px;min-height:44px;padding:8px 10px;}
+ body[data-world] :is(.intro,.heading,.introduction) {top:calc(92px + var(--sg-safe-top));left:var(--sg-gutter);}
+ body[data-world] :is(.intro,.heading,.introduction) :is(h1,h2) {font-size:26px;}
+ body[data-world] :is(.intro-copy,.subtitle,.introduction p:last-child) {font-size:12px;max-width:26ch;}
+ body[data-world] :is(.pomodoro,.pomodoro[data-world],.pomodoro[data-world].is-minimized) {bottom:max(32px,calc(env(safe-area-inset-bottom) + 12px));width:calc(100% - 36px);max-width:360px;padding:10px 14px;}
+ body[data-world] {--sg-controls-bottom:calc(var(--sg-timer-height,56px) + max(32px,calc(env(safe-area-inset-bottom) + 12px)) + 12px);}
+ body[data-world] :is(.dashboard,.dashboard.collapsed,.hex-controls,.ambience,.bottom) {bottom:var(--sg-controls-bottom);right:var(--sg-gutter);}
+ body[data-world] .world-actions {bottom:var(--sg-controls-bottom);gap:6px;max-width:calc(100vw - 94px);}
+ body[data-world] .world-actions button {font-size:12px;padding:10px 12px;min-height:48px;min-width:0;}
+ body[data-world] :is(#farm-controls,#hex-panel,#ambience-controls) {height:min(480px,calc(100dvh - var(--sg-controls-bottom) - 100px));max-height:calc(100dvh - var(--sg-controls-bottom) - 100px);}
+ body[data-world] .panel-content-inner {max-height:calc(100dvh - var(--sg-controls-bottom) - 180px);}
+ body[data-world] :is(#moment,.map-note) {left:var(--sg-gutter);top:calc(174px + var(--sg-safe-top));bottom:auto;max-width:calc(100% - 36px);font-size:12px;padding:7px 10px;}
+ body[data-world] footer {font-size:10px;left:var(--sg-gutter);bottom:10px;}
+ body[data-world=park] .site-header {align-items:flex-start;}
+ body[data-world=park] .brand {margin-top:0;}
+ body[data-world=park] .map-tools {top:calc(16px + var(--sg-safe-top));right:var(--sg-gutter);gap:5px;flex-direction:column;align-items:flex-end;}
+ body[data-world=park] .light-controls button {padding:7px 10px;}
+ body[data-world=park] .map-intro {top:calc(127px + var(--sg-safe-top));max-width:calc(100% - 36px);}
+ body[data-world=park] .map-intro h1 {font-size:22px;}
+ body[data-world=park] .map-intro p {display:block;font-size:12px;max-width:none;}
+ body[data-world=park] .map-footer {font-size:11px;}
+ body[data-world=park] .gesture-hint {padding:6px 8px;}
+ body[data-world=pond] .top-note {display:none;}
+ body[data-world=pond] .intro-copy {display:block;}
+ body[data-world=pond] .intro {max-width:250px;}
+ body[data-world=hex] .scoreboard {margin-top:14px;gap:18px;}
+ body[data-world=hex] .scoreboard strong {font-size:21px;}
+ body[data-world=hex] .scoreboard span {font-size:10px;max-width:58px;}
+ body[data-world=hex] .map-note {top:calc(230px + var(--sg-safe-top));max-width:calc(100% - 36px);}
+ body[data-world=hex] .view-controls {right:var(--sg-gutter);bottom:calc(var(--sg-controls-bottom) + 60px);gap:4px;}
+ body[data-world=kitchen] .kitchen-note {top:calc(87px + var(--sg-safe-top));right:18px;font-size:12px;}
+ body[data-world=kitchen] .sales-count {top:calc(134px + var(--sg-safe-top));right:18px;left:auto;font-size:11px;}
+ body[data-world=kitchen] #shop-status {display:none;}
+ body[data-world=kitchen] .world-actions {max-width:calc(100vw - 94px);}
+ body[data-world=kitchen] .world-actions button {font-size:12px;max-width:150px;}
+ body[data-world=claw] .arcade-hud {top:calc(86px + var(--sg-safe-top));left:18px;right:18px;justify-content:space-between;}
+ body[data-world=claw] .arcade-hud>span {padding:8px 0;font-size:12px;}
+ body[data-world=claw] .arcade-hud small {font-size:11px;}
+ body[data-world=claw] .arcade-controller {right:18px;bottom:max(34px,calc(env(safe-area-inset-bottom) + 28px));}
+ body[data-world=claw] .world-actions {bottom:max(98px,calc(env(safe-area-inset-bottom) + 92px));left:18px;}
+ body[data-world=claw] #status {left:18px;bottom:max(158px,calc(env(safe-area-inset-bottom) + 152px));max-width:calc(100% - 36px);font-size:12px;}
+ body[data-world=claw] .depth-control {bottom:max(34px,calc(env(safe-area-inset-bottom) + 28px));left:18px;width:calc(100% - 96px);}
+ body[data-world=claw] #controller-body {height:min(430px,calc(100dvh - 240px));max-height:calc(100dvh - 240px);}
+ body[data-world=claw] footer {left:50%;bottom:8px;font-size:9px;}
+}
+@media(max-height:500px) {
+ body[data-world] :is(.intro,.heading,.introduction) {top:76px;}
+ body[data-world] :is(.intro-copy,.subtitle,.introduction p:last-child,#moment,.map-note) {display:none;}
+ body[data-world] .world-actions {bottom:24px;}
+ body[data-world] :is(.pomodoro,.pomodoro[data-world],.pomodoro[data-world].is-minimized) {bottom:20px;width:280px;}
+ body[data-world] :is(.dashboard,.dashboard.collapsed,.hex-controls,.ambience,.bottom) {bottom:24px;}
+ body[data-world] :is(#farm-controls,#hex-panel,#ambience-controls,#controller-body) {height:calc(100dvh - 120px);max-height:calc(100dvh - 120px);}
+ body[data-world=park] .map-intro {top:105px;}
+}
+@media(prefers-reduced-motion:reduce) {body[data-world] *,body[data-world] *:before,body[data-world] *:after {scroll-behavior:auto;transition:none;}}
+
+/* Golden Seed is an enamel cabinet in the park, with its controls on the machine. */
+body[data-world=slots] {background:#e7e9d9;color:#304a40;}
+body[data-world=slots] .ambient {background:#e7e9d9;}
+body[data-world=slots] .ambient i {display:none;}
+body[data-world=slots] main {max-width:950px;padding:0 36px;margin:0 auto;}
+body[data-world=slots] .intro {position:static;max-width:none;text-align:center;padding-top:102px;margin:0 0 26px;}
+body[data-world=slots] .intro h1 {font-size:36px;}
+body[data-world=slots] .intro>p {font:400 14px/1.5 var(--sg-ui);color:var(--sg-muted);margin:10px 0 0;}
+body[data-world=slots] .topline {max-width:520px;border:0;padding:0;margin-bottom:24px;gap:22px;}
+body[data-world=slots] .destination-picker label {font:700 13px var(--sg-ui);letter-spacing:0;text-transform:none;margin-bottom:8px;}
+body[data-world=slots] .destination-picker p {display:none;}
+body[data-world=slots] select {font:600 14px var(--sg-ui);height:46px;background:#f4eedf;border:1px solid #a4b59b;border-radius:6px;}
+body[data-world=slots] .purse {border:0;border-radius:0;background:none;padding:9px 0;gap:5px;}
+body[data-world=slots] .purse strong {font:500 27px var(--sg-display);}
+body[data-world=slots] .purse>span:last-child {font:600 12px var(--sg-ui);color:var(--sg-muted);}
+body[data-world=slots] .machine-wrap {max-width:650px;padding:0 45px;}
+body[data-world=slots] .machine {background:#cedbd0;border:7px solid #819e91;border-bottom-width:16px;border-radius:28px 28px 12px 12px;padding:22px 25px 25px;box-shadow:0 18px 30px #304a401c;}
+body[data-world=slots] .arch-label {padding-bottom:18px;color:#304a40;gap:9px;}
+body[data-world=slots] .arch-label p {font:600 20px var(--sg-display);letter-spacing:.03em;}
+body[data-world=slots] .reel-frame {padding:12px;background:#59786d;border:0;border-radius:7px;box-shadow:inset 0 4px 6px #1b3d3333;gap:8px;}
+body[data-world=slots] .reel {background:#f4eedf;border:0;border-radius:4px;box-shadow:none;}
+body[data-world=slots] .reel-window {background:#f4eedf;}
+body[data-world=slots] .symbol-art {padding:18%;}
+body[data-world=slots] .symbol-name {font:700 11px var(--sg-ui);letter-spacing:.03em;color:#52684e;}
+body[data-world=slots] .machine-note {font:600 11px/1.4 var(--sg-ui);letter-spacing:0;color:#3d584b;margin:18px 0;}
+body[data-world=slots] .spin-button {font-family:var(--sg-ui);border:0;border-radius:6px;background:#304a40;color:#f4eedf;min-height:48px;padding:12px 20px;box-shadow:none;gap:10px;}
+body[data-world=slots] .spin-button #spin-label {font:700 15px var(--sg-ui);}
+body[data-world=slots] .spin-button small {font:600 12px var(--sg-ui);padding-left:10px;}
+body[data-world=slots] .machine-feet {bottom:-25px;}
+body[data-world=slots] .machine-feet i {background:#526e60;}
+body[data-world=slots] .lever-knob {background:#d5ba79;border:2px solid #a58a52;box-shadow:inset 0 3px 0 #f3dea6;}
+body[data-world=slots] .result {margin:30px auto 0;max-width:520px;min-height:70px;}
+body[data-world=slots] .result strong {font:500 20px/1.4 var(--sg-display);}
+body[data-world=slots] .result>span {font:400 13px/1.6 var(--sg-ui);color:var(--sg-muted);}
+body[data-world=slots] :is(.claim-hint,#claim) {font:700 14px var(--sg-ui);min-height:44px;background:#304a40;color:#f4eedf;border:0;border-radius:6px;}
+body[data-world=slots] .reward {display:flex;align-items:center;gap:20px;max-width:520px;margin:20px auto 0;padding:24px 0;border:0;border-top:1px solid #b3c0a6;border-radius:0;background:none;box-shadow:none;}
+body[data-world=slots] #reward-art {width:80px;height:80px;min-width:80px;border-radius:0;background:none;}
+body[data-world=slots] #reward-art svg {width:80px;height:80px;}
+body[data-world=slots] .reward-context {display:none;}
+body[data-world=slots] .reward h2 {font:500 22px/1.2 var(--sg-display);margin:0;}
+body[data-world=slots] #reward-description {font:400 13px/1.5 var(--sg-ui);color:var(--sg-muted);margin-top:8px;}
+body[data-world=slots] #reward-count {display:none;}
+body[data-world=slots] .reward-actions {margin-top:10px;}
+body[data-world=slots] #claim-status {font:400 12px var(--sg-ui);}
+body[data-world=slots] footer {position:relative;padding:26px 36px;margin:15px auto 0;max-width:950px;font:400 12px var(--sg-ui);color:var(--sg-muted);}
+body[data-world=slots] :is(#sound,#motion) {font:600 12px var(--sg-ui);color:var(--sg-muted);min-height:44px;}
+body[data-world=slots] #seed-dialog {border:0;border-radius:12px;background:var(--sg-paper);color:var(--sg-ink);box-shadow:var(--sg-shadow);}
+body[data-world=slots] #seed-dialog :is(p,a,button) {font-family:var(--sg-ui);font-size:14px;line-height:1.6;}
+@media(max-width:720px) {
+ body[data-world=slots] main {padding:0 18px;}
+ body[data-world=slots] .intro {padding-top:100px;margin-bottom:24px;}
+ body[data-world=slots] .intro h1 {font-size:32px;}
+ body[data-world=slots] .intro>p {font-size:13px;max-width:26ch;margin:10px auto 0;}
+ body[data-world=slots] .topline {gap:14px;}
+ body[data-world=slots] .destination-picker label {font-size:12px;}
+ body[data-world=slots] .machine-wrap {padding:0 22px 0 6px;}
+ body[data-world=slots] .machine {padding:18px 14px 22px;border-width:6px;border-bottom-width:14px;border-radius:22px 22px 10px 10px;}
+ body[data-world=slots] .arch-label p {font-size:18px;}
+ body[data-world=slots] .reel-frame {padding:8px;gap:5px;}
+ body[data-world=slots] .symbol-name {font-size:10px;}
+ body[data-world=slots] .machine-note {font-size:10px;gap:7px;}
+ body[data-world=slots] .machine-note span {width:12px;}
+ body[data-world=slots] #lever {right:-9px;top:65px;transform:scale(.8);transform-origin:top left;}
+ body[data-world=slots] .result {margin-top:28px;min-height:65px;}
+ body[data-world=slots] .result strong {font-size:19px;}
+ body[data-world=slots] .reward {gap:14px;margin-top:14px;}
+ body[data-world=slots] .reward h2 {font-size:20px;}
+ body[data-world=slots] #reward-description {font-size:13px;}
+ body[data-world=slots] #reward-art,body[data-world=slots] #reward-art svg {width:64px;height:64px;min-width:64px;}
+ body[data-world=slots] .header-actions {gap:4px;}
+ body[data-world=slots] header #sound {font-size:11px;padding-inline:7px;}
+ body[data-world=slots] footer {padding:12px 18px;font-size:12px;}
+}
+
+/* Each world's controls retain the light and material of its setting. */
+body[data-world=pond] {--sg-paper:#203f3b;--sg-ink:#f3ecda;--sg-muted:#c7d7c7;--sg-line:#688579;--sg-well:#17352f;--sg-selected:#3b5f4c;}
+body[data-world=hex] {--sg-paper:#28473b;--sg-ink:#f4eedf;--sg-muted:#d1ddc6;--sg-line:#6a866f;--sg-well:#1e3d32;--sg-selected:#426550;}
+body[data-world=kitchen] {--sg-paper:#263a45;--sg-ink:#f1e3ce;--sg-muted:#c2cecc;--sg-line:#68818a;--sg-well:#1b303b;--sg-selected:#3d5960;}
+body[data-world] .pomodoro .timer-modes {background:var(--sg-well,#e4e5d5);}
+body[data-world] :is(.control[aria-pressed=true],.farm-audio button[aria-pressed=true],#light-mode[aria-pressed=true],#ranges[aria-pressed=true]),body[data-world=hex] .creature-options button[aria-pressed=true],body[data-world=kitchen] .fillings button[aria-pressed=true] {background:var(--sg-selected,#dbe2cf);color:var(--sg-ink);}
+body[data-world] .pomodoro #timer-status {color:var(--sg-muted);}
+body[data-world] #toggle-controls:hover,body[data-world] .panel #toggle-controls:hover,body[data-world] .dashboard #toggle-controls:hover {background:var(--sg-selected,#e4e5d5);}
+body[data-world] #farm-controls #feed small {color:#e1e6d6;}
+body[data-world] :is(#moment,.map-note) {transform:none;}
+body[data-world] :is(.panel .panel-content-inner,#farm-controls,#hex-panel,#ambience-controls,#controller-body) {scrollbar-width:none;overflow-x:hidden;}
+body[data-world] :is(.panel .panel-content-inner,#farm-controls,#hex-panel,#ambience-controls,#controller-body)::-webkit-scrollbar {display:none;width:0;height:0;}
+body[data-world] .panel .panel-content-inner {width:100%;min-width:0;}
+body[data-world] .panel .panel-content-inner :is(select,input,.controls) {max-width:100%;min-width:0;}
+body[data-world=park] .site-header {justify-content:flex-start;}
+body[data-world=park] .motto {margin-right:auto;}
+body[data-world=farm] :is(.dashboard #farm-controls,.pomodoro,.pomodoro[data-world]) {border-radius:4px;}
+body[data-world=hex] .control-heading {align-items:flex-start;}
+body[data-world=hex] .control-heading>span {max-width:145px;}
+body[data-world=hex] .map-rain {color:var(--sg-ink);}
+body[data-world=hex] .map-rain button {border-color:var(--sg-line);}
+body[data-world=kitchen] .shop-earnings {background:none;border-radius:0;}
+body[data-world=kitchen] #ambience-controls .shop-earnings strong {color:var(--sg-ink);}
+body[data-world=kitchen] .shop-earnings a {color:var(--sg-ink);}
+body[data-world=kitchen] #ambience-controls label {color:var(--sg-muted);}
+body[data-world=kitchen] .kitchen-note {background:#f4eedf;color:#304a40;}
+body[data-world=kitchen] .kitchen-note svg {color:#526e55;}
+body[data-world=claw] #depth-position {font:600 12px var(--sg-ui);color:var(--sg-muted);}
+body[data-world=claw] .depth-control {grid-template-columns:1fr 55px 1fr;}
+body[data-world=claw] .depth-control button {min-height:44px;}
+body[data-world=claw] .plush-inventory .eyebrow {font:600 14px var(--sg-ui);letter-spacing:0;}
+@media(max-width:720px) {
+ body[data-world=pond] .header-right {position:static;gap:10px;}
+ body[data-world=pond] .header-right .top-note {display:none;}
+ body[data-world=hex] .map-note {top:calc(240px + var(--sg-safe-top));}
+ body[data-world=kitchen] .world-actions button {min-height:48px;}
+}
+@media(max-height:500px) {
+ body[data-world] :is(.pomodoro,.pomodoro[data-world],.pomodoro[data-world].is-minimized) {left:18px;transform:none;width:260px;bottom:20px;}
+ body[data-world] .world-actions {bottom:88px;}
+ body[data-world]:has(.pomodoro:not(.is-minimized)) .world-actions {visibility:hidden;}
+ body[data-world=claw] .world-actions {bottom:88px;visibility:visible;}
+ body[data-world=claw] .depth-control {bottom:24px;}
+ body[data-world=claw] #status {display:none;}
+ body[data-world=hex] .scoreboard {display:flex;margin-top:10px;gap:15px;}
+}
+
+/* Inspection details and help inherit the same accessible world surfaces. */
+body[data-world=farm] #farm-controls .field-notes summary {color:var(--sg-ink);}
+body[data-world] #pomodoro .timer-heading {font:600 12px/1.5 var(--sg-ui);letter-spacing:0;text-transform:none;max-width:none;}
+body[data-world] .panel .panel-content-inner {height:min(480px,calc(100dvh - 265px));}
+body[data-world=pond] .koi-tag {background:var(--sg-paper);color:var(--sg-ink);border:0;border-radius:12px;box-shadow:var(--sg-shadow);font:400 13px/1.5 var(--sg-ui);padding:18px;}
+body[data-world=pond] .koi-tag h3 {font:500 22px/1.2 var(--sg-display);color:var(--sg-ink);}
+body[data-world=pond] .koi-tag p {font:400 12px/1.6 var(--sg-ui);color:var(--sg-muted);}
+body[data-world=pond] .koi-tag .control {min-height:44px;font:600 13px var(--sg-ui);color:var(--sg-ink);}
+body[data-world=pond] .koi-tag .primary {color:var(--sg-paper);}
+body[data-world=pond] .koi-tag .tag-close {width:44px;height:44px;color:var(--sg-ink);}
+body[data-world=pond] .koi-tag :is(label,input) {font:400 13px/1.5 var(--sg-ui);}
+@media(max-width:720px) {body[data-world] .panel .panel-content-inner {height:min(480px,calc(100dvh - var(--sg-controls-bottom) - 180px));}}
+body[data-world=pond] main {min-height:0;}
+@media(max-width:350px) {
+ body[data-world] > header,body[data-world] main > header {gap:8px;}
+ body[data-world] .brand {font-size:20px;gap:6px;}
+ body[data-world] .brand svg {width:22px;height:22px;}
+ body[data-world=slots] .header-actions {gap:0;}
+}
+@media(max-width:720px) {
+ body[data-world=hex] #map-note {top:calc(240px + var(--sg-safe-top));bottom:auto;left:18px;max-width:calc(100% - 36px);}
+}

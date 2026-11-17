@@ -9,9 +9,9 @@
    sessionStorage.removeItem(key);
    selected=entry?.path===location.pathname&&Date.now()-entry.at>=0&&Date.now()-entry.at<30000;
   }catch{}
-  // Also supports opening a map card in a new tab and disabled session storage.
+  // The park and world switcher both support ordinary links and opening a new tab.
   let fromHome=false;
-  try{const previous=new URL(document.referrer);fromHome=previous.origin===home.origin&&(previous.pathname===home.pathname||previous.pathname===home.pathname+'index.html')}catch{}
+  try{const previous=new URL(document.referrer);const relative=previous.pathname.slice(home.pathname.length);fromHome=previous.origin===home.origin&&(relative===''||relative==='index.html'||/^(pond|pixel|hex|dumplings|slots|claw)\/(index\.html)?$/.test(relative))}catch{}
   if(!selected&&!fromHome){
    document.documentElement.style.visibility='hidden';
    location.replace(home.href);

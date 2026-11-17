@@ -1,6 +1,41 @@
 (() => {
   'use strict';
   const places = window.SPRIGGAN_PLACES;
+  const directory = document.querySelector('.place-directory');
+  const guide = document.querySelector('#park-guide');
+  const guideToggle = document.querySelector('#toggle-guide');
+  const setGuide = open => {
+    guide.classList.toggle('is-open',open);
+    guide.inert = !open;
+    guideToggle.setAttribute('aria-expanded',String(open));
+  };
+  guideToggle?.addEventListener('click',()=>setGuide(guideToggle.getAttribute('aria-expanded')!=='true'));
+  document.addEventListener('pointerdown',event=>{
+    if(guide && !guide.contains(event.target) && !guideToggle.contains(event.target))setGuide(false);
+  });
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&guide?.classList.contains('is-open')){setGuide(false);guideToggle.focus();}});
+  const invitations = {pond:'Feed & unwind',pixel:'Raise a little flock',hex:'A meadow to protect',dumplings:'Fold, steam & serve',claw:'Catch a new friend',slots:'A little garden luck'};
+  if (directory) for (const id of ['pond','pixel','hex','dumplings','claw','slots']) {
+    const place = places.find(item => item.id === id);
+    const link = document.createElement('a');
+    link.className = 'place-link world';
+    link.href = place.href;
+    const art = document.querySelector(`.map-shop[data-place="${id}"] .shop-art`).cloneNode(true);
+    art.removeAttribute('class');
+    link.append(art);
+    const copy = document.createElement('span');
+    const name = document.createElement('strong');
+    name.textContent = place.name;
+    const invitation = document.createElement('small');
+    invitation.textContent = invitations[id];
+    copy.append(name, invitation);
+    const arrow = document.createElement('span');
+    arrow.className = 'link-arrow';
+    arrow.setAttribute('aria-hidden','true');
+    arrow.textContent = '→';
+    link.append(copy, arrow);
+    directory.append(link);
+  }
   const stage = document.querySelector('#map-stage');
   const world = document.querySelector('#map-world');
   const panel = document.querySelector('#destination');
@@ -8,7 +43,7 @@
   const traveler = document.querySelector('#traveler');
   const status = document.querySelector('#map-status');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const compact = matchMedia('(max-width:700px), (max-width:950px) and (max-height:500px)');
+  const compact = matchMedia('(max-width:760px), (max-width:950px) and (max-height:500px)');
   const markers = [...document.querySelectorAll('[data-place]')];
   const pointers = new Map();
   const paths = window.VillagePaths;
@@ -34,6 +69,7 @@
 
   function render() {
     world.style.transform = `translate(${camera.x}px,${camera.y}px) scale(${camera.scale})`;
+    world.style.setProperty('--map-label-scale',Math.max(.8,Math.min(1.8,1/camera.scale)).toFixed(3));
     const factor = camera.scale / fit;
     document.querySelector('#zoom-in').disabled = factor >= 2.19;
     document.querySelector('#zoom-out').disabled = camera.scale <= minimumScale() + .001;
@@ -54,11 +90,11 @@
   function overview(full = false) {
     flight = null;
     const mobile = compact.matches;
-    const scale = full ? minimumScale() : fit * .9;
+    const scale = full || !mobile ? minimumScale() : Math.max(minimumScale(), Math.min(fit * .75, stage.clientWidth / 620));
     camera = {
       scale,
-      x: stage.clientWidth / 2 - (full ? W / 2 : mobile ? 410 : W * .45) * scale,
-      y: stage.clientHeight / 2 - (full ? H / 2 : H * .4) * scale
+      x: stage.clientWidth / 2 - (W / 2) * scale,
+      y: stage.clientHeight / 2 - (full || !mobile ? H / 2 : H * .52) * scale
     };
     constrain();
     render();
@@ -146,14 +182,13 @@
   function focusPlace(place, smooth = true) {
     const mobile = compact.matches;
     let scale = fit * (mobile ? 1.2 : 1.12);
-    let targetX = stage.clientWidth * .58, targetY = stage.clientHeight * .47;
+    let targetX = stage.clientWidth * .65, targetY = stage.clientHeight * .47;
     if (mobile) {
       const stageBounds = stage.getBoundingClientRect();
       const panelBounds = panel.getBoundingClientRect();
       const titleBounds = document.querySelector('.map-intro').getBoundingClientRect();
-      const toolsBounds = document.querySelector('.map-tools').getBoundingClientRect();
       const landscape = stage.clientWidth > stage.clientHeight;
-      const top = (landscape ? titleBounds.bottom : Math.max(titleBounds.bottom, toolsBounds.bottom)) - stageBounds.top + 12;
+      const top = titleBounds.bottom - stageBounds.top + 12;
       const bottom = landscape ? stage.clientHeight - 22 : panelBounds.top - stageBounds.top - 12;
       const freeHeight = Math.max(80, bottom - top);
       scale = Math.min(scale, Math.max(.35, freeHeight / (place.id === 'slots' ? 135 : 230)));
@@ -172,6 +207,7 @@
   function selectPlace(id, source) {
     const place = places.find(item => item.id === id);
     if (!place) return;
+    setGuide(false);
     selected = place;
     restoreFocus = source;
     markers.forEach(marker => marker.setAttribute('aria-pressed', String(marker.dataset.place === id)));
@@ -186,7 +222,12 @@
     enter.hidden = !place.href;
     if (place.href) enter.href = place.href;
     else enter.removeAttribute('href');
-    enter.firstChild.textContent = id === 'slots' ? 'Play Golden Seed ' : 'Enter world ';
+    const label = document.createElement('span');
+    label.textContent = id === 'slots' ? 'Play Golden Seed' : `Visit ${place.name}`;
+    const arrow = document.createElement('span');
+    arrow.textContent = '→';
+    arrow.setAttribute('aria-hidden','true');
+    enter.replaceChildren(label, arrow);
     enter.setAttribute('aria-label', `${id === 'slots' ? 'Play' : 'Enter'} ${place.name}`);
     document.querySelector('#coming-soon').hidden = !!place.href;
     panel.hidden = false;

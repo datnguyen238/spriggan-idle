@@ -1,0 +1,100 @@
+/* Spriggan's park is the page. The directory is an optional field guide. */
+body[data-world=park] {--ground:#c8d8a8;--ink:#294b3e;--muted:#586b5b;--panel:#faf5e9;background:var(--ground);color:#294b3e;height:100dvh;}
+body[data-world=park] .site-header {position:fixed;inset:0 0 auto;height:80px;padding:18px 32px;gap:24px;align-items:center;background:none;border:0;pointer-events:none;}
+body[data-world=park] .site-header .brand {pointer-events:auto;}
+body[data-world=park] .site-header .brand {padding:8px 12px;margin-left:-12px;border-radius:10px;background:#faf5e9;color:#294b3e;}
+body[data-world=park] .motto {display:none;}
+body[data-world=park] .map-shell {position:absolute;inset:0;height:100dvh;overflow:hidden;}
+body[data-world=park] :is(.map-stage,.atmosphere) {inset:0;border-radius:0;}
+body[data-world=park] .map-stage {background:var(--ground);isolation:isolate;}
+body[data-world=park] .map-intro {position:absolute;left:32px;top:90px;padding:6px 10px;background:#faf5e9e6;border:0;border-radius:6px;z-index:2;max-width:300px;}
+body[data-world=park] .map-intro p {font:400 13px/1.5 var(--sg-ui);margin:0;color:#294b3e;}
+body[data-world=park] .sunwash {opacity:.25;}
+body[data-world=park] .edge-shade {background:none;}
+body[data-world=park] .map-tools {position:absolute;inset:auto 32px 28px auto;display:flex;flex-direction:row;align-items:center;gap:9px;z-index:3;}
+body[data-world=park] :is(.light-controls,.zoom-controls) {background:#faf5e9;border:0;border-radius:9px;box-shadow:0 4px 16px #2b4d3314;}
+body[data-world=park] .light-controls {padding:4px;gap:2px;}
+body[data-world=park] .light-controls button {min-height:36px;font:600 12px var(--sg-ui);padding:8px 12px;border-radius:6px;color:#294b3e;}
+body[data-world=park] .light-controls button[aria-pressed=true] {background:#dce6c9;}
+body[data-world=park] .zoom-controls button {height:44px;width:42px;border-color:#d7d9c9;color:#294b3e;}
+body[data-world=park] .map-footer {display:none;}
+body[data-world=park] .map-shop {cursor:pointer;}
+body[data-world=park] .shop-art {filter:drop-shadow(4px 8px 2px #3b63301a);transition:filter .25s,translate .25s;}
+body[data-world=park] .map-shop:hover .shop-art,body[data-world=park] .map-shop:focus-visible .shop-art {filter:drop-shadow(5px 10px 3px #3b633033);translate:0 -4px;}
+body[data-world=park] .shop-name {display:flex;align-items:center;gap:6px;background:#fff8e9;color:#2f4e3d;border:0;border-radius:6px;font:700 13px/1.4 var(--sg-ui);padding:7px 11px;box-shadow:0 3px 8px #3b63301a;scale:var(--map-label-scale,1);transform-origin:top center;}
+body[data-world=park] .shop-name::before {content:'';width:6px;height:6px;border-radius:50%;background:#73985c;}
+body[data-world=park] .shop-claw .shop-name::before {background:#a27ba1;}
+body[data-world=park] .shop-dumplings .shop-name::before {background:#bf7956;}
+body[data-world=park] .shop-pond .shop-name::before {background:#4f9690;}
+body[data-world=park] .shop-slots .shop-name::before {background:#be9a4c;}
+body[data-world=park] .map-shop[aria-pressed=true] .shop-name {background:#294b3e;color:#fff8e9;}
+body[data-world=park] .shop-enter {display:none;}
+body[data-world=park] .shop-incoming {opacity:.6;}
+body[data-world=park] .terrain .road-edge {stroke:#b7a477;}
+body[data-world=park] .terrain .road {stroke:#f0dcad;}
+body[data-world=park] .road-junction-outer {fill:#b7a477;}
+body[data-world=park] .road-junction-inner {fill:#f0dcad;}
+body[data-world=park] .guide-toggle {position:absolute;left:32px;bottom:28px;z-index:7;display:flex;align-items:center;gap:9px;background:#faf5e9;color:#294b3e;border:0;border-radius:10px;min-height:50px;padding:12px 17px;box-shadow:0 5px 22px #243d3024;font:700 13px var(--sg-ui);}
+body[data-world=park] .guide-toggle:hover {background:#edf0dc;}
+body[data-world=park] .guide-toggle[aria-expanded=true] {background:#294b3e;color:#faf5e9;}
+body[data-world=park] .park-guide {position:absolute;inset:auto auto 90px 32px;z-index:6;display:flex;flex-direction:column;width:310px;max-height:calc(100dvh - 200px);padding:22px;background:#faf5e9;color:#294b3e;border-radius:14px;box-shadow:0 14px 44px #102c3029;overflow:auto;scrollbar-width:none;visibility:hidden;opacity:0;pointer-events:none;}
+body[data-world=park] .park-guide::-webkit-scrollbar {display:none;}
+body[data-world=park] .park-guide.is-open {visibility:visible;opacity:1;translate:0 0;pointer-events:auto;}
+body[data-world=park] .guide-welcome h1 {font:500 28px/1.2 var(--sg-display);letter-spacing:-.03em;margin:0;}
+body[data-world=park] .guide-welcome p {display:none;}
+body[data-world=park] .place-directory {display:flex;flex-direction:column;gap:0;margin-top:16px;border-top:1px solid #d7d9c9;}
+body[data-world=park] .place-link {display:flex;align-items:center;min-height:65px;padding:8px 0;gap:12px;border-bottom:1px solid #d7d9c9;text-decoration:none;}
+body[data-world=park] .place-link:hover {color:#a25b3d;}
+body[data-world=park] .place-link svg {width:40px;height:40px;flex:none;overflow:visible;}
+body[data-world=park] .place-link span {display:block;}
+body[data-world=park] .place-link strong {font:700 13px/1.4 var(--sg-ui);}
+body[data-world=park] .place-link small {display:block;font:400 11px/1.4 var(--sg-ui);color:#586b5b;margin-top:3px;}
+body[data-world=park] .place-link .link-arrow {font:400 18px var(--sg-ui);margin-left:auto;}
+body[data-world=park] .guide-foot {display:flex;gap:10px;align-items:center;padding-top:18px;font:400 11px/1.6 var(--sg-ui);color:#65735b;}
+body[data-world=park] .guide-foot svg {flex:none;color:#6c8557;}
+body[data-world=park] .destination {left:32px;bottom:96px;width:305px;display:block;border:0;border-radius:14px;background:#faf5e9;color:#294b3e;box-shadow:0 12px 38px #233e302b;}
+body[data-world=park] .destination>img {width:100%;height:144px;object-fit:cover;}
+body[data-world=park] .destination-copy {padding:20px;}
+body[data-world=park] .destination-kind {display:none;}
+body[data-world=park] .destination h2 {font:500 26px/1.15 var(--sg-display);letter-spacing:-.03em;margin:0;}
+body[data-world=park] #destination-description {font:400 13px/1.65 var(--sg-ui);color:#586b5b;margin-top:10px;}
+body[data-world=park] .enter-world {display:flex;align-items:center;justify-content:space-between;font:700 13px var(--sg-ui);background:#294b3e;color:#fff8e9;border-radius:8px;min-height:46px;padding:12px 15px;margin-top:18px;}
+body[data-world=park] .enter-world:hover {background:#41664b;}
+body[data-world=park] .close-button {width:44px;height:44px;min-width:44px;min-height:44px;background:#faf5e9;border:0;color:#294b3e;}
+body[data-world=park]:has(.destination:not([hidden])) .guide-toggle {visibility:hidden;}
+body[data-world=park][data-light=evening] {--ground:#3f6454;}
+body[data-world=park][data-light=evening] .land-base {fill:#3f6454;}
+body[data-world=park][data-light=evening] .terrain .road {stroke:#b8b18b;}
+body[data-world=park][data-light=evening] .terrain .road-edge {stroke:#6d7c5c;}
+body[data-world=park][data-light=evening] .road-junction-inner {fill:#b8b18b;}
+body[data-world=park][data-light=evening] .road-junction-outer {fill:#6d7c5c;}
+body[data-world=park][data-light=evening] .shop-art {filter:brightness(.87) saturate(.85) drop-shadow(4px 8px 2px #142f3529);}
+body[data-world=park][data-light=evening] .shop-name {background:#faf0d7;}
+body[data-world=park][data-light=evening] .map-shop[aria-pressed=true] .shop-name {background:#294b3e;}
+body[data-world=park][data-light=evening] .site-header .brand,body[data-world=park][data-light=evening] .map-intro p {color:#294b3e;}
+@media(max-width:760px) {
+ body[data-world=park] .site-header {padding:12px 18px;height:68px;gap:12px;}
+ body[data-world=park] .motto {display:none;}
+ body[data-world=park] .map-intro {left:18px;top:79px;}
+ body[data-world=park] .map-intro p {font-size:12px;}
+ body[data-world=park] .map-tools {right:16px;bottom:max(18px,env(safe-area-inset-bottom));flex-direction:column;align-items:flex-end;gap:7px;}
+ body[data-world=park] .light-controls button {font-size:11px;min-height:36px;padding:6px 10px;}
+ body[data-world=park] .zoom-controls button {width:44px;height:44px;}
+ body[data-world=park] .guide-toggle {left:16px;bottom:max(18px,env(safe-area-inset-bottom));padding:12px 14px;font-size:12px;}
+ body[data-world=park] .park-guide {left:16px;right:16px;bottom:max(82px,calc(env(safe-area-inset-bottom) + 64px));width:auto;max-width:340px;max-height:calc(100dvh - 180px);padding:20px;}
+ body[data-world=park] .guide-welcome h1 {font-size:26px;}
+ body[data-world=park] .place-link {min-height:60px;}
+ body[data-world=park] .destination {left:16px;right:16px;bottom:140px;width:auto;max-width:360px;max-height:none;display:flex;min-height:0;}
+ body[data-world=park] .destination>img {width:85px;height:auto;flex:none;}
+ body[data-world=park] .destination-copy {padding:16px;flex:1;min-width:0;}
+ body[data-world=park] .destination h2 {font-size:22px;padding-right:28px;}
+ body[data-world=park] #destination-description {font-size:12px;margin-top:7px;line-height:1.5;}
+ body[data-world=park] .enter-world {min-height:44px;margin-top:12px;font-size:12px;}
+ body[data-world=park] .shop-name {font-size:13px;}
+}
+@media(max-width:360px) {body[data-world=park] .destination>img {display:none;}body[data-world=park] .guide-toggle {font-size:11px;padding-inline:12px;}}
+@media(max-height:540px) and (orientation:landscape) {
+ body[data-world=park] .park-guide {bottom:80px;max-height:calc(100dvh - 100px);}
+ body[data-world=park] .guide-foot,body[data-world=park] .map-intro {display:none;}
+ body[data-world=park] .destination {left:24px;bottom:24px;max-width:300px;}
+}

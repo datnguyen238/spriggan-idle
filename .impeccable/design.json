@@ -1,0 +1,678 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-17T17:12:32.591391+00:00",
+  "title": "Design System: Spriggan",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "primary",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0063 88.72)",
+          "oklch(26% 0.0125 88.72)",
+          "oklch(38% 0.0178 88.72)",
+          "oklch(50% 0.0209 88.72)",
+          "oklch(62% 0.0209 88.72)",
+          "oklch(74% 0.0178 88.72)",
+          "oklch(86% 0.0115 88.72)",
+          "oklch(95% 0.0042 88.72)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0109 168.42)",
+          "oklch(26% 0.0217 168.42)",
+          "oklch(38% 0.0308 168.42)",
+          "oklch(50% 0.0362 168.42)",
+          "oklch(62% 0.0362 168.42)",
+          "oklch(74% 0.0308 168.42)",
+          "oklch(86% 0.0199 168.42)",
+          "oklch(95% 0.0072 168.42)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0087 152.32)",
+          "oklch(26% 0.0174 152.32)",
+          "oklch(38% 0.0247 152.32)",
+          "oklch(50% 0.0290 152.32)",
+          "oklch(62% 0.0290 152.32)",
+          "oklch(74% 0.0247 152.32)",
+          "oklch(86% 0.0160 152.32)",
+          "oklch(95% 0.0058 152.32)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0.0070 115.04)",
+          "oklch(26% 0.0141 115.04)",
+          "oklch(38% 0.0200 115.04)",
+          "oklch(50% 0.0235 115.04)",
+          "oklch(62% 0.0235 115.04)",
+          "oklch(74% 0.0200 115.04)",
+          "oklch(86% 0.0129 115.04)",
+          "oklch(95% 0.0047 115.04)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "sage": {
+        "role": "secondary",
+        "displayName": "Sage",
+        "tonalRamp": [
+          "oklch(15% 0.0135 150.38)",
+          "oklch(26% 0.0269 150.38)",
+          "oklch(38% 0.0382 150.38)",
+          "oklch(50% 0.0449 150.38)",
+          "oklch(62% 0.0449 150.38)",
+          "oklch(74% 0.0382 150.38)",
+          "oklch(86% 0.0247 150.38)",
+          "oklch(95% 0.0090 150.38)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "clay": {
+        "role": "secondary",
+        "displayName": "Clay",
+        "tonalRamp": [
+          "oklch(15% 0.0300 41.20)",
+          "oklch(26% 0.0600 41.20)",
+          "oklch(38% 0.0850 41.20)",
+          "oklch(50% 0.1000 41.20)",
+          "oklch(62% 0.1000 41.20)",
+          "oklch(74% 0.0850 41.20)",
+          "oklch(86% 0.0550 41.20)",
+          "oklch(95% 0.0200 41.20)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "blue": {
+        "role": "secondary",
+        "displayName": "Blue",
+        "tonalRamp": [
+          "oklch(15% 0.0075 189.91)",
+          "oklch(26% 0.0149 189.91)",
+          "oklch(38% 0.0211 189.91)",
+          "oklch(50% 0.0248 189.91)",
+          "oklch(62% 0.0248 189.91)",
+          "oklch(74% 0.0211 189.91)",
+          "oklch(86% 0.0137 189.91)",
+          "oklch(95% 0.0050 189.91)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "straw": {
+        "role": "secondary",
+        "displayName": "Straw",
+        "tonalRamp": [
+          "oklch(15% 0.0267 87.80)",
+          "oklch(26% 0.0534 87.80)",
+          "oklch(38% 0.0757 87.80)",
+          "oklch(50% 0.0891 87.80)",
+          "oklch(62% 0.0891 87.80)",
+          "oklch(74% 0.0757 87.80)",
+          "oklch(86% 0.0490 87.80)",
+          "oklch(95% 0.0178 87.80)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "well": {
+        "role": "neutral",
+        "displayName": "Well",
+        "tonalRamp": [
+          "oklch(15% 0.0064 109.72)",
+          "oklch(26% 0.0128 109.72)",
+          "oklch(38% 0.0182 109.72)",
+          "oklch(50% 0.0214 109.72)",
+          "oklch(62% 0.0214 109.72)",
+          "oklch(74% 0.0182 109.72)",
+          "oklch(86% 0.0117 109.72)",
+          "oklch(95% 0.0043 109.72)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "selected": {
+        "role": "neutral",
+        "displayName": "Selected",
+        "tonalRamp": [
+          "oklch(15% 0.0080 123.45)",
+          "oklch(26% 0.0159 123.45)",
+          "oklch(38% 0.0225 123.45)",
+          "oklch(50% 0.0265 123.45)",
+          "oklch(62% 0.0265 123.45)",
+          "oklch(74% 0.0225 123.45)",
+          "oklch(86% 0.0146 123.45)",
+          "oklch(95% 0.0053 123.45)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "pond-paper": {
+        "role": "neutral",
+        "displayName": "Pond Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0113 184.96)",
+          "oklch(26% 0.0227 184.96)",
+          "oklch(38% 0.0321 184.96)",
+          "oklch(50% 0.0378 184.96)",
+          "oklch(62% 0.0378 184.96)",
+          "oklch(74% 0.0321 184.96)",
+          "oklch(86% 0.0208 184.96)",
+          "oklch(95% 0.0076 184.96)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "pond-ink": {
+        "role": "neutral",
+        "displayName": "Pond Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0075 89.21)",
+          "oklch(26% 0.0150 89.21)",
+          "oklch(38% 0.0212 89.21)",
+          "oklch(50% 0.0250 89.21)",
+          "oklch(62% 0.0250 89.21)",
+          "oklch(74% 0.0212 89.21)",
+          "oklch(86% 0.0137 89.21)",
+          "oklch(95% 0.0050 89.21)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "pond-muted": {
+        "role": "neutral",
+        "displayName": "Pond Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0083 145.33)",
+          "oklch(26% 0.0167 145.33)",
+          "oklch(38% 0.0236 145.33)",
+          "oklch(50% 0.0278 145.33)",
+          "oklch(62% 0.0278 145.33)",
+          "oklch(74% 0.0236 145.33)",
+          "oklch(86% 0.0153 145.33)",
+          "oklch(95% 0.0056 145.33)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "pond-line": {
+        "role": "neutral",
+        "displayName": "Pond Line",
+        "tonalRamp": [
+          "oklch(15% 0.0114 167.87)",
+          "oklch(26% 0.0227 167.87)",
+          "oklch(38% 0.0322 167.87)",
+          "oklch(50% 0.0378 167.87)",
+          "oklch(62% 0.0378 167.87)",
+          "oklch(74% 0.0322 167.87)",
+          "oklch(86% 0.0208 167.87)",
+          "oklch(95% 0.0076 167.87)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "pond-well": {
+        "role": "neutral",
+        "displayName": "Pond Well",
+        "tonalRamp": [
+          "oklch(15% 0.0113 178.97)",
+          "oklch(26% 0.0227 178.97)",
+          "oklch(38% 0.0321 178.97)",
+          "oklch(50% 0.0378 178.97)",
+          "oklch(62% 0.0378 178.97)",
+          "oklch(74% 0.0321 178.97)",
+          "oklch(86% 0.0208 178.97)",
+          "oklch(95% 0.0076 178.97)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "pond-selected": {
+        "role": "neutral",
+        "displayName": "Pond Selected",
+        "tonalRamp": [
+          "oklch(15% 0.0157 160.31)",
+          "oklch(26% 0.0313 160.31)",
+          "oklch(38% 0.0444 160.31)",
+          "oklch(50% 0.0522 160.31)",
+          "oklch(62% 0.0522 160.31)",
+          "oklch(74% 0.0444 160.31)",
+          "oklch(86% 0.0287 160.31)",
+          "oklch(95% 0.0104 160.31)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "hex-paper": {
+        "role": "neutral",
+        "displayName": "Hex Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0128 167.39)",
+          "oklch(26% 0.0256 167.39)",
+          "oklch(38% 0.0363 167.39)",
+          "oklch(50% 0.0427 167.39)",
+          "oklch(62% 0.0427 167.39)",
+          "oklch(74% 0.0363 167.39)",
+          "oklch(86% 0.0235 167.39)",
+          "oklch(95% 0.0085 167.39)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "hex-ink": {
+        "role": "neutral",
+        "displayName": "Hex Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0063 88.72)",
+          "oklch(26% 0.0125 88.72)",
+          "oklch(38% 0.0178 88.72)",
+          "oklch(50% 0.0209 88.72)",
+          "oklch(62% 0.0209 88.72)",
+          "oklch(74% 0.0178 88.72)",
+          "oklch(86% 0.0115 88.72)",
+          "oklch(95% 0.0042 88.72)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "hex-muted": {
+        "role": "neutral",
+        "displayName": "Hex Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0101 129.73)",
+          "oklch(26% 0.0201 129.73)",
+          "oklch(38% 0.0285 129.73)",
+          "oklch(50% 0.0336 129.73)",
+          "oklch(62% 0.0336 129.73)",
+          "oklch(74% 0.0285 129.73)",
+          "oklch(86% 0.0185 129.73)",
+          "oklch(95% 0.0067 129.73)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "hex-line": {
+        "role": "neutral",
+        "displayName": "Hex Line",
+        "tonalRamp": [
+          "oklch(15% 0.0142 150.04)",
+          "oklch(26% 0.0284 150.04)",
+          "oklch(38% 0.0402 150.04)",
+          "oklch(50% 0.0473 150.04)",
+          "oklch(62% 0.0473 150.04)",
+          "oklch(74% 0.0402 150.04)",
+          "oklch(86% 0.0260 150.04)",
+          "oklch(95% 0.0095 150.04)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "hex-well": {
+        "role": "neutral",
+        "displayName": "Hex Well",
+        "tonalRamp": [
+          "oklch(15% 0.0127 168.69)",
+          "oklch(26% 0.0254 168.69)",
+          "oklch(38% 0.0359 168.69)",
+          "oklch(50% 0.0423 168.69)",
+          "oklch(62% 0.0423 168.69)",
+          "oklch(74% 0.0359 168.69)",
+          "oklch(86% 0.0232 168.69)",
+          "oklch(95% 0.0085 168.69)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "hex-selected": {
+        "role": "neutral",
+        "displayName": "Hex Selected",
+        "tonalRamp": [
+          "oklch(15% 0.0159 157.32)",
+          "oklch(26% 0.0318 157.32)",
+          "oklch(38% 0.0450 157.32)",
+          "oklch(50% 0.0530 157.32)",
+          "oklch(62% 0.0530 157.32)",
+          "oklch(74% 0.0450 157.32)",
+          "oklch(86% 0.0291 157.32)",
+          "oklch(95% 0.0106 157.32)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "kitchen-paper": {
+        "role": "neutral",
+        "displayName": "Kitchen Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0096 233.05)",
+          "oklch(26% 0.0192 233.05)",
+          "oklch(38% 0.0273 233.05)",
+          "oklch(50% 0.0321 233.05)",
+          "oklch(62% 0.0321 233.05)",
+          "oklch(74% 0.0273 233.05)",
+          "oklch(86% 0.0176 233.05)",
+          "oklch(95% 0.0064 233.05)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "kitchen-ink": {
+        "role": "neutral",
+        "displayName": "Kitchen Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0096 78.16)",
+          "oklch(26% 0.0191 78.16)",
+          "oklch(38% 0.0271 78.16)",
+          "oklch(50% 0.0318 78.16)",
+          "oklch(62% 0.0318 78.16)",
+          "oklch(74% 0.0271 78.16)",
+          "oklch(86% 0.0175 78.16)",
+          "oklch(95% 0.0064 78.16)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "kitchen-muted": {
+        "role": "neutral",
+        "displayName": "Kitchen Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0040 185.03)",
+          "oklch(26% 0.0080 185.03)",
+          "oklch(38% 0.0114 185.03)",
+          "oklch(50% 0.0134 185.03)",
+          "oklch(62% 0.0134 185.03)",
+          "oklch(74% 0.0114 185.03)",
+          "oklch(86% 0.0073 185.03)",
+          "oklch(95% 0.0027 185.03)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "kitchen-line": {
+        "role": "neutral",
+        "displayName": "Kitchen Line",
+        "tonalRamp": [
+          "oklch(15% 0.0096 221.75)",
+          "oklch(26% 0.0192 221.75)",
+          "oklch(38% 0.0272 221.75)",
+          "oklch(50% 0.0319 221.75)",
+          "oklch(62% 0.0319 221.75)",
+          "oklch(74% 0.0272 221.75)",
+          "oklch(86% 0.0176 221.75)",
+          "oklch(95% 0.0064 221.75)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "kitchen-well": {
+        "role": "neutral",
+        "displayName": "Kitchen Well",
+        "tonalRamp": [
+          "oklch(15% 0.0101 232.34)",
+          "oklch(26% 0.0201 232.34)",
+          "oklch(38% 0.0285 232.34)",
+          "oklch(50% 0.0335 232.34)",
+          "oklch(62% 0.0335 232.34)",
+          "oklch(74% 0.0285 232.34)",
+          "oklch(86% 0.0184 232.34)",
+          "oklch(95% 0.0067 232.34)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "kitchen-selected": {
+        "role": "neutral",
+        "displayName": "Kitchen Selected",
+        "tonalRamp": [
+          "oklch(15% 0.0106 214.99)",
+          "oklch(26% 0.0211 214.99)",
+          "oklch(38% 0.0299 214.99)",
+          "oklch(50% 0.0352 214.99)",
+          "oklch(62% 0.0352 214.99)",
+          "oklch(74% 0.0299 214.99)",
+          "oklch(86% 0.0193 214.99)",
+          "oklch(95% 0.0070 214.99)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "park-ground": {
+        "role": "neutral",
+        "displayName": "Park Ground",
+        "tonalRamp": [
+          "oklch(15% 0.0114 115.41)",
+          "oklch(26% 0.0227 115.41)",
+          "oklch(38% 0.0322 115.41)",
+          "oklch(50% 0.0379 115.41)",
+          "oklch(62% 0.0379 115.41)",
+          "oklch(74% 0.0322 115.41)",
+          "oklch(86% 0.0209 115.41)",
+          "oklch(95% 0.0076 115.41)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "park-evening-ground": {
+        "role": "neutral",
+        "displayName": "Park Evening Ground",
+        "tonalRamp": [
+          "oklch(15% 0.0100 164.06)",
+          "oklch(26% 0.0200 164.06)",
+          "oklch(38% 0.0283 164.06)",
+          "oklch(50% 0.0333 164.06)",
+          "oklch(62% 0.0333 164.06)",
+          "oklch(74% 0.0283 164.06)",
+          "oklch(86% 0.0183 164.06)",
+          "oklch(95% 0.0067 164.06)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "slots-ground": {
+        "role": "neutral",
+        "displayName": "Slots Ground",
+        "tonalRamp": [
+          "oklch(15% 0.0064 112.59)",
+          "oklch(26% 0.0128 112.59)",
+          "oklch(38% 0.0182 112.59)",
+          "oklch(50% 0.0214 112.59)",
+          "oklch(62% 0.0214 112.59)",
+          "oklch(74% 0.0182 112.59)",
+          "oklch(86% 0.0118 112.59)",
+          "oklch(95% 0.0043 112.59)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "slots-enamel": {
+        "role": "neutral",
+        "displayName": "Slots Enamel",
+        "tonalRamp": [
+          "oklch(15% 0.0061 150.07)",
+          "oklch(26% 0.0123 150.07)",
+          "oklch(38% 0.0174 150.07)",
+          "oklch(50% 0.0204 150.07)",
+          "oklch(62% 0.0204 150.07)",
+          "oklch(74% 0.0174 150.07)",
+          "oklch(86% 0.0112 150.07)",
+          "oklch(95% 0.0041 150.07)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      },
+      "slots-rim": {
+        "role": "neutral",
+        "displayName": "Slots Rim",
+        "tonalRamp": [
+          "oklch(15% 0.0113 166.26)",
+          "oklch(26% 0.0225 166.26)",
+          "oklch(38% 0.0319 166.26)",
+          "oklch(50% 0.0376 166.26)",
+          "oklch(62% 0.0376 166.26)",
+          "oklch(74% 0.0319 166.26)",
+          "oklch(86% 0.0207 166.26)",
+          "oklch(95% 0.0075 166.26)"
+        ],
+        "tonalRampPurpose": "Synthesized OKLCH preview ramp. Application colors remain in DESIGN.md frontmatter."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "World headings with route-specific overrides."
+      },
+      "brand": {
+        "displayName": "Brand",
+        "purpose": "Header wordmark."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Controller and inspection titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Shared controller text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Compact interface labels."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Controller buttons and summaries."
+      },
+      "timer": {
+        "displayName": "Timer",
+        "purpose": "Focus timer numerals."
+      }
+    },
+    "shadows": [
+      {
+        "name": "panel",
+        "value": "0 12px 32px #152d2624",
+        "purpose": "Controller, inspection and destination surfaces."
+      },
+      {
+        "name": "play-action",
+        "value": "0 3px 12px #102d2514",
+        "purpose": "Persistent play actions."
+      },
+      {
+        "name": "place-sign",
+        "value": "0 2px 4px #3e583423",
+        "purpose": "Park place signs."
+      },
+      {
+        "name": "enamel-cabinet",
+        "value": "0 18px 30px #304a401c",
+        "purpose": "Golden Seed cabinet."
+      },
+      {
+        "name": "reel-inset",
+        "value": "inset 0 4px 6px #1b3d3333",
+        "purpose": "Golden Seed recessed reels."
+      }
+    ],
+    "motion": [
+      {
+        "name": "sg-ease",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Shared easing declaration."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "@media(prefers-reduced-motion:reduce) { scroll-behavior:auto; transition:none; }",
+        "purpose": "Shared CSS preference treatment."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "720px"
+      },
+      {
+        "name": "narrow",
+        "value": "350px"
+      },
+      {
+        "name": "short-viewport",
+        "value": "500px",
+        "axis": "height"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary control",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "html": "<button class=\"ds-primary\">Feed the koi</button>",
+      "css": ".ds-primary{font:600 13px/1.4 var(--sg-ui,'Nunito Sans',sans-serif);min-height:44px;border-radius:6px;color:var(--sg-ink,#304a40);background:var(--sg-ink,#304a40);color:var(--sg-paper,#f4eedf);border:0}.ds-primary:hover:not(:disabled){filter:brightness(.94);transform:none}.ds-primary:focus-visible{outline:2px solid var(--sg-straw,#d5ba79);outline-offset:4px;}",
+      "description": "World ink and paper define the primary action."
+    },
+    {
+      "name": "Secondary control",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "html": "<button class=\"ds-secondary\">Rain</button>",
+      "css": ".ds-secondary{font:600 13px/1.4 var(--sg-ui,'Nunito Sans',sans-serif);min-height:44px;border-radius:6px;color:var(--sg-ink,#304a40);background:transparent;border:1px solid var(--sg-line,#c4c7b6)}.ds-secondary:focus-visible{outline:2px solid var(--sg-straw,#d5ba79);outline-offset:4px;}",
+      "description": "Outlined secondary control."
+    },
+    {
+      "name": "Selected control",
+      "kind": "button",
+      "refersTo": "button-selected",
+      "html": "<button class=\"ds-selected\" aria-pressed=\"true\">Rain</button>",
+      "css": ".ds-selected{font:600 13px/1.4 var(--sg-ui,'Nunito Sans',sans-serif);min-height:44px;border-radius:6px;color:var(--sg-ink,#304a40);background:var(--sg-selected,#dbe2cf);border:1px solid #90a17f}.ds-selected:focus-visible{outline:2px solid var(--sg-straw,#d5ba79);outline-offset:4px;}",
+      "description": "Pressed surface with shared fallback border."
+    },
+    {
+      "name": "World navigation",
+      "kind": "nav",
+      "refersTo": "world-navigation",
+      "html": "<a class=\"ds-nav\" href=\"../\">All worlds <svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"M6 18 18 6M6 6h12v12\"/></svg></a>",
+      "css": ".ds-nav{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:8px 13px;border:1px solid currentColor;border-radius:6px;background:transparent;color:var(--sg-ink,#304a40);text-decoration:none;font:600 12px/1.3 var(--sg-ui,'Nunito Sans',sans-serif)}.ds-nav:focus-visible{outline:2px solid var(--sg-straw,#d5ba79);outline-offset:4px;}",
+      "description": "Outlined header return navigation."
+    },
+    {
+      "name": "Destination select",
+      "kind": "input",
+      "refersTo": "destination-select",
+      "html": "<label class=\"ds-field\">Destination <select><option>Stillwater</option><option>Chicken farm</option></select></label>",
+      "css": ".ds-field{display:grid;gap:8px;font:700 13px var(--sg-ui,'Nunito Sans',sans-serif);color:var(--sg-ink,#304a40)}.ds-field select{font:600 14px var(--sg-ui,'Nunito Sans',sans-serif);height:46px;background:var(--sg-paper,#f4eedf);color:var(--sg-ink,#304a40);border:1px solid #a4b59b;border-radius:6px}.ds-field select:focus-visible{outline:2px solid var(--sg-straw,#d5ba79);outline-offset:4px;}",
+      "description": "Golden Seed destination field."
+    },
+    {
+      "name": "Controller surface",
+      "kind": "card",
+      "refersTo": "controller",
+      "html": "<section class=\"ds-controller\"><h3>Little Folds</h3><p>Make and steam dumplings.</p></section>",
+      "css": ".ds-controller{width:300px;max-width:calc(100vw - 32px);height:min(520px,calc(100dvh - 220px));padding:22px;border:0;border-radius:12px;background:var(--sg-paper,#f4eedf);color:var(--sg-ink,#304a40);box-shadow:0 12px 32px #152d2624;font:400 13px/1.5 var(--sg-ui,'Nunito Sans',sans-serif);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none}.ds-controller::-webkit-scrollbar{display:none;width:0;height:0}.ds-controller h3{font:500 22px/1.2 var(--sg-display,'Bricolage Grotesque',sans-serif);letter-spacing:-.02em}.ds-controller p{font-size:12px;line-height:1.6;color:var(--sg-muted,#57685b)}",
+      "description": "Bounded scrolling shell. Pond and mobile heights have documented overrides."
+    },
+    {
+      "name": "Focus timer",
+      "kind": "custom",
+      "refersTo": "focus-timer",
+      "html": "<section class=\"ds-timer\"><span>Focus timer</span><div>25:00</div><button>Start</button></section>",
+      "css": ".ds-timer{width:320px;padding:12px 16px;border:0;border-radius:12px;background:var(--sg-paper,#f4eedf);color:var(--sg-ink,#304a40);font:600 12px/1.5 var(--sg-ui,'Nunito Sans',sans-serif)}.ds-timer div{font:500 36px/1.1 var(--sg-display,'Bricolage Grotesque',sans-serif);letter-spacing:-.03em}.ds-timer button{min-height:40px;border:0;border-radius:6px;background:var(--sg-ink,#304a40);color:var(--sg-paper,#f4eedf);font:600 12px var(--sg-ui,'Nunito Sans',sans-serif)}.ds-timer button:focus-visible{outline:2px solid var(--sg-straw,#d5ba79);outline-offset:4px;}",
+      "description": "Shared timer type and surface. Preview markup illustrates the appearance."
+    },
+    {
+      "name": "Botanical brand",
+      "kind": "custom",
+      "refersTo": "brand",
+      "html": "<a class=\"ds-brand\" href=\"./\"><svg viewBox=\"0 0 32 32\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 19a11 11 0 0 0 22 0M16 26V14\"/><path d=\"M16 17C9 17 5 13 5 7c7 0 11 4 11 10ZM16 12C16 5 21 2 28 3c0 6-5 10-12 9Z\"/></svg><span>Spriggan</span></a>",
+      "css": ".ds-brand{display:flex;align-items:center;gap:10px;font:500 25px/1 var(--sg-display,'Bricolage Grotesque',sans-serif);letter-spacing:-.03em;min-height:44px;text-decoration:none;color:var(--sg-ink,#304a40)}.ds-brand svg{width:26px;height:26px;flex:none}.ds-brand:focus-visible{outline:2px solid var(--sg-straw,#d5ba79);outline-offset:4px;}",
+      "description": "Implemented botanical SVG symbol and wordmark."
+    }
+  ],
+  "narrative": {
+    "northStar": "Little places, made by hand",
+    "overview": "Spriggan presents a collection of inhabited miniature places. Quiet, playful scenes fill the viewport while compact controls support direct interaction. Geometry-driven artwork supplies each place with its own material and atmosphere.\n\nA shared botanical mark, humanist lettering and consistent spacing connect the park and its six games. The shared surface roles change with the setting. Pond uses dark teal, hex uses deep green, and the kitchen uses nighttime slate. Farm, slots and claw keep their pixel orchard, pastel enamel and sculpted-plush character.",
+    "keyCharacteristics": [
+      "Scene-led composition with directly reachable play actions.",
+      "Shared typography and botanical identity across six distinct settings.",
+      "Fixed-size controller surfaces with internal scrolling and hidden scrollbars.",
+      "Responsive controls positioned around the measured focus timer."
+    ],
+    "rules": [],
+    "dos": [
+      "Do preserve the pond, pixel orchard, hex diorama, nighttime kitchen, pastel enamel slots and sculpted plush cabinet themes.",
+      "Do use local display and UI font files for shared interface text.",
+      "Do apply the active world\u2019s paper, ink, muted and line roles to controller content.",
+      "Do keep controller content scrollable within its established viewport-bounded dimensions.",
+      "Do keep the botanical symbol and Spriggan wordmark together in the header."
+    ],
+    "donts": [
+      "Don\u2019t flatten the six world materials into a single artwork style.",
+      "Don\u2019t show native scrollbars on controller content.",
+      "Don\u2019t replace the botanical symbol with a generic game icon.",
+      "Don\u2019t let mobile hex notifications overlap its counters or let play controls overlap the expanded focus timer."
+    ]
+  }
+}

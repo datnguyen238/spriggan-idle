@@ -1,0 +1,212 @@
+/* Spriggan — the pocket park atlas. Presentation only; game state stays local. */
+:root {
+ --sg-paper:#faf5e9; --sg-ink:#294b3e; --sg-muted:#586b5b; --sg-line:#cbd1bd;
+ --sg-sage:#6b885c; --sg-clay:#ba7158; --sg-blue:#719c9b; --sg-straw:#dcb56e;
+ --sg-radius:16px; --sg-shadow:0 14px 44px #102c3029; --sg-gutter:32px;
+ --atlas-serif:'Bricolage Grotesque',sans-serif;
+}
+body[data-world] {font-size:14px;}
+body[data-world] :is(button,a,input,select,summary):focus-visible {outline:3px solid #c58b3d;outline-offset:4px;}
+body[data-world] ::selection {background:#e6c98c;color:#223e31;}
+body[data-world] :is(h1,h2,h3) {text-wrap:balance;}
+body[data-world] > header,body[data-world] main > header {
+ position:fixed;height:76px;padding:14px var(--sg-gutter);background:transparent;color:var(--sg-nav-ink,#294b3e);
+ border:0;pointer-events:none;z-index:20;
+}
+body[data-world] .brand {font-size:26px;font-weight:600;gap:9px;color:var(--sg-nav-ink,#294b3e);}
+body[data-world] .brand svg {width:29px;height:29px;color:inherit;}
+body[data-world] header button {pointer-events:auto;}
+body[data-world] select {appearance:none;min-height:44px;padding:10px 34px 10px 12px;background:var(--sg-paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23586b5b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center;color:var(--sg-ink);border:1px solid var(--sg-line);border-radius:8px;font:600 13px var(--sg-ui);width:100%;}
+body[data-world] input[type=range] {appearance:none;-webkit-appearance:none;height:24px;background:transparent;cursor:pointer;max-width:100%;}
+body[data-world] input[type=range]::-webkit-slider-runnable-track {height:4px;border-radius:3px;background:var(--sg-line);}
+body[data-world] input[type=range]::-webkit-slider-thumb {-webkit-appearance:none;width:18px;height:18px;margin-top:-7px;border:3px solid var(--sg-paper);border-radius:50%;background:var(--sg-ink);box-shadow:0 1px 5px #183b302e;}
+body[data-world] input[type=range]::-moz-range-track {height:4px;border:0;border-radius:3px;background:var(--sg-line);}
+body[data-world] input[type=range]::-moz-range-thumb {width:12px;height:12px;border:3px solid var(--sg-paper);border-radius:50%;background:var(--sg-ink);box-shadow:0 1px 5px #183b302e;}
+body[data-world] :is(.panel,.panel.is-collapsed,.dashboard,.dashboard.collapsed) {width:max-content;min-width:52px;}
+body[data-world] :is(.worlds,.worlds-link,header .back) {
+ border:0;background:#e8ecdc;border-radius:8px;min-height:44px;padding:10px 15px;font-size:13px;
+}
+body[data-world] :is(.worlds,.worlds-link,header .back):hover {background:#dce3cb;}
+body[data-world] :is(.worlds,.worlds-link,header .back) svg {transform:rotate(-135deg);width:16px;height:16px;}
+body[data-world] .header-right .top-note {display:none;}
+body[data-world] :is(.intro,.heading,.introduction) {top:103px;left:var(--sg-gutter);}
+body[data-world] :is(.intro,.heading,.introduction) :is(h1,h2) {font-size:clamp(27px,2.6vw,38px);font-weight:500;letter-spacing:-.035em;}
+body[data-world] :is(.intro-copy,.subtitle,.introduction p:last-child) {font-size:14px;line-height:1.6;max-width:34ch;}
+body[data-world] :is(.panel .panel-content,main[data-night=true] .panel .panel-content,.dashboard #farm-controls,#hex-panel,#ambience-controls,#controller-body) {
+ width:328px;padding:24px;border-radius:16px;background:var(--sg-paper);color:var(--sg-ink);box-shadow:var(--sg-shadow);
+ font-size:14px;max-width:calc(100vw - 32px);
+}
+body[data-world] :is(.panel-content-inner,#farm-controls,#hex-panel,#ambience-controls,#controller-body) {scroll-padding-block:16px;}
+body[data-world] :is(.panel-content,#farm-controls,#hex-panel,#ambience-controls,#controller-body) {transition:none;animation:none;}
+body[data-world] :is(#farm-controls,#hex-panel,#ambience-controls,#controller-body,.panel-content-inner) :is(button,select,summary) {font-size:13px;min-height:44px;border-radius:8px;}
+body[data-world] :is(#farm-controls,#hex-panel,#ambience-controls,#controller-body,.panel-content-inner) :is(p,label,output,small,.status,.instructions,.control-copy) {font-size:13px;line-height:1.6;}
+body[data-world] :is(.panel-heading h3,.control-heading>span,.controller-heading>span,#ambience-controls h2) {font-size:25px;line-height:1.2;font-weight:500;}
+body[data-world] :is(.control.primary,#feed,#crowd,#make,#buy-seeds) {border-radius:8px;background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world] :is(#toggle-controls,.panel #toggle-controls,.dashboard #toggle-controls) {
+ width:auto;min-width:52px;height:52px;min-height:52px;gap:10px;padding:0 16px;border:0;border-radius:10px;
+ background:var(--sg-paper);color:var(--sg-ink);box-shadow:0 5px 22px #102c3024;
+}
+body[data-world] #toggle-controls::after {content:'Controls';font:700 13px var(--sg-ui);}
+body[data-world] #toggle-controls[aria-expanded=true] {background:var(--sg-ink);color:var(--sg-paper);}
+body[data-world] .world-actions {bottom:28px;gap:8px;z-index:8;}
+body[data-world] .world-actions button {min-height:52px;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 5px 22px #102c3024;display:flex;align-items:center;gap:9px;}
+body[data-world] .world-actions button svg {width:19px;height:19px;flex:none;}
+body[data-world] :is(.dashboard,.dashboard.collapsed,.hex-controls,.ambience,.bottom,.arcade-controller) {right:var(--sg-gutter);bottom:28px;}
+body[data-world] :is(.pomodoro,.pomodoro[data-world],.pomodoro[data-world].is-minimized) {bottom:28px;border-radius:12px;padding:13px 16px;background:var(--sg-paper);box-shadow:0 5px 22px #102c301a;}
+body[data-world] .pomodoro .timer-modes {border-radius:8px;background:var(--sg-well,#e8ecdc);}
+body[data-world] .pomodoro .timer-modes button {font-size:12px;}
+body[data-world] .pomodoro #timer-time {font-size:42px;font-variant-numeric:tabular-nums;}
+body[data-world] .pomodoro .timer-action {border-radius:8px;}
+body[data-world] .pomodoro .timer-heading {font-size:13px;}
+body[data-world] :is(#moment,.map-note,#status) {max-width:330px;font-size:13px;line-height:1.6;padding:12px 16px;border-radius:10px;box-shadow:0 4px 20px #102c3014;}
+body[data-world] :is(#moment,.map-note) {bottom:96px;}
+body[data-world] footer {display:none;}
+body[data-world] .world-nav {position:relative;pointer-events:auto;}
+body[data-world] .world-nav summary {cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;background:#e8ecdc;border-radius:8px;padding:11px 14px;min-height:44px;font:700 13px var(--sg-ui);color:#294b3e;}
+body[data-world] .world-nav summary::-webkit-details-marker {display:none;}
+body[data-world] .world-nav summary svg {width:18px;height:18px;}
+body[data-world] .world-nav[open] summary {background:#294b3e;color:#faf5e9;}
+body[data-world] .world-nav-menu {position:absolute;top:56px;right:0;width:285px;padding:10px;background:#faf5e9;color:#294b3e;border-radius:12px;box-shadow:0 12px 44px #102c3033;max-height:calc(100dvh - 110px);overflow:auto;}
+body[data-world] .world-nav-menu a {display:flex;align-items:center;gap:12px;padding:11px 12px;min-height:48px;border-radius:7px;font:700 13px var(--sg-ui);text-decoration:none;}
+body[data-world] .world-nav-menu a:hover,body[data-world] .world-nav-menu a[aria-current=page] {background:#e8ecdc;}
+body[data-world] .world-nav-menu a svg {width:22px;height:22px;flex:none;color:#658057;}
+body[data-world] .world-nav-menu a:last-child {border-top:1px solid #d7d9c9;margin-top:5px;border-radius:0;}
+body[data-world=pond] {--sg-paper:#f5f0df;--sg-ink:#294f43;--sg-muted:#546d5b;--sg-line:#b9c6ac;--sg-selected:#dce5cc;--sg-well:#e3e8d6;--sg-nav-ink:#faf4df;}
+body[data-world=pond] .intro {color:#fff5df;}
+body[data-world=pond] .intro-copy {color:#e2ead4;}
+body[data-world=pond] .bottom {bottom:28px;}
+body[data-world=pond] .panel-content-inner>.panel-heading {margin-top:0;}
+body[data-world=pond] .controls {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+body[data-world=pond] .controls .control {min-width:0;white-space:normal;padding:10px 7px;font-size:12px;gap:5px;}
+body[data-world=pond] #status {padding:0;border-radius:0;background:none;box-shadow:none;margin:4px 0 8px;}
+body[data-world=pond] #resume-audio {grid-column:1/-1;}
+body[data-world=pond] #music {grid-column:1/-1;}
+/* Play already has a persistent home. Panels hold settings and collections. */
+body[data-world=pond] .controls #feed,body[data-world=farm] #farm-controls #feed,body[data-world=hex] #hex-panel #crowd,body[data-world=kitchen] #ambience-controls .recipe-actions,body[data-world=claw] #controller-body .control-deck {display:none;}
+body[data-world=farm] {--sg-paper:#faf2dc;--sg-ink:#405a36;--sg-muted:#62704c;--sg-line:#c7cdb1;--sg-selected:#e0e7c9;--sg-well:#e8e9d1;--sg-nav-ink:#faf4df;}
+body[data-world=farm] .heading {color:#fff8e5;}
+body[data-world=farm] .farm-frame::after {content:'';position:absolute;inset:0 0 auto;height:300px;pointer-events:none;background:linear-gradient(180deg,#183f3073,#183f3059 180px,transparent);}
+body[data-world=farm] :is(.dashboard #farm-controls,.pomodoro,.pomodoro[data-world]) {border-radius:8px;}
+body[data-world=farm] #bird-card {padding:22px;border-radius:8px;}
+body[data-world=farm] #flock-picker {width:100%;min-height:46px;padding:10px;background:#f4efd9;color:var(--sg-ink);border:1px solid var(--sg-line);border-radius:6px;font:600 13px var(--sg-ui);}
+body[data-world=farm] #moment {bottom:96px;}
+body[data-world=farm] .control-bottom .motion {width:auto;min-width:88px;padding:10px 16px;font:600 13px var(--sg-ui);}
+body[data-world=farm] .stats {padding-bottom:20px;margin-bottom:20px;gap:12px;}
+body[data-world=farm] .stats strong {font:500 32px/1.2 var(--sg-display);font-variant-numeric:tabular-nums;}
+body[data-world=farm] .stats span {font:600 11px/1.5 var(--sg-ui);text-transform:none;letter-spacing:0;}
+body[data-world=farm] #farm-controls .flock-label {display:block;margin:0 0 8px;font-weight:700;}
+body[data-world=farm] .field-notes summary {font-weight:700;}
+body[data-world=hex] {--sg-paper:#f1f1de;--sg-ink:#365341;--sg-muted:#5e7058;--sg-line:#bbcbb2;--sg-selected:#d9e5c9;--sg-well:#e1e8d4;--sg-nav-ink:#faf4df;}
+body[data-world=hex] .scoreboard {display:flex;gap:24px;margin-top:22px;}
+body[data-world=hex] .scoreboard strong {font-size:25px;font-variant-numeric:tabular-nums;}
+body[data-world=hex] .scoreboard span {font-size:11px;color:#e1ebd4;}
+body[data-world=hex] .view-controls {bottom:96px;right:var(--sg-gutter);}
+body[data-world=hex] .view-controls button {border-radius:8px;}
+body[data-world=hex] .creature-options button {padding:10px 8px;border-radius:8px;min-height:66px;}
+body[data-world=hex] .creature-options small {font-size:11px;}
+body[data-world=kitchen] {--sg-paper:#f7e8d5;--sg-ink:#684a3b;--sg-muted:#7c6453;--sg-line:#d6c0a6;--sg-selected:#e9d5bc;--sg-well:#eddbc3;--sg-nav-ink:#faf4df;}
+body[data-world=kitchen] .kitchen-note {top:104px;min-height:44px;border-radius:8px;}
+body[data-world=kitchen] .sales-count {top:154px;}
+body[data-world=kitchen] #shop-status {top:180px;}
+body[data-world=kitchen] .fillings button {min-height:62px;gap:8px;}
+body[data-world=kitchen] .shop-earnings a {color:var(--sg-ink);}
+body[data-world=kitchen] #ambience-controls .shop-earnings {margin-top:20px;}
+body[data-world=claw] {--sg-paper:#faf1e9;--sg-ink:#63516b;--sg-muted:#78677a;--sg-line:#d8c8d6;--sg-selected:#eadce8;--sg-well:#eee1e9;}
+body[data-world=claw] .arcade-hud {top:103px;background:var(--sg-paper);padding:3px 12px;border:0;border-radius:10px;}
+body[data-world=claw] #insert {background:#63516b;color:#faf1e9;}
+body[data-world=claw] #drop {background:#dfb776;color:#513b38;}
+body[data-world=claw] #status {bottom:96px;}
+body[data-world=claw] #toggle-controls::after {content:'Collection';}
+body[data-world=claw] .world-actions button:first-child {background:#63516b;}
+body[data-world=claw] .keyboard-hint {bottom:30px;}
+body[data-world=claw] .plush-row {min-height:82px;grid-template-columns:62px 1fr auto;}
+body[data-world=claw] .plush-row button {min-height:44px;color:var(--sg-ink);}
+body[data-world=claw] #controller-body:has(.inventory-empty) {height:auto;min-height:0;}
+body[data-world=claw] .inventory-empty {font:400 13px/1.6 var(--sg-ui);color:var(--sg-muted);padding-block:18px;margin:0;}
+body[data-world=claw] .quiet-controls {display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;}
+body[data-world=claw] .quiet-controls button {width:100%;min-height:44px;padding:10px;border:1px solid var(--sg-line);border-radius:8px;color:var(--sg-ink);}
+body[data-world=claw] #close-controls {width:44px;min-width:44px;min-height:44px;padding:0;}
+body[data-world=slots] {background:#eee6cd;--sg-paper:#fff6df;--sg-ink:#5a5b36;--sg-muted:#6d704e;--sg-line:#c8c3a3;}
+body[data-world=slots] .ambient {background:#eee6cd;}
+body[data-world=slots] main {max-width:1050px;}
+body[data-world=slots] .intro {padding-top:110px;}
+body[data-world=slots] .intro h1 {font-size:46px;}
+body[data-world=slots] .intro>p {font-size:14px;}
+body[data-world=slots] .machine {background:#d6bc7e;border:7px solid #9b8859;border-bottom-width:15px;border-radius:40px 40px 14px 14px;box-shadow:0 16px 38px #72623424;padding:24px 26px 28px;}
+body[data-world=slots] .arch-label p {color:#4c563b;font-size:23px;letter-spacing:.04em;}
+body[data-world=slots] .reel-frame {background:#7f8d69;border-radius:10px;padding:12px;}
+body[data-world=slots] :is(.reel,.reel-window) {background:#fff6df;}
+body[data-world=slots] .reel {border-radius:6px;}
+body[data-world=slots] :is(.spin-button,#claim,.claim-hint) {background:#435a3d;color:#fff6df;border-radius:8px;}
+body[data-world=slots] select {background:#fff6df;}
+body[data-world=slots] .result {margin-top:32px;}
+body[data-world=slots] #seed-dialog h2 {font:500 28px/1.2 var(--sg-display);letter-spacing:-.025em;color:var(--sg-ink);}
+body[data-world=slots] #seed-dialog p {color:var(--sg-muted);}
+body[data-world=slots] #seed-dialog .earn-seeds {font:600 13px/1.6 var(--sg-ui);color:var(--sg-ink);}
+body[data-world=slots] #seed-dialog-close {background:var(--sg-ink);color:var(--sg-paper);border:0;border-radius:8px;font:700 13px var(--sg-ui);}
+body[data-world=slots] footer {display:flex;}
+@media (max-width:900px) {
+ body[data-world] .world-actions button {padding-inline:14px;font-size:13px;}
+}
+@media (min-width:721px) and (max-width:1100px) and (min-height:541px) {
+ body[data-world] {--sg-controls-bottom:calc(var(--sg-timer-height,56px) + 52px);}
+ body[data-world] .world-actions,body[data-world] :is(.bottom,.dashboard,.dashboard.collapsed,.hex-controls,.ambience) {bottom:var(--sg-controls-bottom);}
+ body[data-world] :is(#moment,.map-note) {bottom:calc(var(--sg-controls-bottom) + 66px);}
+ body[data-world=hex] .view-controls {bottom:calc(var(--sg-controls-bottom) + 66px);}
+ body[data-world] :is(#farm-controls,#hex-panel,#ambience-controls) {height:min(480px,calc(100dvh - var(--sg-controls-bottom) - 150px));max-height:calc(100dvh - var(--sg-controls-bottom) - 150px);}
+ body[data-world] .panel .panel-content-inner {height:min(440px,calc(100dvh - var(--sg-controls-bottom) - 180px));max-height:calc(100dvh - var(--sg-controls-bottom) - 180px);}
+ body[data-world=claw] .world-actions {bottom:28px;}
+}
+@media (max-width:720px) {
+ :root {--sg-gutter:16px;}
+ body[data-world] > header,body[data-world] main > header {height:calc(68px + var(--sg-safe-top));padding:calc(10px + var(--sg-safe-top)) 16px 10px;gap:8px;}
+ body[data-world] .brand {font-size:22px;}
+ body[data-world] .brand svg {width:25px;height:25px;}
+ body[data-world] .world-nav summary {font-size:12px;padding:10px 12px;}
+ body[data-world] :is(.intro,.heading,.introduction) {top:calc(91px + var(--sg-safe-top));}
+ body[data-world] :is(.intro,.heading,.introduction) :is(h1,h2) {font-size:28px;}
+ body[data-world] :is(.intro-copy,.subtitle,.introduction p:last-child) {font-size:12px;max-width:28ch;margin-top:7px;}
+ body[data-world] {--sg-controls-bottom:calc(var(--sg-timer-height,56px) + max(18px,env(safe-area-inset-bottom)) + 12px);}
+ body[data-world] :is(.pomodoro,.pomodoro[data-world],.pomodoro[data-world].is-minimized) {bottom:max(18px,env(safe-area-inset-bottom));width:calc(100% - 32px);max-width:380px;padding:10px 14px;}
+ body[data-world] :is(.dashboard,.dashboard.collapsed,.hex-controls,.ambience,.bottom) {bottom:var(--sg-controls-bottom);right:16px;}
+ body[data-world] :is(#toggle-controls,.panel #toggle-controls,.dashboard #toggle-controls) {width:50px;min-width:50px;height:50px;padding:0;border-radius:10px;}
+ body[data-world] #toggle-controls::after {content:none;}
+ body[data-world] .world-actions {bottom:var(--sg-controls-bottom);left:16px;max-width:calc(100% - 94px);gap:6px;}
+ body[data-world] .world-actions button {min-height:50px;padding:10px 13px;font-size:12px;gap:7px;}
+ body[data-world] .world-actions button svg {width:17px;height:17px;}
+ body[data-world=farm] .heading .subtitle {display:block;}
+ body[data-world=farm] #moment {top:calc(178px + var(--sg-safe-top));bottom:auto;}
+ body[data-world] :is(#moment,.map-note) {top:calc(174px + var(--sg-safe-top));bottom:auto;font-size:12px;max-width:calc(100% - 32px);padding:9px 12px;}
+ body[data-world] :is(.panel .panel-content,main[data-night=true] .panel .panel-content,.dashboard #farm-controls,#hex-panel,#ambience-controls,#controller-body) {padding:20px;width:min(328px,calc(100vw - 32px));}
+ body[data-world] :is(#farm-controls,#hex-panel,#ambience-controls) {height:min(480px,calc(100dvh - var(--sg-controls-bottom) - 150px));max-height:calc(100dvh - var(--sg-controls-bottom) - 150px);}
+ body[data-world] .panel .panel-content-inner {height:min(440px,calc(100dvh - var(--sg-controls-bottom) - 180px));max-height:calc(100dvh - var(--sg-controls-bottom) - 180px);}
+ body[data-world=hex] .scoreboard {margin-top:15px;gap:22px;}
+ body[data-world=hex] #map-note {top:calc(238px + var(--sg-safe-top));}
+ body[data-world=hex] .view-controls {bottom:calc(var(--sg-controls-bottom) + 62px);}
+ body[data-world=kitchen] .kitchen-note {top:calc(92px + var(--sg-safe-top));right:16px;font-size:12px;}
+ body[data-world=kitchen] .sales-count {top:calc(143px + var(--sg-safe-top));right:16px;}
+ body[data-world=kitchen] .world-actions button {padding-inline:10px;font-size:11px;}
+ body[data-world=kitchen] .world-actions button svg {display:none;}
+ body[data-world=claw] .arcade-hud {top:calc(84px + var(--sg-safe-top));left:16px;right:16px;gap:10px;}
+ body[data-world=claw] .arcade-hud>span {padding:8px 0;}
+ body[data-world=claw] .arcade-controller {bottom:max(18px,env(safe-area-inset-bottom));right:16px;}
+ body[data-world=claw] .world-actions {bottom:max(82px,calc(env(safe-area-inset-bottom) + 64px));}
+ body[data-world=claw] #status {bottom:max(144px,calc(env(safe-area-inset-bottom) + 126px));max-width:calc(100% - 32px);}
+ body[data-world=claw] .depth-control {bottom:max(18px,env(safe-area-inset-bottom));left:16px;width:calc(100% - 94px);}
+ body[data-world=claw] .depth-control {display:grid;transform:none;}
+ body[data-world=claw] .keyboard-hint {display:none;}
+ body[data-world=slots] .intro {padding-top:100px;}
+ body[data-world=slots] .intro h1 {font-size:38px;}
+ body[data-world=slots] .machine {padding:22px 14px 24px;border-radius:30px 30px 12px 12px;}
+ body[data-world=slots] .arch-label p {font-size:20px;}
+}
+@media (max-height:540px) and (orientation:landscape) {
+ body[data-world] > header,body[data-world] main > header {height:60px;padding-block:8px;}
+ body[data-world] :is(.intro,.heading,.introduction) {top:78px;}
+ body[data-world] :is(.subtitle,.intro-copy,#moment,.map-note) {display:none;}
+ body[data-world] .world-actions,body[data-world] :is(.dashboard,.dashboard.collapsed,.hex-controls,.ambience,.bottom,.arcade-controller) {bottom:16px;}
+ body[data-world] :is(.pomodoro,.pomodoro[data-world],.pomodoro[data-world].is-minimized) {left:50%;transform:translateX(-50%);bottom:16px;width:260px;}
+ body[data-world] :is(#farm-controls,#hex-panel,#ambience-controls,#controller-body) {height:calc(100dvh - 155px);max-height:calc(100dvh - 155px);}
+ body[data-world] #status {display:none;}
+}
+@media (prefers-reduced-motion:reduce) {body[data-world] *,body[data-world] *::before,body[data-world] *::after {animation:none!important;transition:none!important;scroll-behavior:auto!important;}}

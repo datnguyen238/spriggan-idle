@@ -51,15 +51,15 @@ $('#seed-dialog-close').onclick=()=>$('#seed-dialog').close();
 async function transaction(fn){if(busy)return;busy=true;sync();try{return await lock(()=>{if(!read())return;return fn()})}finally{busy=false;sync()}}
 function describe(r){
  const counts=Life.reward(state,r.map),waiting=counts.won>counts.claimed;
- const title=r.kind==='triple'?(waiting?`${friend(r.map)} is yours to welcome home.`:`${friend(r.map)} is home. Roll again for another.`):r.kind==='pair'?'A matching pair. 20 seeds won.':'Three different symbols. A quiet turn.';
- message(title,r.kind==='triple'?(waiting?`A new friend for your ${Life.destination(r.map).shortName}.`:'A little luck, a new friend.'):r.kind==='pair'?'':'10 seeds spent · 0 returned',r.kind,r.map);
+ const title=r.kind==='triple'?(waiting?`${friend(r.map)} is yours to welcome home.`:`${friend(r.map)} is home. Roll again for another.`):r.kind==='pair'?'A matching pair. 20 seeds won.':'No match this time.';
+ message(title,r.kind==='triple'?(waiting?`A new friend for your ${Life.destination(r.map).shortName}.`:'Your friend is home.'):r.kind==='pair'?'':'10 seeds spent · 0 returned',r.kind,r.map);
 }
 function finish(){if(!animation)return;const r=animation.result;animation=null;$('#machine').classList.remove('spinning');paint(r.symbols,r.map);read();sync();describe(r);if(r.kind==='triple')chime()}
 function animate(now){if(!animation)return;const elapsed=Math.max(0,now-animation.start);if(elapsed>=2100){finish();return}if(now-lastFrame>110){lastFrame=now;paint(Life.reelSymbols(elapsed),animation.result.map);names.forEach(n=>n.textContent='· · ·')}requestAnimationFrame(animate)}
 async function start(){if(animation||busy)return;await transaction(()=>{
  const before=JSON.stringify(state),r=Life.spin(state);if(!r){save();return}
- if(!save()){state=Life.decode(before);message('A little pause.','Enable browser storage before spending seeds.');return}
- claimMessage='';lastFrame=-Infinity;animation={result:r,start:performance.now(),spentBalance:state.balance-r.payout};$('#machine').classList.add('spinning');message('A little luck in motion.','Your result is saved while the reels turn.');
+ if(!save()){state=Life.decode(before);message('Your seeds could not be saved.','Enable browser storage before spending seeds.');return}
+ claimMessage='';lastFrame=-Infinity;animation={result:r,start:performance.now(),spentBalance:state.balance-r.payout};$('#machine').classList.add('spinning');message('Reels are turning…','');
  if(motion())requestAnimationFrame(animate);else finish();
  })}
 $('#spin').onclick=$('#lever').onclick=start;

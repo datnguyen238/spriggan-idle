@@ -123,8 +123,26 @@
   function drawBase(){
     let g=ctx.createRadialGradient(w*.46,h*.44,10,w*.5,h*.5,Math.max(w,h)*.8);
     if(night){g.addColorStop(0,'#204045');g.addColorStop(.55,'#103037');g.addColorStop(1,'#09232a')}
-    else{g.addColorStop(0,'#3c7862');g.addColorStop(.55,'#23584b');g.addColorStop(1,'#112f2d')}
+    else{g.addColorStop(0,'#468a79');g.addColorStop(.55,'#2c695d');g.addColorStop(1,'#20473f')}
     ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+    // Shallow shelves remain at the edges, leaving the center open for koi.
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(w*.86,0);
+    ctx.bezierCurveTo(w*.93,h*.08,w*.82,h*.13,w*.91,h*.24);
+    ctx.bezierCurveTo(w*.96,h*.30,w*.89,h*.39,w,h*.44);ctx.closePath();
+    ctx.fillStyle=night?'#4a656044':'#a2ae8254';ctx.fill();
+    ctx.beginPath();ctx.moveTo(0,h);ctx.lineTo(0,h*.68);
+    ctx.bezierCurveTo(w*.09,h*.75,w*.02,h*.88,w*.17,h);ctx.closePath();
+    ctx.fillStyle=night?'#415e5844':'#99ab8054';ctx.fill();
+    for(let i=0;i<16;i++){
+      const side=i<9,seed=i*2.39996,x=side?w*(.95+.035*Math.sin(seed)):w*(.015+.095*Math.sin(i*.27)),y=side?h*(.035+i*.035):h*(.79+(i-9)*.037);
+      const size=Math.min(w,h)*(.016+(i%3)*.006);
+      ctx.save();ctx.translate(x,y);ctx.rotate(seed*.4);
+      ctx.beginPath();ctx.ellipse(2,size*.28,size*1.2,size*.72,0,0,Math.PI*2);ctx.fillStyle='#123e3438';ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,0,size,size*.68,0,0,Math.PI*2);ctx.fillStyle=night?['#5d756b','#6d8071','#556e64'][i%3]:['#a9b79a','#b9bea1','#8da695'][i%3];ctx.fill();
+      ctx.beginPath();ctx.ellipse(-size*.16,-size*.18,size*.57,size*.25,-.15,Math.PI,Math.PI*2);ctx.strokeStyle=night?'#b9c8ac24':'#e1dfbf66';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
+    }
+    ctx.restore();
     if(!night){
       const light=ctx.createRadialGradient(w*.67,h*.25,0,w*.67,h*.25,w*.48);
       light.addColorStop(0,'rgba(185,191,121,.14)');light.addColorStop(1,'rgba(155,180,130,0)');ctx.fillStyle=light;ctx.fillRect(0,0,w,h);
@@ -322,8 +340,15 @@
       for(const row of SIDES)for(let i=0;i<5;i++){const x=-S*.35+i*S*.15,y=row*S*.14;ctx.moveTo(x+c0,y+s0);ctx.arc(x,y,sr,-.9,.8)}
       ctx.stroke();
     }
-    // A smooth face with eyes only.
+    // Glints, gill folds and tiny barbels give the koi a natural face at every size.
     ctx.fillStyle='#26352f';for(const side of SIDES){ctx.beginPath();ctx.arc(S*.49,side*S*.086,S*.023,0,Math.PI*2);ctx.fill()}
+    if(quality<2){
+      ctx.fillStyle='#fff9e4';for(const side of SIDES){ctx.beginPath();ctx.arc(S*.493,side*S*.086-S*.006,S*.007,0,Math.PI*2);ctx.fill()}
+      ctx.strokeStyle='rgba(68,76,60,.3)';ctx.lineWidth=Math.max(.5,S*.012);
+      for(const side of SIDES){ctx.beginPath();ctx.moveTo(S*.3,side*S*.16);ctx.quadraticCurveTo(S*.35,side*S*.09,S*.32,side*S*.025);ctx.stroke()}
+      ctx.strokeStyle='rgba(246,236,201,.72)';ctx.lineWidth=Math.max(.6,S*.013);
+      for(const side of SIDES){ctx.beginPath();ctx.moveTo(S*.58,side*S*.032);ctx.quadraticCurveTo(S*.67,side*S*.04,S*.65,side*S*.105);ctx.stroke()}
+    }
     ctx.restore();
     ctx.restore();
   }
@@ -673,7 +698,7 @@
   rainVolInput.value=pond.settings.rainVolume;rainVolValue.textContent=`${pond.settings.rainVolume}%`;audio.setVolume(pond.settings.rainVolume);
   syncAudioRecovery();
   if(pond.settings.collapsed)toggleControlsBtn.click();
-  if(stored)document.querySelector('.intro .eyebrow').textContent='Welcome back to your pond';
+  if(stored)memoryLine.textContent='Welcome back. Your pond is saved on this device.';
   syncPause();syncFeedingStatus();checkGrowthAndVisitors();setInterval(checkGrowthAndVisitors,30000);
   let backgroundSaveAt=0;
   Runtime.runBackground(update,()=>{const now=performance.now();if(now-backgroundSaveAt>=1000){backgroundSaveAt=now;checkGrowthAndVisitors()}dirty=true},()=>paused);

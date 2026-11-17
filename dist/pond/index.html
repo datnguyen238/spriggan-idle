@@ -7,10 +7,7 @@
   <meta name="theme-color" content="#0a292b">
   <meta name="description" content="A quiet interactive koi pond. Feed the fish and watch them swim.">
   <title>Spriggan — Koi Pond</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230a292b'/%3E%3Cpath d='M11 35c13-17 28-16 43-3-15 13-30 14-43-3l6 3-6 3z' fill='%23f6e7c9'/%3E%3Ccircle cx='42' cy='30' r='3' fill='%23ba583c'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500&display=swap">
+
   <style>
     :root{font-family:'DM Sans',system-ui,sans-serif;color:#f1eddd;background:#102e2b;font-synthesis:none;color-scheme:dark}
     *{box-sizing:border-box}html,body{height:100%;margin:0}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.4}
@@ -77,19 +74,19 @@
 <link rel="stylesheet" href="../shared/map-controls.css">
 <script defer src="../shared/background.js?v=1"></script>
 <link rel="stylesheet" href="../shared/icons.css?v=1">
-</head>
-<body>
+<link rel="stylesheet" href="../shared/spriggan.css?v=little-places-3"><script defer src="../shared/world-ui.js?v=atlas-1"></script><link rel="icon" type="image/svg+xml" href="../shared/favicon.svg"><link rel="stylesheet" href="../shared/atlas.css?v=atlas-3"></head>
+<body data-world="pond">
 <main>
   <canvas id="pond" tabindex="0" aria-label="Animated koi pond. Tap water to feed, or tap a koi to see its name. Use the Meet a koi menu for keyboard access."></canvas>
   <div class="vignette"></div><div class="frame"></div>
   <header>
-    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 17c6-9 15-9 22-2-7 8-16 9-22 2Z"/><path d="m6 17-3-5v9l3-4M12 13l4-5m-4 12 5 3"/><circle cx="23" cy="15" r="1" fill="currentColor"/></svg></span><div><h1>Spriggan</h1><small>Your personal space of peace</small></div></div>
+    <div class="brand"><span class="mark" aria-hidden="true"><svg class="spriggan-symbol" viewBox="0 0 32 32" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 19a11 11 0 0 0 22 0M16 26V14"/><path d="M16 17C9 17 5 13 5 7c7 0 11 4 11 10ZM16 12C16 5 21 2 28 3c0 6-5 10-12 9Z"/></svg></span><div><span>Spriggan</span></div></div>
     <div class="header-right">
       <div class="top-note"><span class="live-dot"></span><span id="light-label">Daylight</span></div>
       <a class="worlds-link" href="../">All worlds <svg class="nav-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
     </div>
   </header>
-  <div class="intro"><p class="eyebrow">A small escape, whenever you need it</p><h2>A little pause.<br><em>A little peace.</em></h2><p class="intro-copy">Let the world wait a moment.<br>There’s nowhere else you need to be.</p><p class="memory-line" id="pond-memory">Your pond is saved on this device.</p></div>
+  <div class="intro"><h1>Stillwater Pond</h1><p class="intro-copy">Tap the water to feed. Tap a koi to say hello.</p><p class="memory-line" id="pond-memory">Your pond is saved on this device.</p></div>
   <div class="pause-badge" id="pause-badge" hidden>The pond is resting</div>
   <div class="bottom">
     <section class="panel" aria-label="Pond controls">
@@ -98,7 +95,7 @@
       <div class="panel-content-inner">
     <div class="instruction" id="instruction"><strong>Touch the water</strong> to feed. Tap a koi to meet them.</div>
 
-      <div class="panel-heading"><h3>A moment by the pond</h3><span class="status" id="status" aria-live="polite">5 koi swimming</span><label class="koi-picker-label" for="koi-picker">Your koi</label><select class="koi-picker" id="koi-picker"><option value="">Meet a koi…</option></select></div>
+      <div class="panel-heading"><h3>Pond controls</h3><span class="status" id="status" aria-live="polite">5 koi swimming</span><label class="koi-picker-label" for="koi-picker">Your koi</label><select class="koi-picker" id="koi-picker"><option value="">Meet a koi…</option></select></div>
       <div class="controls">
         <button class="control primary" id="feed" type="button" aria-describedby="feeding-status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15c4-5 11-5 16 0-5 5-12 5-16 0Z"/><path d="m4 15-2-3v6l2-3"/><circle cx="16" cy="14" r=".6"/><path d="M10 5v2m5-4v2m-9 3v1"/></svg><span>Feed the koi</span></button>
         <button class="control" id="add" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add a koi</span></button>
@@ -119,8 +116,8 @@
       </div>
     </section>
   </div>
-  <section class="pomodoro" id="pomodoro" aria-label="Pomodoro timer" data-mode="focus">
-    <div class="timer-top"><h2 class="timer-heading">Time by the pond</h2><span class="timer-sessions" id="timer-sessions" role="img" aria-label="0 of 4 focus sessions complete"><i class="timer-dot"></i><i class="timer-dot"></i><i class="timer-dot"></i><i class="timer-dot"></i></span><span id="timer-summary"></span><button class="timer-icon" id="timer-collapse" type="button" aria-label="Minimize Pomodoro timer" aria-expanded="true" aria-controls="timer-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button></div>
+  <section class="pomodoro" id="pomodoro" aria-label="Pomodoro timer" data-mode="focus" data-start-collapsed="true">
+    <div class="timer-top"><h2 class="timer-heading">Focus timer</h2><span class="timer-sessions" id="timer-sessions" role="img" aria-label="0 of 4 focus sessions complete"><i class="timer-dot"></i><i class="timer-dot"></i><i class="timer-dot"></i><i class="timer-dot"></i></span><span id="timer-summary"></span><button class="timer-icon" id="timer-collapse" type="button" aria-label="Minimize Pomodoro timer" aria-expanded="true" aria-controls="timer-body"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button></div>
     <div id="timer-body">
       <div class="timer-modes" role="group" aria-label="Timer session"><button type="button" data-timer-mode="focus" aria-pressed="true">Focus · 50m</button><button type="button" data-timer-mode="short" aria-pressed="false">Rest · 5m</button><button type="button" data-timer-mode="long" aria-pressed="false">Unwind · 15m</button></div>
       <div class="timer-main"><div class="timer-orbit" aria-hidden="true"><svg viewBox="0 0 58 58"><circle class="timer-track" cx="29" cy="29" r="26"/><circle id="timer-progress" cx="29" cy="29" r="26"/></svg><span class="timer-leaf"><svg viewBox="0 0 28 28"><path d="M7 21C3 10 11 5 23 5c0 11-4 18-13 16M6 24 19 10m-8 9 0-6m4 2h5"/></svg></span></div><div class="timer-reading"><span id="timer-time" role="timer" aria-live="off">50:00</span><span id="timer-label">Focus softly</span></div><div class="timer-actions"><button class="timer-action" id="timer-action" type="button" aria-label="Start focus timer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z"/></svg><span>Begin</span></button><div class="timer-secondary"><button class="timer-icon" id="timer-chime" type="button" aria-label="Mute timer chime" aria-pressed="true" title="Timer chime on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9Z"/><path d="M10 21h4"/><path class="chime-muted" d="m4 3 16 18"/></svg></button><button class="timer-icon" id="timer-reset" type="button" aria-label="Reset current timer" title="Reset timer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></svg></button></div></div></div>
@@ -135,14 +132,14 @@
     <form id="rename-koi" hidden><label for="koi-name">Koi name</label><input id="koi-name" maxlength="24" autocomplete="off" required><button class="control primary" type="submit">Save name</button></form>
   </aside>
   <p class="pond-moment" id="pond-moment" role="status"></p>
-  <footer><span>AN IDLE APP MADE BY DAT NGUYEN</span><span class="keyboard-hint"><kbd>space</kbd> to pause &nbsp; · &nbsp; <kbd>esc</kbd> to cancel</span></footer>
+  <footer><span>A small world by Spriggan</span><span class="keyboard-hint"><kbd>space</kbd> to pause &nbsp; · &nbsp; <kbd>esc</kbd> to cancel</span></footer>
 </main>
 <script src="./pond-life.js?v=repeat-prizes-1" defer></script>
 <script src="./pond-rain-loop.js" defer></script>
 <script src="./pond-audio.js" defer></script>
 <script src="./pond-plants.js" defer></script>
 <script src="./pond-surprises.js" defer></script>
-<script src="./app.js?v=combined-rain-2" defer></script>
+<script src="./app.js?v=atlas-3" defer></script>
 <script src="./pond-timer-chime.js?v=1" defer></script>
 <script src="./pond-timer.js?v=map-timers-4" defer></script>
 <!-- Vercel Web Analytics: served by Vercel after Analytics is enabled. -->

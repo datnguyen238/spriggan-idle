@@ -68,6 +68,13 @@
  // Little neighbors in linen shirts, with soft faces and distinct hats/hair.
  this.line([[-8,-3],[-9+(moving?Math.sin(t*4)*3:0),14]],'#827c69',7);this.line([[8,-3],[9-(moving?Math.sin(t*4)*3:0),14]],'#827c69',7);this.rect(-17,-36,34,39,12,shirt);this.line([[-11,-30],[-11,-21]],c.kind%2?'#eab9c5':'#a9e2da',2);this.line([[-17,-26],[-22,-9]],shirt,8);this.oval(-22,-7,4,5,skin);if(c.phase!=='eating'){this.line([[17,-26],[22,-9]],shirt,8);this.oval(22,-7,4,5,skin)}
  this.oval(0,-54,19,22,hair[c.kind]);this.oval(0,-50,16,18,skin);this.oval(-16,-50,3,5,skin);this.oval(16,-50,3,5,skin);
+ // Collars, pockets and different hairlines make the neighbors feel dressed, not stamped.
+ this.line([[-8,-34],[0,-28],[8,-34]],'#f2dfc6',2);
+ this.line([[0,-27],[0,-5]],'#ffffff26',1);
+ this.rect(5,-22,8,8,1,'#ffffff1c');this.line([[5,-22],[13,-22]],'#f2dfc66b',1);
+ for(const by of [-22,-14,-6])this.oval(0,by,.8,.8,'#ead4b7');
+ this.line([[-9,-56],[-4,-57]],hair[c.kind],1.3);this.line([[4,-57],[9,-56]],hair[c.kind],1.3);
+ this.line([[1,-49],[2,-44],[0,-43]],'#9f795d66',.8);
  if(c.kind===0){this.rect(-20,-72,40,15,7,'#7b9675');this.line([[-19,-58],[19,-58]],'#a7ba93',5);this.oval(0,-76,5,5,'#8fa681')}
  else if(c.kind===1){this.oval(-12,-69,9,9,hair[c.kind]);this.oval(10,-63,10,7,hair[c.kind]);this.line([[-17,-59],[-12,-64]],'#c5b088',2)}
  else if(c.kind===2){this.line([[-17,-63],[-4,-66],[11,-61]],hair[c.kind],7);g.strokeStyle='#6d786b';g.lineWidth=1;for(const ex of [-6,6]){g.beginPath();g.ellipse(ex,-49,5,4,0,0,Math.PI*2);g.stroke()}this.line([[-1,-49],[1,-49]],'#6d786b',1)}
@@ -105,7 +112,7 @@
  lantern(x,y,k,t){this.at(x,y,k,()=>{const g=this.g;this.line([[0,-45],[0,-8]],'#46515d',2);const glow=g.createRadialGradient(0,25,3,0,25,80);glow.addColorStop(0,'#ef99782f');glow.addColorStop(1,'#ef997800');g.fillStyle=glow;g.fillRect(-80,-55,160,160);g.translate(Math.sin(t*.22)*1.2,0);const paper=g.createLinearGradient(-23,0,23,0);paper.addColorStop(0,'#b35d54');paper.addColorStop(.5,'#f4b785');paper.addColorStop(1,'#c67b62');this.rect(-23,-6,46,63,20,paper);for(let i=2;i<54;i+=7)this.line([[-20,i],[20,i]],'#754c4852',1);this.rect(-11,-10,22,5,2,'#69524c');this.rect(-11,55,22,5,2,'#69524c');g.fillStyle='#553f41';g.textAlign='center';g.font='17px serif';g.fillText('餃',0,20);g.fillText('子',0,42)})}
  cityWindow(win,t,night,rain){const g=this.g;this.cached('city',[win.x-14,win.y-10,win.w+28,win.h+24],night,()=>{const g=this.g;this.rect(win.x-10,win.y-10,win.w+20,win.h+20,3,'#152835');this.rect(win.x-4,win.y-4,win.w+8,win.h+8,1,'#657178');g.save();g.beginPath();g.rect(win.x,win.y,win.w,win.h);g.clip();const sky=g.createLinearGradient(0,win.y,0,win.y+win.h);sky.addColorStop(0,night?'#141c38':'#29324d');sky.addColorStop(1,'#413551');g.fillStyle=sky;g.fillRect(win.x,win.y,win.w,win.h);
  for(let i=0;i<12;i++){const bw=win.w/8,bx=win.x+i*win.w/11-20,by=win.y+win.h*(.10+this.seed(i+20)*.37);this.rect(bx,by,bw,win.h,0,i%2?'#172738':'#203047');for(let r=0;r<8;r++)for(let c=0;c<3;c++)if(this.seed(i*40+r*3+c)>.46)this.rect(bx+7+c*bw/4,by+10+r*15,bw/9,5,i%3?'#c8987060':'#83bfc566')}
- this.neon(win.x+win.w*.13,win.y+win.h*.28,win.w*.18,win.h*.19,'24H','#8fcfd0',Math.max(8,win.w*.035));this.neon(win.x+win.w*.67,win.y+win.h*.17,win.w*.14,win.h*.42,'茶','#dba4c4',Math.max(14,win.w*.07));
+ this.neon(win.x+win.w*.13,win.y+win.h*.28,win.w*.18,win.h*.19,'24H','#9accc4',Math.max(8,win.w*.035));this.neon(win.x+win.w*.67,win.y+win.h*.17,win.w*.14,win.h*.42,'茶','#c99bb6',Math.max(14,win.w*.07));
  // Still, faint reflected signs keep the glass luminous without flashing.
  for(let i=0;i<9;i++){const px=win.x+this.seed(i+170)*win.w;this.line([[px,win.y+win.h*.64],[px+Math.sin(i)*5,win.y+win.h]],i%2?'#dd9ab51c':'#87d2d221',3+this.seed(i)*7)}
  g.restore();this.line([[win.x+win.w*.48,win.y],[win.x+win.w*.48,win.y+win.h]],'#485763',4);this.rect(win.x-14,win.y+win.h,win.w+28,9,2,'#33454d');this.line([[win.x-9,win.y+win.h+1],[win.x+win.w+9,win.y+win.h+1]],'#85b7b14f',1);
@@ -138,7 +145,16 @@
  });
  this.cityWindow(win,t,night,rain);
  this.lantern(phone?w*.09:w*.535,phone?win.y+12:win.y+28,phone?.56:.88,t);
- if(!phone){this.lantern(w*.956,win.y+21,.7,t);this.neon(w*.14,top+14,w*.16,34,'LITTLE FOLDS','#d5a0b7',12);const mx=w*.155,my=top+72,names=['MUSHROOM','GREENS','GINGER','MEAT'];for(let i=0;i<4;i++){const compact=tableY-my<104,x=compact?mx+(i%2)*62:mx+i*34,y=compact?tableY-45+Math.floor(i/2)*19:my;this.rect(x,y,compact?57:25,compact?16:92,2,'#e1c99b');g.save();g.fillStyle='#675a50';g.font='8px monospace';g.textAlign='center';if(compact)g.fillText(names[i],x+28.5,y+11);else names[i].split('').forEach((letter,j)=>g.fillText(letter,x+12,y+12+j*10));g.restore()}}
+ if(!phone){
+  this.lantern(w*.956,win.y+21,.7,t);
+  const mx=w*.105,my=top+24,mw=w*.17,mh=Math.min(138,tableY-my-44);
+  this.line([[mx+12,my-22],[mx+12,my]],'#b7a084',1);this.line([[mx+mw-12,my-22],[mx+mw-12,my]],'#b7a084',1);
+  this.rect(mx,my,mw,mh,3,'#5b625c');this.line([[mx+12,my+5],[mx+mw-12,my+5]],'#c2bd9240',1);
+  g.save();g.fillStyle='#eee0bd';g.font='13px Nunito Sans, sans-serif';g.textAlign='left';
+  const names=['Mushroom','Greens','Ginger','Meat'];
+  names.forEach((name,i)=>{const y=my+26+i*(mh-26)/4;g.fillText(name,mx+16,y);this.line([[mx+mw-32,y-4],[mx+mw-16,y-4]],['#b3a18a','#9bb58c','#d9b37b','#c99783'][i],3)});g.restore();
+ }
+
  this.shop(s,w,tableY,t,phone);
  // A continuous walnut worktop: broad boards, fine flowing grain, and a rounded front edge.
  const front=h-(phone?66:48);this.cached('counter',[0,tableY,w,h-tableY],night,()=>{const g=this.g,depth=front-tableY;
@@ -146,7 +162,7 @@
  for(let plank=0;plank<3;plank++){
   const py=tableY+depth*(plank/3),ph=depth/3;
   if(plank%2){g.fillStyle='#ddba8410';g.fillRect(0,py,w,ph)}
-  if(plank){this.line([[0,py],[w,py]],'#32292559',1.2);this.line([[0,py+2],[w,py+2]],'#e2b58418',1)}
+  if(plank){this.line([[0,py],[w,py]],'#32292538',1.2);this.line([[0,py+2],[w,py+2]],'#e2b58412',1)}
   for(let i=0;i<9;i++){
    const y=py+ph*(.08+i*.103),drift=(this.seed(i+plank*31)-.5)*ph*.28;
    g.beginPath();g.moveTo(-20,y);g.bezierCurveTo(w*.24,y+drift,w*.36,y-drift*.7,w*.6,y+drift*.25);g.bezierCurveTo(w*.78,y+drift*.5,w*.9,y-drift*.3,w+20,y+drift*.2);
@@ -162,10 +178,10 @@
 
  // Lay out complete object groups together, including the open lid and waiting tray.
  // Reserve the bottom UI strip even when the tray is empty, so cooking never shifts the table.
- const workTop=tableY+(phone?22:26),workBottom=phone?Math.min(front-16,h-(h<650?155:185)):Math.min(front-16,h-(h<500?70:155));
- const room=Math.max(65,workBottom-workTop),unit=Math.min((w-(phone?28:72))/(phone?620:900),room/(phone?400:340));
+ const workTop=tableY+(phone?22:32),workBottom=phone?Math.min(front-16,h-(h<650?155:185)):Math.min(front-16,h-(h<500?70:155));
+ const room=Math.max(65,workBottom-workTop),unit=Math.min((w-(phone?28:72))/(phone?620:900),room/(phone?400:315));
  const origin=(w-(phone?620:900)*unit)/2,centerY=workTop+room/2-(phone?0:40*unit);
- const board={x:origin+(phone?172:326)*unit,y:centerY,k:unit*(phone?1:1.06)};
+ const board={x:origin+(phone?172:326)*unit,y:centerY,k:unit*(phone?1:1.12)};
  const basket={x:origin+(phone?496:720)*unit,y:centerY,k:unit*(phone?1:1.2)};
  const ingredient={x:phone?board.x-72*unit:origin+60*unit,y:centerY-(phone?157:49)*unit,k:unit*.87};
  const wrappers={x:phone?board.x+72*unit:ingredient.x,y:phone?ingredient.y+3*unit:centerY+65*unit,k:unit*.68};

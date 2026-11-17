@@ -70,29 +70,36 @@ function resize(){
  H=Math.max(80,canvas.height/scale-sceneTop-sceneBottom);
  ctx.setTransform(scale,0,0,scale,0,Math.round(sceneTop)*scale);ctx.imageSmoothingEnabled=false;draw();
 }
-function tree(x,y,s=1){ctx.save();ctx.translate(Math.round(x),Math.round(y));rect(-3,-8,6,23,'#796445');rect(0,1,2,13,'#ad8a53');rect(-18,-24,35,24,'#3d613e');rect(-13,-33,27,12,'#3d613e');rect(-22,-20,41,13,'#3d613e');rect(-16,-26,29,20,'#588349');rect(-10,-32,21,18,'#79a15a');rect(-15,-20,8,5,'#94b774');rect(5,-12,10,5,'#315136');ctx.restore()}
+function tree(x,y,s=1){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(s,s);rect(-3,-8,6,23,'#796445');rect(0,1,2,13,'#ad8a53');rect(-18,-24,35,24,'#365b49');rect(-13,-33,27,12,'#365b49');rect(-22,-20,41,13,'#365b49');rect(-16,-26,29,20,'#527c5d');rect(-10,-32,21,18,'#86a776');rect(-15,-20,8,5,'#abc49b');rect(5,-12,10,5,'#2f5143');ctx.restore()}
 function fence(x,y,width){rect(x,y+3,width,3,'#a88a54');rect(x,y+10,width,3,'#a88a54');for(let i=0;i<=width;i+=12){rect(x+i,y,3,18,'#d4bd7e');rect(x+i,y,2,2,'#efdaa1');rect(x+i+2,y+2,1,16,'#8e774c')}}
 function background(){
- rect(0,-sceneTop-1,W,H+sceneTop+sceneBottom+2,'#809c60');rect(0,0,W,H*.28,'#718f55');
- for(let i=0;i<240;i++){const x=(i*71+13)%W,y=(i*43+17)%H;rect(x,y,2,1,i%3?'#739757':'#aac780');if(i%6===0)rect(x+1,y-2,1,2,'#65874b')}
- rect(W*.14,H*.38,W*.72,H*.48,'#97b16e');
- for(let i=0;i<120;i++){const x=W*.14+(i*37)%(W*.72),y=H*.38+(i*23)%(H*.48);rect(x,y,1,1,'#7f9c5b')}
+ rect(0,-sceneTop-1,W,H+sceneTop+sceneBottom+2,'#86a17c');rect(0,0,W,H*.28,'#708b69');
+ for(let i=0;i<240;i++){const x=(i*71+13)%W,y=(i*43+17)%H;rect(x,y,2,1,i%3?'#7d9e70':'#b8cda1');if(i%6===0)rect(x+1,y-2,1,2,'#688a61')}
+ rect(W*.14,H*.38,W*.72,H*.48,'#a9bd8e');
+ for(let i=0;i<120;i++){const x=W*.14+(i*37)%(W*.72),y=H*.38+(i*23)%(H*.48);rect(x,y,1,1,'#93ad7f')}
+ // Uneven clover patches break up the yard without changing its walkable area.
+ for(let i=0;i<22;i++){
+  const x=W*(.18+((i*37)%61)/100),y=H*(.43+((i*19)%35)/100),pw=5+i%4*3;
+  rect(x,y,pw,3,i%2?'#93ad7f':'#b5c79c');rect(x+2,y-2,pw-3,2,i%2?'#93ad7f':'#b5c79c');
+ }
  // A worn path from the coop to the gate.
- rect(W*.46,H*.29,W*.12,H*.64,'#c3a77a');rect(W*.44,H*.45,W*.16,H*.27,'#c3a77a');
- for(let i=0;i<36;i++)rect(W*.46+(i*7)%(W*.12),H*.38+(i*13)%(H*.48),2,1,'#a68a5c');
+ rect(W*.47,H*.29,W*.10,H*.64,'#cbb68d');rect(W*.44,H*.43,W*.15,H*.30,'#cbb68d');rect(W*.43,H*.48,W*.16,H*.19,'#cbb68d');
+ for(let i=0;i<36;i++)rect(W*.46+(i*7)%(W*.12),H*.38+(i*13)%(H*.48),2,1,'#b49c73');
  // Distant hedges and an orchard.
  for(let i=0;i<W;i+=19){rect(i,0,17,12,'#5e804d');rect(i+2,0,12,16,'#769456')}
- tree(W*.09,H*(W>300?.31:.22),.95);tree(W*.91,H*.2,1.1);tree(W*.79,H*.08,.7);
+ tree(W*.06,H*(W>300?.31:.22),.95);tree(W*.93,H*.19,1.1);tree(W*.79,H*.08,.7);tree(W*.97,H*.70,.85);tree(W*.035,H*.77,.8);
  fence(W*.13,H*.34,W*.73);
  // The coop, built from blocks and shingles.
  const x=W*.32,cw=Math.min(68,W*.3),ch=Math.min(46,H*.22),y=H*.34-ch;
- rect(x+5,y+ch+5,cw,6,'#74865b');rect(x,y,cw,ch,'#d4a469');rect(x+4,y+4,cw-8,ch-4,'#e1b67b');
+ rect(x+5,y+ch+5,cw,6,'#74865b');rect(x,y,cw,ch,'#d1ad79');rect(x+4,y+4,cw-8,ch-4,'#e4c798');
  for(let i=8;i<cw;i+=10)rect(x+i,y+4,1,ch-4,'#c29259');
- rect(x-5,y-3,cw+10,8,'#744e40');rect(x,y-10,cw,8,'#925d48');rect(x+6,y-16,cw-12,7,'#ae7251');rect(x+13,y-20,cw-26,5,'#bc805a');
+ rect(x-5,y-3,cw+10,8,'#744e40');rect(x,y-10,cw,8,'#8c594a');rect(x+6,y-16,cw-12,7,'#ac7059');rect(x+13,y-20,cw-26,5,'#c68c68');
  for(let i=4;i<cw;i+=12)rect(x+i,y-8,7,1,'#c18a60');
  rect(x+cw*.58,y+ch*.36,17,ch*.64,'#695440');rect(x+cw*.58+2,y+ch*.36+2,13,ch*.64-2,'#3c4134');
  rect(x+10,y+8,15,14,'#f4d899');rect(x+12,y+10,11,10,'#7f9e99');rect(x+17,y+9,1,12,'#f7dfab');rect(x+11,y+14,13,1,'#f7dfab');
  rect(x+cw*.58-3,y+ch,23,4,'#b68c57');rect(x+cw*.58-5,y+ch+4,27,3,'#d4b078');
+ rect(x-15,y+ch-9,8,10,'#c4ad7d');rect(x-14,y+ch-11,6,3,'#e3c796');rect(x-12,y+ch-6,2,3,'#8f956c');
+ for(let i=0;i<3;i++){rect(x+cw+8,y+ch-3-i*4,14-i*2,3,'#94754f');rect(x+cw+9,y+ch-3-i*4,2,3,'#c7a87b')}
  // Vegetable beds and a little water trough.
  const bx=W*.76,by=H*.57;rect(bx-2,by-2,W*.14+4,H*.17+4,'#b89865');rect(bx,by,W*.14,H*.17,'#80674b');
  for(let r=0;r<3;r++)for(let c=0;c<3;c++){const px=bx+4+c*W*.039,py=by+5+r*H*.045;rect(px,py,2,4,'#d88f4c');rect(px-2,py-2,6,2,'#507249');rect(px,py-4,2,3,'#759451')}
@@ -131,6 +138,10 @@ function chicken(b,carried=false){
   rect(-6,-4,6,5,shade);rect(-5,-5,4,1,shade);rect(-5,-4,4,1,'#fff4d8');rect(-3,0,2,1,edge);
   rect(8,-7,4,2,'#edb46b');rect(9,-5,2,1,'#cb904e');rect(6,-3,2,2,'#dc8778');rect(5,-4,2,1,'#efb1a0');
   if(blink)rect(5,-8,2,1,'#493f32');else{rect(5,-10,2,3,'#493f32');rect(5,-10,1,1,'#fffdf0')}
+  // Three feather tips and a soft cheek keep the tiny side profile expressive.
+  rect(-7,-1,2,1,shade);rect(-4,1,2,1,edge);rect(-1,1,2,1,shade);
+  rect(5,-5,1,1,'#f3b6a1');rect(8,-7,2,1,'#ffcf7e');
+  if(!hen){rect(-12,-11,2,2,'#90b38a');rect(-11,-8,1,3,'#83a07b');rect(3,-11,1,2,'#ffe0a1')}
  }
  if(!carried&&selected===b.id){rect(-9,9,18,1,'#fff0b4');rect(-10,8,1,1,'#fff0b4');rect(9,8,1,1,'#fff0b4')}
  ctx.restore();
@@ -169,20 +180,20 @@ function fox(){
  ctx.restore();
 }
 function draw(){background();for(const g of grain){rect(g.x*W,g.y*H,2,1,'#e5cc83');rect(g.x*W+1,g.y*H-1,1,1,'#fbdf96')}const objects=[...(foxVisitor?[{y:foxVisitor.y,draw:fox}]:[]),...animals().map(b=>({y:b.y,draw:()=>b.species==='cow'?cow(b):chicken(b)})),...state.eggs.map(e=>({y:e.y,draw:()=>egg(e)}))];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(const h of hearts){const x=h.x*W,y=h.y*H-(1-h.life)*15;ctx.globalAlpha=h.life;rect(x-2,y-1,2,2,'#bc7962');rect(x+1,y-1,2,2,'#bc7962');rect(x-1,y+1,3,2,'#bc7962');rect(x,y+3,1,1,'#bc7962');ctx.globalAlpha=1}if(rain.enabled)rain.draw(ctx,W,H,clock,{top:-sceneTop,bottom:H+sceneBottom,splashes:Array.from({length:12},(_,i)=>({x:W*(.2+(i*7%11)/18),y:H*(.43+(i*3%7)/20)}))})}
-function scatter(x=.5,y=.62){if(grain.length>=60)return notice('Plenty of grain already. Let them finish a little.');for(let i=0;i<10&&grain.length<60;i++)grain.push({x:Math.max(.17,Math.min(.82,x+(Math.random()-.5)*.13)),y:Math.max(.4,Math.min(.82,y+(Math.random()-.5)*.1)),life:60});notice('A little grain, a little gathering.');draw()}
-function inspect(){if(!selected)return;const b=animals().find(b=>b.id===selected),e=state.eggs.find(e=>e.id===selected);if(!b&&!e){card.hidden=true;selected=null;return}card.hidden=false;document.querySelector('#bird-name').textContent=b?b.name:'A warm little egg';let detail;
+function scatter(x=.5,y=.62){if(grain.length>=60)return notice('There is enough grain in the yard. Let them eat first.');for(let i=0;i<10&&grain.length<60;i++)grain.push({x:Math.max(.17,Math.min(.82,x+(Math.random()-.5)*.13)),y:Math.max(.4,Math.min(.82,y+(Math.random()-.5)*.1)),life:60});notice('Grain scattered. Watch them come over.');draw()}
+function inspect(){if(!selected)return;const b=animals().find(b=>b.id===selected),e=state.eggs.find(e=>e.id===selected);if(!b&&!e){card.hidden=true;selected=null;return}card.hidden=false;document.querySelector('#bird-name').textContent=b?b.name:'An egg';let detail;
  if(e)detail=`Hatching in ${Math.max(1,Math.ceil((e.hatchesAt-Date.now())/1000))} seconds. A tiny life is on its way.`;
  else if(b.species==='cow')detail=`Cow · ${b.meals} meals shared. A Golden Seed friend, here to wander with your flock.`;
  else if(b.stage==='chick')detail=`Little chick · ${Math.min(Life.GROW_MEALS,b.meals)}/${Life.GROW_MEALS} meals to grow into an adult.`;
  else if(b.sex==='hen')detail=`Hen · ${b.layFood}/${Life.LAY_MEALS} meals for her next egg. ${state.birds.length+state.eggs.length>=Life.LIMIT?'The yard is full.':'Every grain she eats counts.'}`;
- else detail='Rooster · Keeping the little family company. Scatter some grain and he’ll come running.';
+ else detail='Rooster · Hens need an adult rooster to lay eggs.';
  document.querySelector('#bird-detail').textContent=detail;document.querySelector('#remove-bird').hidden=!b;
 }
 canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=((e.clientY-r.top)/r.height*(H+sceneTop+sceneBottom)-sceneTop)/H;let nearest=null,dist=14;for(const b of [...animals(),...state.eggs]){const d=Math.hypot((b.x-x)*W,(b.y-y)*H);if(d<dist){nearest=b;dist=d}}if(nearest){selected=nearest.id;inspect();draw()}else scatter(x,y)});
 document.querySelector('#feed').onclick=()=>scatter();document.querySelector('#close-card').onclick=()=>{selected=null;card.hidden=true;draw()};
 const controlsToggle=document.querySelector('#toggle-controls'),controls=document.querySelector('#farm-controls');
 controlsToggle.onclick=()=>{const expanded=controlsToggle.getAttribute('aria-expanded')==='true';controlsToggle.setAttribute('aria-expanded',String(!expanded));controls.inert=expanded;controls.setAttribute('aria-hidden',String(expanded));document.querySelector('.dashboard').classList.toggle('collapsed',expanded)};
-const motion=document.querySelector('#motion');function syncMotion(){motion.setAttribute('aria-pressed',String(paused));motion.setAttribute('aria-label',paused?'Resume farm animation':'Pause farm animation');motion.textContent=paused?'▶':'Ⅱ'}motion.onclick=()=>{paused=!paused;syncMotion();if(paused)notice('A quiet moment. Egg and growth timers still continue.');draw()};syncMotion();
+const motion=document.querySelector('#motion');function syncMotion(){motion.setAttribute('aria-pressed',String(paused));motion.setAttribute('aria-label',paused?'Resume farm animation':'Pause farm animation');motion.textContent=paused?'Resume':'Pause'}motion.onclick=()=>{paused=!paused;syncMotion();if(paused)notice('Farm paused. Egg timers keep running.');draw()};syncMotion();
 const picker=document.querySelector('#flock-picker'),restart=document.querySelector('#restart-flock');let flockOptions='';
 picker.onchange=()=>{selected=picker.value||null;card.hidden=!selected;inspect();draw()};
 document.querySelector('#remove-bird').onclick=()=>{
@@ -191,12 +202,12 @@ document.querySelector('#remove-bird').onclick=()=>{
  if(!confirm(`Remove ${b.name} from your farm?${lastRooster?" Hens need an adult rooster in the yard to lay eggs.":''}`))return;
  if(b.species==='cow')state.cows=state.cows.filter(c=>c.id!==b.id);else Life.removeBird(state,b.id);walk.delete(b.id);selected=null;card.hidden=true;picker.value='';notice(`${b.name} has left the farm.`);ui();save();draw();picker.focus();
 };
-restart.onclick=()=>{if(state.birds.length||state.eggs.length)return;state.birds=Life.create().birds;notice('Clover & Bramble. A fresh little beginning.');ui();save();draw()};
+restart.onclick=()=>{if(state.birds.length||state.eggs.length)return;state.birds=Life.create().birds;notice('Meet Clover and Bramble. Your new flock is ready.');ui();save();draw()};
 function ui(){
  const signature=JSON.stringify(animals().map(b=>[b.id,b.name,b.stage,b.sex]));
  if(signature!==flockOptions){flockOptions=signature;picker.replaceChildren(new Option('Meet a farm friend…',''));for(const b of animals())picker.add(new Option(`${b.name} · ${b.stage==='chick'?'chick':b.sex}`,b.id))}
  picker.value=animals().some(b=>b.id===selected)?selected:'';picker.disabled=!animals().length;restart.hidden=!!(state.birds.length||state.eggs.length);
-document.querySelector('#adults').textContent=state.birds.filter(b=>b.stage==='adult').length;document.querySelector('#chicks').textContent=state.birds.filter(b=>b.stage==='chick').length;document.querySelector('#eggs').textContent=state.eggs.length;inspect();if(Date.now()>noticeUntil)moment.textContent=state.eggs.length?'Something small is on its way.':state.birds.length+state.eggs.length>=Life.LIMIT?'A full little family. Room for 16, love for everyone.':'Feed, hatch, grow. No hurry at all.'}
+document.querySelector('#adults').textContent=state.birds.filter(b=>b.stage==='adult').length;document.querySelector('#chicks').textContent=state.birds.filter(b=>b.stage==='chick').length;document.querySelector('#eggs').textContent=state.eggs.length;inspect();if(Date.now()>noticeUntil)moment.textContent=state.eggs.length?'An egg is getting ready to hatch.':state.birds.length+state.eggs.length>=Life.LIMIT?'Your farm is full: 16 chickens and eggs.':'Tap a chicken to check its growth.'}
 function tick(now){const events=Life.advance(state,now);if(events.length)notice(events.at(-1));ui();save()}
 function update(dt){
  if(!paused){
@@ -254,5 +265,5 @@ function frame(ts){
  if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}draw();
 }
 window.addEventListener('storage',e=>{if(e.key===Life.KEY){receiveCow();ui();draw()}});
-window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your little family is right here.');resize();Runtime.runBackground(update,()=>{const now=performance.now();if(now-lastRules>1000){lastRules=now;tick(Date.now())}},()=>paused);requestAnimationFrame(frame);
+window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your flock is here.');resize();Runtime.runBackground(update,()=>{const now=performance.now();if(now-lastRules>1000){lastRules=now;tick(Date.now())}},()=>paused);requestAnimationFrame(frame);
 })();
