@@ -36,6 +36,16 @@ Individual worlds save progress and preferences in browser storage. Saves belong
 
 Keep existing storage keys and support existing saved values when changing a world. Preserve earned items, balances, timers, and preferences. Use a separate browser profile or test context for checks that create or remove progress.
 
+Open **Your park** on the map to see saved milestones, return to your last world, and manage optional cloud copies. Guests keep saving in the browser. Loading a cloud copy keeps the previous browser park available through **Restore previous browser park**. Close other Spriggan tabs first so an older autosave cannot overwrite restored progress. Manual file download and import controls are not part of the player interface.
+
+The journal records changes in saved facts after its first visit to each world. It does not simulate events while the park is closed. Existing collections become the starting point; new discoveries and milestones appear as you play.
+
+## Optional Google sign-in and cloud copies
+
+**Your park** also offers Google sign-in when the Supabase project is ready. Signing in leaves the browser park untouched. Signed-in players choose **Save to cloud** or **Load cloud save**; cloud copies update only when requested. Replacing either copy requires review, and loading a cloud park keeps a recoverable copy of the previous browser park. Sign-out preserves local play.
+
+Public project settings live in `dist/shared/cloud-config.js`. Configure the database and Google provider using [the setup guide](docs/cloud-saves-setup.md) and [migration](supabase/migrations/202611190001_park_saves.sql). The client checks Google provider availability before enabling sign-in. Cloud saves use one private snapshot per account, server revision checks, and explicit conflict resolution. Auth tokens are excluded from cloud and recovery snapshots.
+
 ## Run tests
 
 With Node.js installed:

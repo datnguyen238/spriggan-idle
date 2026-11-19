@@ -37,7 +37,9 @@ p.lastKept=TYPES.some(t=>t.id===s.lastKept)&&p.collection[s.lastKept]?s.lastKept
 function collect(p,type,id){const t=TYPES.find(t=>t.id===type);if(!t)return false;if(id&&p.friends.some(f=>f.id===id))return false;if((p.collection[type]||0)>=9999)return false;p.collection[type]=(p.collection[type]||0)+1;p.lastKept=type;p.friends.push({id:id||globalThis.crypto?.randomUUID?.()||`friend-${Date.now()}-${Math.random().toString(36).slice(2)}`,type,name:t.name,spot:'shelf'});return true;}
 function arrange(p,id,name,spot){const f=p.friends.find(f=>f.id===id);if(!f||typeof name!=='string'||!name.trim()||!SPOTS.includes(spot))return false;f.name=name.trim().slice(0,24);f.spot=spot;return true;}
 function spend(p){if(!Number.isSafeInteger(p.coins)||p.coins<TURN_COST)return false;p.coins-=TURN_COST;return true;}
+// An empty purse always has another turn; keeping a friend never blocks play.
+function beginTurn(s,p){if(!s||s.phase!=='idle'||!Number.isSafeInteger(p?.coins)||p.coins<0)return null;const free=p.coins===0;if(!free&&!spend(p))return null;insert(s);return free?'free':'paid';}
 function sellValue(type){return type==='moonfox'?8:SELL_PRICE;}
 function sell(p,id){const i=p.friends.findIndex(f=>f.id===id);if(i<0||p.coins>999999-sellValue(p.friends[i].type))return false;const [f]=p.friends.splice(i,1);p.collection[f.type]--;if(p.collection[f.type]<=0)delete p.collection[f.type];p.coins+=sellValue(f.type);p.lastKept=p.friends.at(-1)?.type||null;return true;}
-const api={KEY,TYPES,durations,create,insert,aim,aimDepth,drop,update,decode,collect,arrange,SPOTS,START_COINS,TURN_COST,SELL_PRICE,AIM_SECONDS,spend,sell,sellValue,SECRET_CHANCE,refillType};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.ClawLife=api;
+const api={KEY,TYPES,durations,create,insert,aim,aimDepth,drop,update,decode,collect,arrange,SPOTS,START_COINS,TURN_COST,SELL_PRICE,AIM_SECONDS,spend,beginTurn,sell,sellValue,SECRET_CHANCE,refillType};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.ClawLife=api;
 })(globalThis);
