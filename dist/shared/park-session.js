@@ -17,7 +17,7 @@
     try {
       const url = new URL(value,home);
       const path = url.pathname.slice(home.pathname.length);
-      return url.origin === home.origin && url.pathname.startsWith(home.pathname) && /^(?:index\.html|(?:pond|pixel|hex|dumplings|slots|claw|fishing)\/(?:index\.html)?)?$/.test(path) ? url.pathname : home.pathname;
+      return url.origin === home.origin && url.pathname.startsWith(home.pathname) && /^(?:index\.html|(?:pond|pixel|hex|dumplings|slots|claw|fishing|journal)\/(?:index\.html)?)?$/.test(path) ? url.pathname : home.pathname;
     } catch {return home.pathname;}
   }
   function nextRoute() {try {return route(sessionStorage.getItem(NEXT_KEY) || home.pathname);} catch {return home.pathname;}}

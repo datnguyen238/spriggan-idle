@@ -35,6 +35,8 @@ colors:
   slots-ground: "#e7e9d9"
   slots-enamel: "#cedbd0"
   slots-rim: "#819e91"
+  journal-ink: "#344b61"
+  journal-desk: "#586f5e"
 typography:
   display:
     fontFamily: "Bricolage Grotesque, sans-serif"
@@ -76,6 +78,24 @@ typography:
     fontWeight: 500
     lineHeight: 1.1
     letterSpacing: "-.03em"
+  journal-writing:
+    fontFamily: "Caveat, Nunito Sans, sans-serif"
+    fontSize: "28px"
+    fontWeight: 400
+    lineHeight: "40px"
+    letterSpacing: "0"
+  journal-date:
+    fontFamily: "Caveat, Nunito Sans, sans-serif"
+    fontSize: "43px"
+    fontWeight: 600
+    lineHeight: 1.15
+    letterSpacing: "0"
+  journal-title:
+    fontFamily: "Caveat, Nunito Sans, sans-serif"
+    fontSize: "clamp(54px,5vw,72px)"
+    fontWeight: 600
+    lineHeight: 1.1
+    letterSpacing: "0"
 rounded:
   farm: "4px"
   control: "6px"
@@ -230,6 +250,14 @@ The shared script forwards shortcuts to existing game controls and synchronizes 
 ### World artwork
 
 Pond retains dark teal water and moving koi. Farm retains crisp pixel orchard scenery. Hex retains a green faceted diorama. Little Folds uses a slate nighttime counter, bamboo steamers, pleated dumplings, steam and neighboring customers. Golden Seed uses pastel enamel and botanical reel illustrations. Claw uses a painted cabinet and rounded plush forms with radial shading and stitched details. These materials are implemented through route renderers and inline geometry.
+
+### Park journal
+
+The separate `/journal/` route is a read-only diary of automatically recorded park milestones. Its paper and handwriting treatment is specific to this route: a natural ivory paper texture repeats at (627px) over a muted botanical desk, with blue pen ink for the written memories. The generated texture ships as `dist/journal/paper-texture.webp`, with its generation provenance alongside the asset.
+
+Caveat supplies the handwritten diary title, dates and memory text. The locally hosted variable WOFF2 covers weights (400–700), uses `font-display: swap`, and keeps its OFL license in `dist/journal/fonts`. The writing role is (28px) on a (40px) baseline; date headings are (43px, weight 600), and the diary title scales from (54px) to (72px, weight 600). Nunito Sans remains the interface voice, and the existing botanical brand stays intact.
+
+Desktop presents two dated paper pages with a subtle central fold only when two pages are present. A single day has no fold. At widths up to (760px), the pages stack, the fold disappears, and the writing baseline becomes (38px). Date bookmarks and earlier/newer day controls navigate the existing memories; the page contains no personal-entry editor.
 
 ## Do's and Don'ts
 

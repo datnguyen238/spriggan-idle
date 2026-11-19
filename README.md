@@ -24,6 +24,7 @@ There is no package installation or bundling. The application is plain HTML, CSS
 | --- | --- |
 | `dist/index.html`, `landing*.js`, `landing.css`, `park.css` | Park artwork, attraction registry, walking paths, camera, and destination controls |
 | `dist/login/` | Google sign-in screen and first-visit save choices |
+| `dist/journal/` | Paper diary and dated park memories |
 | `dist/<world>/` | Each world’s scene, controls, rules, saves, and assets |
 | `dist/shared/` | Shared navigation, interface styles, entry flow, and reusable controls |
 | `dist/previews/` | Artwork shown when choosing a destination |
@@ -48,9 +49,11 @@ Individual worlds save progress and preferences in browser storage immediately. 
 
 Keep existing storage keys and support existing saved values when changing a world. Preserve earned items, balances, timers, and preferences. Use a separate browser profile or test context for checks that create or remove progress.
 
-Open **Your park** on the map to see saved milestones, return to your last world, and check your account's save status. Players do not need to press save or load buttons. Existing browser progress is handled during sign-in, with an explicit choice when it differs from the account's park. The application blocks concurrent Spriggan tabs in the same browser profile so an old world's in-memory save cannot overwrite a newly loaded park. Manual file download and import controls are not part of the player interface.
+Open **Your park** on the map to preview recent milestones, open the journal, return to your last world, and check your account's save status. The separate paper diary groups the 20 most recent automatic memories by date. Players read their milestones without editing entries; journal updates sync through the existing account save. Players do not need to press cloud save or load buttons. Existing browser progress is handled during sign-in, with an explicit choice when it differs from the account's park. The application blocks concurrent Spriggan tabs in the same browser profile so an old world's in-memory save cannot overwrite a newly loaded park. Manual file download and import controls are not part of the player interface.
 
 The journal records changes in saved facts after its first visit to each world. It does not simulate events while the park is closed. Existing collections become the starting point; new discoveries and milestones appear as you play.
+
+The diary uses a locally hosted Caveat handwriting font, with its license and source in `dist/journal/fonts/`. Its paper texture is a generated image; provenance accompanies the WebP. The existing journal data format, database snapshot, and row security are unchanged.
 
 ## Google sign-in and automatic saving
 

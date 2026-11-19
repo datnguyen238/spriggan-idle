@@ -9,9 +9,9 @@
    sessionStorage.removeItem(key);
    selected=entry?.path===location.pathname&&Date.now()-entry.at>=0&&Date.now()-entry.at<30000;
   }catch{}
-  // The park and world switcher both support ordinary links and opening a new tab.
+  // The park, journal and world switcher support ordinary links and opening a new tab.
   let fromHome=false;
-  try{const previous=new URL(document.referrer);const relative=previous.pathname.slice(home.pathname.length);fromHome=previous.origin===home.origin&&(relative===''||relative==='index.html'||/^(pond|pixel|hex|dumplings|slots|claw|fishing)\/(index\.html)?$/.test(relative))}catch{}
+  try{const previous=new URL(document.referrer);const relative=previous.pathname.slice(home.pathname.length);fromHome=previous.origin===home.origin&&previous.pathname.startsWith(home.pathname)&&(relative===''||relative==='index.html'||/^(pond|pixel|hex|dumplings|slots|claw|fishing|journal)\/(index\.html)?$/.test(relative))}catch{}
   if(!selected&&!fromHome){
    document.documentElement.style.visibility='hidden';
    location.replace(home.href);

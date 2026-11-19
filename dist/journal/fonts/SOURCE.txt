@@ -1,0 +1,20 @@
+Caveat — Latin variable WOFF2, weight 400–700, normal style.
+Unmodified Google Fonts delivery asset, retrieved 2026-11-19.
+
+Stylesheet:
+https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap
+
+Asset:
+https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7ZjYYiAzcPA.woff2
+
+License source:
+https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/OFL.txt
+
+Copyright 2014 The Caveat Project Authors.
+SIL Open Font License 1.1; full license in OFL.txt.
+
+Asset SHA-256:
+7a0049db01fdd8fc7af7ef36675862a72a5c76d0cb45ae63c9f5b6f1b769dac7
+
+Latin coverage includes common Western European accents and typographic
+punctuation. Other scripts must use the diary's readable fallback family.

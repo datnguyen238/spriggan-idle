@@ -128,6 +128,20 @@ test('an unauthenticated protected route redirects without hydrating or executin
   assert.equal(h.calls.start.length,0);assert.equal(h.activated.length,0);assert.equal(h.calls.fetch.length,0);
 });
 
+test('a signed-out diary visit returns to its protected page after login without exposing the diary first',async()=>{
+  for(const path of ['/journal/','/journal/index.html']) {
+    const diary=setup({user:null,world:'journal',href:'https://spriggan.test'+path+'?private=discarded#entry'});await settle();
+    assert.deepEqual(diary.calls.replace,['https://spriggan.test/login/']);
+    assert.equal(diary.sessionStorage.getItem(NEXT),path);
+    assert.equal(diary.calls.start.length,0);assert.equal(diary.activated.length,0);
+    assert.equal(diary.document.documentElement.dataset.parkAuth,'loading');
+    const login=setup({login:true,session:Object.fromEntries(diary.sessionStorage.values)});await settle();
+    assert.deepEqual(login.calls.replace,['https://spriggan.test'+path]);
+    assert.equal(login.sessionStorage.getItem(NEXT),null);
+    assert.equal(login.activated.length,0,'login never executes diary scripts');
+  }
+});
+
 test('world activation waits for authenticated park hydration, including its local writes',async()=>{
   const hydration=deferred();
   const h=setup({start:async(user,{storage})=>{await hydration.promise;storage.setItem('spriggan.hex.moonlight','false');return READY;},
@@ -335,8 +349,10 @@ test('a blocked storage probe never initializes auth, sync or gameplay',async()=
 test('return navigation accepts only recognized same-origin park routes and strips query or hash values',async()=>{
   const cases=[
     ['/pond/','/pond/'],['/fishing/index.html','/fishing/index.html'],['/','/'],
+    ['/journal/','/journal/'],['/journal/index.html?private=discarded#entry','/journal/index.html'],
     ['/claw/?code=private#extra','/claw/'],['https://other.test/pond/','/'],['//other.test/fishing/','/'],
-    ['/login/','/'],['/private/','/'],['javascript:alert(1)','/'],['/pond/%2fother/','/']
+    ['/login/','/'],['/private/','/'],['javascript:alert(1)','/'],['/pond/%2fother/','/'],
+    ['https://other.test/journal/','/'],['/journal/private/','/'],['/journal/%2fother/','/'],['/journal.js','/']
   ];
   for(const [input,expected] of cases) {
     const h=setup({login:true,session:{[NEXT]:input}});await settle();assert.deepEqual(h.calls.replace,['https://spriggan.test'+expected],input);
@@ -348,6 +364,11 @@ test('subdirectory deployments keep login and whitelisted return paths inside th
   const h=setup({login:true,href:'https://spriggan.test/garden/login/',scriptURL:'https://spriggan.test/garden/shared/park-session.js',session:{[NEXT]:'/pond/'}});await settle();
   assert.deepEqual(h.calls.replace,['https://spriggan.test/garden/']);
   assert.equal(h.calls.create[0].dependencies.redirectTo,'https://spriggan.test/garden/');
+});
+
+test('diary login return routes stay within a subdirectory deployment',async()=>{
+  const h=setup({login:true,href:'https://spriggan.test/garden/login/',scriptURL:'https://spriggan.test/garden/shared/park-session.js',session:{[NEXT]:'/garden/journal/?private=discarded#entry'}});await settle();
+  assert.deepEqual(h.calls.replace,['https://spriggan.test/garden/journal/']);
 });
 
 test('only supported game writes after activation mark progress dirty',async()=>{
@@ -413,6 +434,20 @@ test('in-app world navigation waits for a final flush before leaving',async()=>{
   h.documentEvent('click',{target:{closest:()=>anchor},button:0,preventDefault(){prevented=true;}});
   await settle();assert.equal(prevented,true);assert.equal(h.calls.flush,1);assert.equal(h.calls.assign.length,0);
   saved.resolve(READY);await settle();assert.deepEqual(h.calls.assign,['https://spriggan.test/pond/']);
+});
+
+test('opening either diary route captures world progress and waits for its final flush',async()=>{
+  for(const path of ['/journal/','/journal/index.html']) {
+    const saved=deferred();const h=setup({world:'fishing',href:'https://spriggan.test/fishing/',flush:()=>saved.promise});await settle();
+    const captures=h.emitted.filter(event=>event.type==='spriggan:park-save-request').length;
+    let prevented=false;
+    const anchor={href:'https://spriggan.test'+path,target:'',hasAttribute:()=>false};
+    h.documentEvent('click',{target:{closest:()=>anchor},button:0,preventDefault(){prevented=true;}});
+    await settle();
+    assert.equal(prevented,true);assert.equal(h.calls.flush,1);assert.equal(h.calls.assign.length,0);
+    assert.equal(h.emitted.filter(event=>event.type==='spriggan:park-save-request').length,captures+1);
+    saved.resolve(READY);await settle();assert.deepEqual(h.calls.assign,['https://spriggan.test'+path]);
+  }
 });
 
 test('slow-cloud navigation continues after 1500ms while preserving pending device progress',async()=>{

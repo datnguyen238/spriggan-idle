@@ -69,10 +69,33 @@ test('an open world observes again after back-forward cache restoration without 
 });
 
 test('journal changes from another tab are read without writing them back',async()=>{
-  const h=setup();h.writes.length=0;
+  const h=setup();h.writes.length=0;h.emitted.length=0;
   await h.windowEvent('storage',{key:journal.KEY});
   assert.equal(h.writes.length,0);
+  assert.deepEqual(h.emitted,['spriggan:journal-updated']);
   await h.windowEvent('storage',{key:'another-app'});assert.equal(h.writes.length,0);
+  assert.deepEqual(h.emitted,['spriggan:journal-updated']);
+});
+
+test('diary readers receive changed journal facts after persistence without a second polling loop',async()=>{
+  const h=setup({world:'journal'});
+  assert.deepEqual(h.emitted,['spriggan:journal-updated'],'a new persisted journal can notify initial readers');
+  assert.equal(h.intervals.size,1);
+  h.writes.length=0;h.emitted.length=0;
+  h.tick();
+  assert.deepEqual(h.writes,[journal.KEY],'unchanged refresh retains existing write behavior');
+  assert.deepEqual(h.emitted,[],'unchanged facts do not ask diary readers to render again');
+  const observed=[];
+  h.document.addEventListener('spriggan:journal-updated',()=>observed.push(h.meta().memories));
+  h.storage.setItem('spriggan.fishing.guide.v1',fishing({'willow-minnow':minnow}));
+  await h.documentEvent('spriggan:park-save-request');
+  assert.deepEqual(h.emitted,['spriggan:journal-updated']);
+  assert.equal(observed.length,1);assert.equal(observed[0].length,1);
+  assert.match(observed[0][0].text,/Willow Minnow/);
+  assert.equal(h.meta().lastWorld,null,'reading the diary must not become a played-world visit');
+  h.tick();assert.equal(observed.length,1);assert.equal(h.intervals.size,1);
+  const blocked=setup({world:'journal',blocked:true});
+  assert.deepEqual(blocked.emitted,[],'a failed storage write cannot announce persisted facts');
 });
 
 test('notebook opens alongside the map, closes other tools, and Escape returns focus',async()=>{
@@ -128,6 +151,22 @@ test('periodic refresh keeps the same memory link and adding a new memory preser
   h.storage.setItem('spriggan.fishing.guide.v1',fishing({'willow-minnow':{count:2,bestLength:10}}));h.tick();
   assert.equal(h.ids.get('park-memory-list').children.length,2);
   assert.equal(h.ids.get('park-memory-list').children[1].children[0],link);
+});
+
+test('the park preview shows the two newest memories while retaining the full journal',()=>{
+  const memories=Array.from({length:journal.MAX_MEMORIES},(_,i)=>({id:'memory-'+i,world:'hex',text:`Clover Keep grew to ${journal.MAX_MEMORIES-i} storeys.`,at:1000-i}));
+  const metadata={version:1,lastWorld:'fishing',lastVisitedAt:500,snapshot:{},memories};
+  const h=setup({data:{[journal.KEY]:JSON.stringify(metadata)}});
+  const list=h.ids.get('park-memory-list'),first=list.children[0].children[0];
+  assert.equal(list.children.length,2);
+  assert.deepEqual(list.children.map(item=>item.children[0].children[0].textContent),memories.slice(0,2).map(memory=>memory.text));
+  assert.equal(h.ids.get('park-memory-empty').hidden,true);
+  assert.deepEqual(h.meta().memories,memories,'preview truncation must not erase older saved memories');
+  first.focus();h.tick();
+  assert.equal(list.children[0].children[0],first,'polling retains the focused preview link');
+  assert.deepEqual(h.meta().memories,memories);
+  const html=fs.readFileSync(require.resolve('../dist/index.html'),'utf8');
+  assert.match(html,/<a\b[^>]*id="park-memory-open-journal"[^>]*class="[^"]*\bworld\b[^"]*"[^>]*href="\.\/journal\/"[^>]*><span>Open journal<\/span>/);
 });
 
 test('a whole-park restore cannot resurrect the previous journal when the imported copy has no journal',async()=>{

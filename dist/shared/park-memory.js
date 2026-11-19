@@ -12,6 +12,7 @@
     try { storage = window.localStorage; } catch {}
     let storageFailed = false;
     function refresh(rebaseline = false, markVisit = false) {
+      let changed = false;
       try {
         const raw = storage?.getItem(journal.KEY);
         let previous = rebaseline ? raw : raw || metadata;
@@ -24,10 +25,13 @@
           world: markVisit && knownWorlds.has(activeWorld) ? activeWorld : null, now: Date.now()
         });
         if (!storage) throw new Error('Storage unavailable');
-        storage.setItem(journal.KEY, JSON.stringify(metadata));
+        const serialized = JSON.stringify(metadata);
+        storage.setItem(journal.KEY, serialized);
+        changed = serialized !== raw;
         storageFailed = false;
       } catch { storageFailed = true; }
       if (isPark) render();
+      if (changed) document.dispatchEvent(new CustomEvent('spriggan:journal-updated'));
     }
 
     const toggle = document.querySelector('#park-memory-toggle');
@@ -52,7 +56,7 @@
         resume.href = worldURL(last);
         resume.querySelector('strong').textContent = `Return to ${names[last]}`;
       }
-      const memories = metadata?.memories || [];
+      const memories = (metadata?.memories || []).slice(0,2);
       empty.hidden = memories.length > 0;
       const retained = new Set();
       let position = 0;
@@ -126,7 +130,10 @@
     window.addEventListener('storage',event => {
       if (event.key === journal.KEY) {
         // Reading another tab's journal must not write it back and start a storage-event loop.
-        try {metadata = journal.updateJournal(storage.getItem(journal.KEY), {}, {world:null,now:Date.now()});} catch {}
+        try {
+          metadata = journal.updateJournal(storage.getItem(journal.KEY), {}, {world:null,now:Date.now()});
+          document.dispatchEvent(new CustomEvent('spriggan:journal-updated'));
+        } catch {}
         if (isPark) render();
       } else if (!event.key || event.key.startsWith('spriggan.')) refresh();
     });

@@ -35,6 +35,9 @@ body[data-world=park] .park-memory[hidden],.park-memory [hidden] {display:none;}
 .park-memory-list a {display:block;color:#294b3e;text-decoration:none;min-height:44px;overflow-wrap:anywhere;}
 .park-memory-list a:hover {text-decoration:underline;text-underline-offset:4px;}
 .park-memory-list time {display:block;font:400 12px/1.5 var(--sg-ui);color:#53664f;margin-top:4px;}
+.park-memory-journal-link {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;margin-top:8px;padding:10px 0;color:var(--ink,#294b3e);text-decoration:none;}
+.park-memory-journal-link svg {width:18px;height:18px;flex:none;}
+.park-memory-journal-link:hover span {text-decoration:underline;text-underline-offset:4px;}
 .park-account-actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
 .park-memory .park-memory-button {display:inline-flex;justify-content:center;align-items:center;min-height:44px;padding:10px 12px;border:1px solid #8a9a7c;border-radius:6px;background:transparent;color:#294b3e;}
 .park-memory .park-memory-button:hover {background:#e4e5d5;}
