@@ -2,3 +2,6 @@
 .vercel/
 *.zip
 .impeccable/
+
+# Google OAuth client credentials
+client_secret*.json

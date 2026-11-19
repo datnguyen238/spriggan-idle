@@ -1,0 +1,23 @@
+@import url('./fonts.css');
+html[data-park-auth=loading] {background:#f4eedf;}
+html[data-park-auth=loading] body > :not(#park-gate) {visibility:hidden!important;}
+.park-gate {position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:28px;background:#f4eedf;color:#304a40;text-align:center;font-family:'Nunito Sans',sans-serif;font-size:16px;line-height:1.6;font-weight:400;}
+.park-gate[hidden] {display:none;}
+.park-gate > div {max-width:34ch;}
+.park-gate svg {width:42px;height:42px;margin-bottom:20px;}
+.park-gate h1 {margin:0;color:#304a40;font:500 32px/1.2 'Bricolage Grotesque',sans-serif;letter-spacing:-.025em;}
+.park-gate p {color:#57685b;margin:14px 0 0;}
+.park-gate button,.park-gate a {display:inline-flex;align-items:center;justify-content:center;min-height:48px;margin-top:24px;padding:10px 18px;background:#304a40;color:#f4eedf;border:0;border-radius:6px;font:700 15px/1.5 'Nunito Sans',sans-serif;text-decoration:none;cursor:pointer;}
+.park-gate [hidden] {display:none;}
+.park-gate :focus-visible {outline:2px solid #a98535;outline-offset:4px;}
+.park-gate ::selection {background:#d5ba79;color:#304a40;}
+.park-session-link {display:grid;place-items:center;flex:none;width:44px;height:44px;min-width:44px;padding:10px;border:1px solid currentColor;border-radius:6px;color:inherit;pointer-events:auto;}
+.park-session-link svg {width:20px;height:20px;}
+.park-session-link:hover {background:#748f791a;}
+.park-session-summary {display:block;font:400 12px/1.4 var(--sg-ui,'Nunito Sans',sans-serif);opacity:.85;}
+.park-memory .park-account-note {font-size:14px;line-height:1.6;}
+.park-memory .park-account-identity {font-size:14px;}
+.park-memory .park-account-status {font-size:14px;}
+.park-memory .park-account-signout {font-size:14px;}
+@media(max-width:760px) {.park-session-link {display:none;}}
+@media(prefers-reduced-motion:reduce) {.park-gate * {animation:none!important;transition:none!important;}}

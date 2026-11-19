@@ -92,6 +92,7 @@ function checkDay(){if(busy||animation)return;transaction(()=>{const before=JSON
 setInterval(()=>{if((!document.hidden||!Runtime.mobile)&&state.balance<Life.COST&&state.refillAt<=Date.now())checkDay()},1000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(Runtime.mobile){finish();if(audio?.state==='running')void audio.suspend()}}else{checkDay();if(state.settings.sound&&audio)void audio.resume().catch(()=>{})}});
 Runtime.runBackground(null,()=>{if(animation&&performance.now()-animation.start>=2100)finish()});
+document.addEventListener('spriggan:park-save-request',save);
 window.addEventListener('pagehide',()=>{finish();if(audio?.state==='running')void audio.suspend()});
 window.addEventListener('storage',e=>{if(e.key===Life.KEY&&!animation&&!busy){read();sync();if(state.lastResult)paint(state.lastResult.symbols,state.lastResult.map)}});
 $('#seed-icon').innerHTML=Art.icon('seed');document.querySelectorAll('[data-art]').forEach(el=>el.innerHTML=Art.icon(el.dataset.art));

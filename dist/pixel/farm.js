@@ -266,5 +266,5 @@ function frame(ts){
  if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}draw();
 }
 window.addEventListener('storage',e=>{if(e.key===Life.KEY){receiveCow();ui();draw()}});
-window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your flock is here.');resize();Runtime.runBackground(update,()=>{const now=performance.now();if(now-lastRules>1000){lastRules=now;tick(Date.now())}},()=>paused);requestAnimationFrame(frame);
+document.addEventListener('spriggan:park-save-request',save);window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your flock is here.');resize();Runtime.runBackground(update,()=>{const now=performance.now();if(now-lastRules>1000){lastRules=now;tick(Date.now())}},()=>paused);requestAnimationFrame(frame);
 })();

@@ -10,6 +10,7 @@ function saveTotals(){
  if(serialized===savedProgress)return;
  try{localStorage.setItem(TOTALS_KEY,serialized);savedProgress=serialized}catch{}
 }
+document.addEventListener('spriggan:park-save-request',saveTotals);
 window.addEventListener('pagehide',saveTotals);
 let night=false;try{night=localStorage.getItem('spriggan.hex.moonlight')==='true'}catch{}
 const rain=new MapRain(document.querySelector('[data-map-rain]'),'spriggan.hex.rain.v1','hex');

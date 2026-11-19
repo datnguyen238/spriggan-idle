@@ -44,7 +44,17 @@ body[data-world=park] .park-memory[hidden],.park-memory [hidden] {display:none;}
 .park-memory :is(button,a):focus-visible {outline:2px solid #8e692c;outline-offset:3px;}
 .park-memory .park-memory-status {font-size:12px;}
 .park-memory-status:empty {display:none;}
-.park-account {margin-top:24px;padding-bottom:22px;border-bottom:1px solid #c4c7b6;}
+.park-account {margin-top:24px;padding-bottom:20px;border-bottom:1px solid #c4c7b6;}
+.park-account-profile {display:flex;align-items:center;gap:12px;min-width:0;}
+.park-account-avatar {display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:50%;background:#e4e5d5;color:#304a40;}
+.park-account-avatar svg {width:23px;height:23px;}
+.park-account-details {flex:1;min-width:0;}
+.park-memory .park-account-profile h3 {margin:0;font-size:18px;line-height:1.3;}
+.park-memory .park-account-profile .park-account-identity {margin:3px 0 0;font-size:14px;line-height:1.5;overflow-wrap:anywhere;}
+.park-account-sr {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
+.park-account-save-row {display:flex;align-items:flex-start;gap:14px;margin-top:12px;}
+.park-memory .park-account-save-row .park-account-status {flex:1;min-width:0;margin:0;align-self:center;font-size:14px;line-height:1.5;overflow-wrap:anywhere;}
+.park-memory .park-account-save-row .park-account-signout {flex:none;min-height:44px;padding:10px 0;font-size:14px;}
 .park-memory .park-account-google {display:block;min-height:44px;width:180px;padding:2px 0;margin-top:16px;border:0;border-radius:4px;background:transparent;}
 .park-account-google img {display:block;width:180px;height:40px;}
 .park-memory .park-account-note,.park-memory .park-account-status {font-size:12px;line-height:1.6;}

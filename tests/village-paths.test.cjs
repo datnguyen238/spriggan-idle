@@ -106,7 +106,9 @@ test('the dock is registered in the map, directory, and world navigation', () =>
   assert.ok(existsSync(resolve(__dirname, '../dist', fishing.preview.split('?')[0])));
   const html = read('index.html');
   assert.match(html, /<button[^>]*data-place="fishing"[^>]*aria-label="Select The Fishing Dock"/);
-  assert.match(html, /href="\.\/fishing\/">The Fishing Dock<\/a>/);
+  // Destinations are offered by the authenticated map; scripts-disabled visitors
+  // receive sign-in guidance rather than a separate unguarded world directory.
+  assert.match(html, /Please enable JavaScript to sign in and visit your park/);
   assert.match(read('landing.js'), /fishing:'Cast & discover'/);
   assert.match(read('shared/world-ui.js'), /\['fishing','fishing','The Fishing Dock',/);
 });

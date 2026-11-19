@@ -136,6 +136,7 @@ document.addEventListener('keydown',controlKey);
 document.addEventListener('keyup',event=>{if(event.code==='Space'||event.key==='Enter')stopHolding();});
 window.addEventListener('blur',()=>{holding=false;last=performance.now();sync();});
 document.addEventListener('visibilitychange',()=>{holding=false;last=performance.now();syncSound();sync();});
+document.addEventListener('spriggan:park-save-request',()=>{saveSettings();saveGuide();});
 window.addEventListener('pagehide',()=>{holding=false;audioPageHidden=true;saveSettings();syncSound();});
 window.addEventListener('pageshow',()=>{audioPageHidden=false;last=performance.now();syncSound();});
 window.addEventListener('storage',event=>{

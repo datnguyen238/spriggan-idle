@@ -169,8 +169,12 @@
         throw failure;
       }
     }
-    async function currentSession() {
+    async function currentSession(expectedUserId) {
       assertOpen();
+      // The view receives auth notifications asynchronously. Bind each operation
+      // to the account whose park the caller actually has open, even if Auth has
+      // already switched internally and its UI notification has not run yet.
+      if (expectedUserId !== undefined && user?.id !== expectedUserId) throw fail('SESSION_CHANGED');
       if (!user) throw fail('AUTH_REQUIRED');
       const expected = {id:user.id,generation};
       try {
@@ -198,7 +202,7 @@
         authStorage.setItem(probe,'ready');
         const available = authStorage.getItem(probe) === 'ready';authStorage.removeItem(probe);
         if (!available) throw fail('STORAGE_UNAVAILABLE');
-        const response = await limited(() => sdk.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirect.href}}));
+        const response = await limited(() => sdk.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirect.href,queryParams:{prompt:'select_account'}}}));
         if (response?.error) throw remoteError(response.error,'AUTH_FAILED');
       } catch (cause) {throw remoteError(cause,'AUTH_FAILED');}
     }
@@ -220,10 +224,10 @@
         throw fail('SIGN_OUT_FAILED');
       }
     }
-    async function read() {
+    async function read(expectedUserId) {
       const controller = new AbortController();controllers.add(controller);
       try {
-        const identity = await currentSession();
+        const identity = await currentSession(expectedUserId);
         const query = sdk.from('park_saves').select('payload,revision,updated_at').eq('user_id',identity.id).maybeSingle();
         const response = await limited(() => request(query,identity,controller),controller);
         assertAccount(identity);
@@ -237,12 +241,12 @@
       } catch (cause) {throw remoteError(cause);}
       finally {controllers.delete(controller);}
     }
-    async function write(backupText,expectedRevision) {
+    async function write(backupText,expectedRevision,expectedUserId) {
       try {saves.inspectBackup(backupText);} catch (_) {throw fail('INVALID_BACKUP');}
       if (expectedRevision !== undefined && expectedRevision !== null && !integer(expectedRevision)) throw fail('SAVE_CONFLICT');
       const controller = new AbortController();controllers.add(controller);
       try {
-        const identity = await currentSession();
+        const identity = await currentSession(expectedUserId);
         const query = sdk.rpc('save_park',{p_payload:JSON.parse(backupText),p_expected_revision:expectedRevision ?? null});
         const response = await limited(() => request(query,identity,controller),controller);
         assertAccount(identity);

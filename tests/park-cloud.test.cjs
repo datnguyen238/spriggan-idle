@@ -52,6 +52,18 @@ test('configuration accepts browser keys and rejects elevated or malformed crede
   assert.equal(Cloud.validateConfig({...CONFIG,url:'http://127.0.0.1:54321/'}).url,'http://127.0.0.1:54321');
 });
 
+test('an expected park owner blocks new operations immediately when Auth switches before the view callback',async()=>{
+  const h=setup();await h.client.initialize();let visibleUser=USER_A.id;
+  h.client.onAuthChange(user=>{visibleUser=user?.id||null;});
+  h.emit('SIGNED_IN',SESSION_B);
+  assert.equal(visibleUser,USER_A.id);assert.equal(h.client.getUser().id,USER_B.id);
+  await assert.rejects(h.client.read(USER_A.id),{code:'SESSION_CHANGED'});
+  await assert.rejects(h.client.write(backup(),null,USER_A.id),{code:'SESSION_CHANGED'});
+  assert.equal(h.calls.requests.length,0);assert.equal(h.calls.rpcs.length,0);
+  await h.client.read(USER_B.id);assert.deepEqual(h.calls.requests[0].filter,['user_id',USER_B.id]);
+  assert.equal(h.calls.requests[0].headers.Authorization,'Bearer verified-token-b');h.client.dispose();
+});
+
 test('initialization verifies the session and exposes only sanitized display identity',async()=>{
   const h=setup(),user=await h.client.initialize();
   assert.deepEqual(user,{id:'user-a',email:'a@example.test',name:'Lin Garden'});
@@ -73,9 +85,9 @@ test('guest initialization is quiet and remote operations require sign-in',async
   assert.equal(h.calls.requests.length,0);h.client.dispose();
 });
 
-test('Google sign-in uses the approved redirect and auth storage is isolated from world saves',async()=>{
+test('Google sign-in opens the account picker using the approved redirect and isolated auth storage',async()=>{
   const h=setup();await h.client.signIn();
-  assert.deepEqual(h.calls.oauth,[{provider:'google',options:{redirectTo:'https://spriggan.test/'}}]);
+  assert.deepEqual(h.calls.oauth,[{provider:'google',options:{redirectTo:'https://spriggan.test/',queryParams:{prompt:'select_account'}}}]);
   assert.equal(h.data.get('spriggan.pond.v1'),'keep this local park');assert.equal(h.data.get('unrelated.token'),'keep this too');
   assert(h.writes.every(([key])=>key.startsWith('spriggan.cloud.garden.supabase.co.auth.v1-')));
   assert.throws(()=>h.sdkOptions().auth.storage.setItem('spriggan.pond.v1','overwrite'),{code:'STORAGE_UNAVAILABLE'});

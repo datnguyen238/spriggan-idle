@@ -684,6 +684,7 @@
       announce('A golden koi is waiting outside your full pond. Remove a koi to welcome Kin.');
     }
   });
+  document.addEventListener('spriggan:park-save-request',savePond);
   window.addEventListener('pagehide',()=>{savePond();audio.visibility(true)});
   window.addEventListener('pageshow',()=>{audio.visibility(document.hidden&&Runtime.mobile);syncAudioRecovery()});
   window.addEventListener('focus',()=>{if(!document.hidden)audio.visibility(false)});
