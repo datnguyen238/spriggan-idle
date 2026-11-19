@@ -1,5 +1,5 @@
-import * as THREE from '../claw/vendor/three.module.min.js';
-import { createRiverFish } from './fish-model.js';
+import * as THREE from '../claw/vendor/three.module.min.js?v=perf-e2b5ee6bccd38fd6';
+import { createRiverFish } from './fish-model.js?v=perf-de6898a8c0249f3f';
 
 // A continuous woodland river. Y is up; the old timber dock sits on its west bank.
 const PI = Math.PI;

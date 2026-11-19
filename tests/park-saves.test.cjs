@@ -15,6 +15,14 @@ const Journal = require('../dist/shared/park-journal.js');
 const at = 1795100000000;
 const pack = entries => JSON.stringify({format: 'spriggan-park', version: 1, exportedAt: new Date(at).toISOString(), entries});
 const raw = value => JSON.stringify(value);
+
+test('single-entry validation checks the same schema and reports encoded bytes for cache accounting',() => {
+  const key='spriggan.claw.v1',value=Claw.decode(null);Claw.collect(value,'frog','unicode-frog');value.friends[0].name='Frog 🐸';
+  const encoded=raw(value);
+  assert.equal(Saves.validateEntry(key,encoded),Buffer.byteLength(JSON.stringify(key))+Buffer.byteLength(JSON.stringify(encoded))+8);
+  assert.throws(()=>Saves.validateEntry('unrelated.token',encoded),error=>error.code==='UNSUPPORTED_KEY');
+  assert.throws(()=>Saves.validateEntry(key,'not json'),error=>error.code==='INVALID_SAVE');
+});
 function storage(initial = {}) {
   const data = new Map(Object.entries(initial));
   return {

@@ -3,6 +3,7 @@
   'use strict';
 
   const DEFAULT_TIMEOUT = 15000;
+  const INITIAL_IDENTITY_TTL = 5000;
   const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
   const integer = value => Number.isSafeInteger(value) && value > 0;
   const cleanText = (value, max) => typeof value === 'string' ? value.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max) : '';
@@ -88,6 +89,7 @@
     } catch (_) {throw fail('SDK_UNAVAILABLE');}
     if (!sdk?.auth || !['getSession','getUser','signInWithOAuth','signOut','onAuthStateChange'].every(method => typeof sdk.auth[method] === 'function')) throw fail('SDK_UNAVAILABLE');
     let user = null, userKnown = false, generation = 0, disposed = false;
+    let initialIdentity = null, authVersion = 0;
     const listeners = new Set(), notifications = new Set(), controllers = new Set();
     function assertOpen() {if (disposed) throw fail('CLOSED');}
     function notify(event) {
@@ -101,12 +103,14 @@
     }
     function setUser(value,event) {
       const next = userView(value);
-      if ((next?.id || null) !== (user?.id || null) || event === 'SIGNED_OUT') generation++;
+      if ((next?.id || null) !== (user?.id || null) || event === 'SIGNED_OUT') {generation++;initialIdentity = null;}
       user = next; userKnown = true; notify(event);
     }
     // Never call back into Auth while Supabase holds its auth-state callback lock.
     let authSubscription;
-    try {authSubscription = sdk.auth.onAuthStateChange((event,session) => {if (!disposed) setUser(session?.user || null,event);})?.data?.subscription;}
+    try {authSubscription = sdk.auth.onAuthStateChange((event,session) => {
+      if (!disposed) {authVersion++;initialIdentity = null;setUser(session?.user || null,event);}
+    })?.data?.subscription;}
     catch (_) {throw fail('SDK_UNAVAILABLE');}
     async function limited(operation,controller) {
       assertOpen();
@@ -130,12 +134,14 @@
       assertOpen();
       if (!user || user.id !== expected.id || generation !== expected.generation) throw fail('SESSION_CHANGED');
     }
-    async function verify(expectedId, expectedGeneration) {
+    async function verify(expectedId, expectedGeneration, cached) {
       const sessionResult = await limited(() => sdk.auth.getSession());
       if (sessionResult?.error) throw remoteError(sessionResult.error);
       const session = sessionResult?.data?.session;
       if (!session) throw fail('AUTH_REQUIRED');
       if (session.user?.id !== expectedId || typeof session.access_token !== 'string' || !session.access_token) throw fail('SESSION_CHANGED');
+      const age = cached ? Date.now()-cached.verifiedAt : -1;
+      if (cached && cached.id === expectedId && cached.generation === expectedGeneration && cached.authVersion === authVersion && cached.token === session.access_token && age >= 0 && age < INITIAL_IDENTITY_TTL) return cached;
       const response = await limited(() => sdk.auth.getUser(session.access_token));
       if (response?.error) throw remoteError(response.error);
       const verified = userView(response?.data?.user);
@@ -143,8 +149,16 @@
       if (verified.id !== expectedId || generation !== expectedGeneration && userKnown) throw fail('SESSION_CHANGED');
       return {view:verified,token:session.access_token,id:verified.id,generation:expectedGeneration};
     }
+    function initializedIdentity(verified,version) {
+      setUser(verified.view,'INITIALIZED');
+      // This one-use handoff only saves the immediately repeated getUser call
+      // before the first park read. It never survives an Auth event or a write.
+      if (authVersion === version) initialIdentity = {...verified,authVersion,verifiedAt:Date.now()};
+      return user;
+    }
     async function initialize() {
       assertOpen();
+      initialIdentity = null;
       let attemptedId = null;
       try {
         const before = generation;
@@ -153,7 +167,8 @@
         if (generation !== before && userKnown) {
           if (!user) return null;
           attemptedId = user.id;
-          const verified = await verify(user.id,generation); setUser(verified.view,'INITIALIZED'); return user;
+          const version = authVersion, verified = await verify(user.id,generation);
+          return initializedIdentity(verified,version);
         }
         const session = response?.data?.session;
         if (!session) {setUser(null,'INITIALIZED');return null;}
@@ -161,16 +176,20 @@
         if (!id) throw fail('AUTH_REQUIRED');
         attemptedId = id;
         setUser(session.user,'INITIALIZING');
+        const version = authVersion;
         const verified = await verify(id,generation);
-        setUser(verified.view,'INITIALIZED'); return user;
+        return initializedIdentity(verified,version);
       } catch (cause) {
+        initialIdentity = null;
         const failure = remoteError(cause);
         if (failure.code === 'AUTH_REQUIRED' && user?.id === attemptedId) setUser(null,'SIGNED_OUT');
         throw failure;
       }
     }
-    async function currentSession(expectedUserId) {
+    async function currentSession(expectedUserId,allowInitialIdentity = false) {
       assertOpen();
+      const cached = allowInitialIdentity ? initialIdentity : null;
+      initialIdentity = null;
       // The view receives auth notifications asynchronously. Bind each operation
       // to the account whose park the caller actually has open, even if Auth has
       // already switched internally and its UI notification has not run yet.
@@ -178,7 +197,10 @@
       if (!user) throw fail('AUTH_REQUIRED');
       const expected = {id:user.id,generation};
       try {
-        const verified = await verify(expected.id,expected.generation);
+        let verified = await verify(expected.id,expected.generation,cached);
+        // An Auth callback can run between promise continuations even with the
+        // same user. Fall back to network verification before using that handoff.
+        if (verified === cached && verified.authVersion !== authVersion) verified = await verify(expected.id,expected.generation);
         assertAccount(expected);
         return verified;
       } catch (cause) {
@@ -189,6 +211,7 @@
     }
     function request(builder, identity, controller) {
       assertAccount(identity);
+      if (identity.authVersion !== undefined && identity.authVersion !== authVersion) throw fail('SESSION_CHANGED');
       // Pin the verified session: a simultaneous Google account switch must not upload A's park to B.
       if (!builder || typeof builder.setHeader !== 'function') throw fail('SDK_UNAVAILABLE');
       builder = builder.setHeader('Authorization',`Bearer ${identity.token}`);
@@ -197,6 +220,7 @@
     }
     async function signIn() {
       assertOpen();
+      initialIdentity = null;
       try {
         const probe = storageKey+'-probe';
         authStorage.setItem(probe,'ready');
@@ -210,6 +234,7 @@
       assertOpen();
       // Stop in-flight account work immediately, but keep the displayed identity until
       // the SDK confirms sign-out or emits a genuine session change of its own.
+      initialIdentity = null;
       const expected = ++generation;
       try {
         const response = await limited(() => sdk.auth.signOut({scope:'local'}));
@@ -226,8 +251,9 @@
     }
     async function read(expectedUserId) {
       const controller = new AbortController();controllers.add(controller);
+      let identity;
       try {
-        const identity = await currentSession(expectedUserId);
+        identity = await currentSession(expectedUserId,true);
         const query = sdk.from('park_saves').select('payload,revision,updated_at').eq('user_id',identity.id).maybeSingle();
         const response = await limited(() => request(query,identity,controller),controller);
         assertAccount(identity);
@@ -238,10 +264,16 @@
         const backup = JSON.stringify(row.payload);
         try {saves.inspectBackup(backup);} catch (_) {throw fail('CLOUD_DATA_INVALID');}
         return {backup,revision:row.revision,updatedAt:row.updated_at};
-      } catch (cause) {throw remoteError(cause);}
+      } catch (cause) {
+        initialIdentity = null;
+        const failure = remoteError(cause);
+        if (failure.code === 'AUTH_REQUIRED' && identity?.authVersion === authVersion && user?.id === identity.id && generation === identity.generation) setUser(null,'SIGNED_OUT');
+        throw failure;
+      }
       finally {controllers.delete(controller);}
     }
     async function write(backupText,expectedRevision,expectedUserId) {
+      initialIdentity = null;
       try {saves.inspectBackup(backupText);} catch (_) {throw fail('INVALID_BACKUP');}
       if (expectedRevision !== undefined && expectedRevision !== null && !integer(expectedRevision)) throw fail('SAVE_CONFLICT');
       const controller = new AbortController();controllers.add(controller);
@@ -265,7 +297,7 @@
       return () => listeners.delete(listener);
     }
     function dispose() {
-      disposed = true;generation++;
+      disposed = true;generation++;initialIdentity = null;
       authSubscription?.unsubscribe();listeners.clear();
       for (const timer of notifications) clearTimeout(timer);
       notifications.clear();for (const controller of controllers) controller.abort();controllers.clear();

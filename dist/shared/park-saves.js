@@ -175,6 +175,12 @@
     try { valid = schema[key][0](value); } catch (_) {}
     if (!valid) throw fail('The saved data for ' + saveLabel(key) + ' is damaged or uses an unsupported version. Your current progress has not changed.', 'INVALID_SAVE');
   }
+  // A single local mutation can be checked without decoding every other world.
+  // Include pretty-printed entry overhead for the sync cache's size guard.
+  function validateEntry(key, raw) {
+    checkEntry(key, raw);
+    return bytes(JSON.stringify(key)) + bytes(JSON.stringify(raw)) + 8;
+  }
   function inspectBackup(text) {
     if (typeof text !== 'string' || bytes(text) > MAX_BYTES) throw fail('Choose a Spriggan backup smaller than 2 MB.', 'FILE_SIZE');
     let backup;
@@ -270,7 +276,7 @@
     return summary;
   }
 
-  const api = Object.freeze({FORMAT, VERSION, MAX_BYTES, SUPPORTED_KEYS, exportBackup, inspectBackup, restoreBackup, restorePark});
+  const api = Object.freeze({FORMAT, VERSION, MAX_BYTES, SUPPORTED_KEYS, validateEntry, exportBackup, inspectBackup, restoreBackup, restorePark});
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.SprigganSaves = api;
 })(globalThis);

@@ -130,9 +130,24 @@
         const gameWrite = this === storage && (method === 'clear' || supported.has(String(args[0])));
         if (gameWrite && gameStarted && !writesAllowed) throw Error('This park is paused while its account changes.');
         const result = original.apply(this,args);
-        if (gameWrite && gameStarted && writesAllowed) sync.changed();
+        if (gameWrite && gameStarted && writesAllowed) sync.changed(method === 'clear' ? undefined : String(args[0]));
         return result;
       };
+    }
+  }
+  function preloadWorld() {
+    // Warm public script bytes while Auth and hydration run. These links never
+    // execute a world; activateWorld still owns the ordered, authenticated start.
+    for (const source of document.querySelectorAll('script[type="application/x-spriggan"][src]')) {
+      const link = document.createElement('link');
+      const module = source.getAttribute('data-park-type') === 'module';
+      link.setAttribute('rel',module ? 'modulepreload' : 'preload');
+      if (!module) link.setAttribute('as','script');
+      link.setAttribute('href',source.getAttribute('src'));
+      for (const name of ['crossorigin','integrity','referrerpolicy','fetchpriority','nonce']) {
+        if (source.hasAttribute(name)) link.setAttribute(name,source.getAttribute(name));
+      }
+      document.head.append(link);
     }
   }
   async function activateWorld() {
@@ -247,6 +262,7 @@
     catch (error) {gate('Your park is waiting',messageFor(error),() => location.reload());}
   }
   function mount() {
+    preloadWorld();
     $('login-retry')?.addEventListener('click',() => {void retryAction?.();});
     $('park-gate-retry')?.addEventListener('click',() => {void retryAction?.();});
     $('login-use-cloud')?.addEventListener('click',() => {void choose('useCloud');});

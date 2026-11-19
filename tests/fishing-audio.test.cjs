@@ -3,6 +3,11 @@ const assert=require('node:assert/strict');
 const {harness}=require('./helpers/fishing-ui.cjs');
 function setup(options){const h=harness(options);h.openControls();h.openSectionFor('#river-sound');return h;}
 const SETTINGS_KEY='spriggan.fishing.settings.v1';
+function assertPondRecording(value,filename){
+  const url=new URL(value);
+  assert.equal(url.origin,'https://spriggan.test');assert.equal(url.pathname,'/pond/'+filename);
+  assert.match(url.search,/^\?v=perf-[a-f0-9]{16}$/);assert.equal(url.hash,'');
+}
 
 test('opening and foregrounding the dock create no players, audio contexts, or recording requests',async()=>{
   for(const settings of [undefined,{sound:true,rain:true}]){
@@ -20,7 +25,7 @@ test('the first nature gesture uses the actual pond controller and its recording
   await h.flush();
   assert.equal(h.value('riverAudio instanceof window.PondAudio'),true);
   assert.equal(h.value("riverAudio.players.get('rain') instanceof PondRainLoop"),true);
-  assert.equal(h.audio.players[0].src,'https://spriggan.test/pond/mixkit-night-crickets-near-the-swamp-1782.wav');
+  assertPondRecording(h.audio.players[0].src,'mixkit-night-crickets-near-the-swamp-1782.wav');
   assert(h.audio.players[0].calls.every(url=>url===h.audio.players[0].src));
   assert.equal(h.audio.players[0].preload,'none');assert.equal(h.audio.players[0].loop,true);
   assert.equal(h.audio.contexts.length,0,'the nature recording needs no synthesized music context');
@@ -36,7 +41,7 @@ test('controller rain updates weather settings and adds the pond seamless loop o
   assert.equal(h.$('#river-rain').getAttribute('aria-pressed'),'true');
   assert.equal(h.$('#river-rain').textContent,'Remove rain');
   h.click('#river-sound');await h.flush();
-  assert.deepEqual(h.audio.fetches,['https://spriggan.test/pond/rain-seamless.wav']);
+  assert.equal(h.audio.fetches.length,1);assertPondRecording(h.audio.fetches[0],'rain-seamless.wav');
   assert.equal(h.value("riverAudio.isPlaying('rain')"),true);
   assert.equal(h.value("riverAudio.isPlaying('ambient')"),true);
   assert.equal(h.value("riverAudio.players.get('rain').source.loop"),true);
@@ -119,7 +124,7 @@ test('a failed rain request is retryable at the same pond URL while nature keeps
   assert.equal(h.$('#river-audio-resume').hidden,false);
   h.audio.fetchFails=false;h.click('#river-audio-resume');await h.flush();
   assert.equal(h.value("riverAudio.isPlaying('rain')"),true);assert.equal(h.audio.fetches.length,2);
-  assert(h.audio.fetches.every(url=>url==='https://spriggan.test/pond/rain-seamless.wav'));
+  assertPondRecording(h.audio.fetches[0],'rain-seamless.wav');assert(h.audio.fetches.every(url=>url===h.audio.fetches[0]));
 });
 
 test('casting is a valid gesture for a remembered sound preference without starting it on reload',async()=>{

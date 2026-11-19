@@ -6,7 +6,7 @@ window.SPRIGGAN_PLACES = [
     "description": "Turn seeds into a chance at a golden koi or a cow for your worlds.",
     "x": 1050,
     "y": 435,
-    "image": "./previews/slots.png?v=little-places-1",
+    "image": "./previews/slots.png?v=perf-f50833113384d5da",
     "href": "./slots/"
   },
   {
@@ -16,7 +16,7 @@ window.SPRIGGAN_PLACES = [
     "description": "Catch plushies. Keep your favorites or trade them for another turn.",
     "x": 412.5,
     "y": 360,
-    "image": "./previews/claw.png?v=little-places-1",
+    "image": "./previews/claw.png?v=perf-811d3b7651fa80bc",
     "href": "./claw/"
   },
   {
@@ -26,7 +26,7 @@ window.SPRIGGAN_PLACES = [
     "description": "Fold, steam, and serve dumplings at your own after-hours counter.",
     "x": 874.5,
     "y": 360,
-    "image": "./previews/dumplings.png?v=little-places-1",
+    "image": "./previews/dumplings.png?v=perf-daeea7e2b42f9609",
     "href": "./dumplings/"
   },
   {
@@ -36,7 +36,7 @@ window.SPRIGGAN_PLACES = [
     "description": "Invite hungry little monsters and watch four guards protect the farm.",
     "x": 1219.5,
     "y": 360,
-    "image": "./previews/hex.png?v=little-places-1",
+    "image": "./previews/hex.png?v=perf-33c25ad19da568be",
     "href": "./hex/"
   },
   {
@@ -46,7 +46,7 @@ window.SPRIGGAN_PLACES = [
     "description": "Feed your chickens, hatch eggs, and grow your flock.",
     "x": 373.5,
     "y": 700,
-    "image": "./previews/farm.png",
+    "image": "./previews/farm.png?v=perf-995a031d84166458",
     "href": "./pixel/"
   },
   {
@@ -56,7 +56,7 @@ window.SPRIGGAN_PLACES = [
     "description": "Feed the koi, turn on the rain, and take a quiet moment.",
     "x": 945.0,
     "y": 696.0,
-    "image": "./previews/pond.png",
+    "image": "./previews/pond.png?v=perf-58c6e54062202ad7",
     "href": "./pond/",
     "artX": 997.5,
     "artY": 645

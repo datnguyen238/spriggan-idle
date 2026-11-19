@@ -31,7 +31,8 @@ async function harness(coins){
  class MutationObserver{constructor(callback){this.callback=callback;}observe(target){observers.push({target,callback:this.callback});}}
  const context=vm.createContext({ClawLife:L,ClawArt:{plush:()=>''},Scene,Physics,document,window,MutationObserver,ResizeObserver:class{observe(){}},matchMedia:()=>({matches:false}),performance:{now:()=>0},requestAnimationFrame(){},console,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)}});
  const source=fs.readFileSync(require.resolve('../dist/claw/claw.js'),'utf8')
-  .replace("await Promise.all([import('./claw-scene.js?v=atlas-1'),import('./claw-physics.js?v=17')])","await Promise.resolve([{ClawScene:Scene},{ClawPhysics:Physics}])")
+  .replace(/import\((['"])\.\/claw-scene\.js(?:\?[^'"]*)?\1\)/g,'Promise.resolve({ClawScene:Scene})')
+  .replace(/import\((['"])\.\/claw-physics\.js(?:\?[^'"]*)?\1\)/g,'Promise.resolve({ClawPhysics:Physics})')
   .replace('updateCollection();if(progress.lastKept)','globalThis.hooks={s,render,claim};updateCollection();if(progress.lastKept)');
  await vm.runInContext(source,context);
  vm.runInContext(fs.readFileSync(require.resolve('../dist/shared/world-ui.js'),'utf8'),context);

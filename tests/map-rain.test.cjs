@@ -15,7 +15,7 @@ function setup(saved=null){
 }
 test('saved rain is visual-only until a gesture and uses the shared pond file',async()=>{
  const s=setup(JSON.stringify({enabled:true,volume:.4}));assert(s.rain.enabled);assert.equal(s.instances(),0);assert.equal(s.elements['[data-rain-resume]'].hidden,false);
- await s.rain.play();assert.equal(s.rain.player.url,'https://example.com/pond/rain-seamless.wav');assert.equal(s.rain.player.volume,.4);assert.equal(s.elements['[data-rain-resume]'].hidden,true);
+ await s.rain.play();const url=new URL(s.rain.player.url);assert.equal(url.origin,'https://example.com');assert.equal(url.pathname,'/pond/rain-seamless.wav');assert.match(url.search,/^\?v=perf-[a-f0-9]{16}$/);assert.equal(url.hash,'');assert.equal(s.rain.player.volume,.4);assert.equal(s.elements['[data-rain-resume]'].hidden,true);
 });
 test('rain mute stops playback and preserves the selected volume',async()=>{
  const s=setup();s.rain.toggle();await Promise.resolve();s.elements['[data-rain-volume]'].value='45';s.elements['[data-rain-volume]'].oninput();s.rain.toggle();assert(s.rain.player.paused);assert.deepEqual(s.saved(),{enabled:false,volume:.45});

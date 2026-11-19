@@ -1,5 +1,7 @@
 (()=>{'use strict';
-const Life=HexLife,Art=HexCreatures,canvas=document.querySelector('#meadow'),ctx=canvas.getContext('2d'),$=s=>document.querySelector(s);
+const Life=HexLife,Art=HexCreatures,canvas=document.querySelector('#meadow'),$=s=>document.querySelector(s);
+let ctx=canvas.getContext('2d'),density=1,terrainKey='',drawnRain=false;
+const terrain=document.createElement('canvas'),terrainContext=terrain.getContext('2d');
 let state=Life.create(),selected='sprout',paused=false,showRanges=false,W=1000,H=550,S=30,zoom=1,pan={x:0,y:0},hover=null,last=0,pointer=null,noteUntil=0;
 const TOTALS_KEY='spriggan.hex.totals.v1';
 function readTotals(){try{return Life.progress(localStorage.getItem(TOTALS_KEY))}catch{return Life.progress(null)}}
@@ -16,6 +18,9 @@ let night=false;try{night=localStorage.getItem('spriggan.hex.moonlight')==='true
 const rain=new MapRain(document.querySelector('[data-map-rain]'),'spriggan.hex.rain.v1','hex');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const tiles=[];for(let q=-Life.SIZE;q<=Life.SIZE;q++)for(let r=-Life.SIZE;r<=Life.SIZE;r++)tiles.push({q,r});tiles.sort((a,b)=>a.q+a.r-b.q-b.r||a.q-b.q);
+const riverTiles=tiles.filter(t=>Life.river(t.q,t.r));
+function textContent(selector,value){const el=$(selector),text=String(value);if(el.textContent!==text)el.textContent=text}
+function disabled(selector,value){const el=$(selector);if(el.disabled!==value)el.disabled=value}
 const hash=(q,r,n=0)=>{const x=Math.sin(q*127.1+r*311.7+n*43.3)*43758.5453;return x-Math.floor(x)};
 function poly(points,fill,stroke=null,width=1){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke()}}
 function line(points,color,width=1){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke()}
@@ -34,9 +39,6 @@ function tile(t){
  const farm=Life.farm(t.q,t.r),guard=Life.tower(t.q,t.r),colors=['#acc697','#9fbd8c','#b9cea2','#a8c596','#b2c99b'];
  poly(v,Life.river(t.q,t.r)?'#65a59f':farm?((t.q+t.r)%2?'#dfca91':'#e7d49e'):guard?'#d7d3af':colors[Math.floor(hash(t.q,t.r)*colors.length)],'#eef0d42e',.8);
  if(edge){line([[v[1][0],v[1][1]+depth*.7],[v[2][0],v[2][1]+depth*.7]],'#778e6c40',1);if(hash(t.q,t.r,5)>.6)ellipse(p.x,p.y+depth+1,2.5*zoom,1.8*zoom,'#8da17c')}
- if(Life.river(t.q,t.r)){
-  for(let i=0;i<3;i++){const drift=reduced?0:Math.sin(state.time*.7+t.q+i)*S*.09;const x=p.x+drift+(i-1)*S*.3*zoom,y=p.y+(i-1)*S*.17*zoom;line([[x-S*.12*zoom,y],[x+S*.12*zoom,y]],'#d9f2df75',1*zoom)}
- }
  if(!farm&&!guard&&!Life.river(t.q,t.r)&&hash(t.q,t.r,21)>.94){
   ellipse(p.x+S*.35*zoom,p.y+S*.09*zoom,4*zoom,2.2*zoom,'#8eaa8b');
   ellipse(p.x+S*.32*zoom,p.y+S*.055*zoom,3.5*zoom,1.6*zoom,'#c8cfac');
@@ -45,6 +47,28 @@ function tile(t){
   for(let i=0;i<3;i++){const x=p.x+(hash(t.q,t.r,i+2)-.5)*S*zoom*1.3,y=p.y+(hash(t.q,t.r,i+6)-.5)*S*zoom*.6;line([[x-2*zoom,y],[x,y-3*zoom],[x+zoom,y]],'#95ae7a85',.8)}
   if(hash(t.q,t.r,9)>.72){const x=p.x+S*.28*zoom,y=p.y-S*.15*zoom;ellipse(x,y,2.3*zoom,1.4*zoom,'#f8f3d3');ellipse(x,y,1*zoom,.8*zoom,'#d4b967')}
  }
+}
+function river(t){
+ const p=project(t.q,t.r);
+ // These short highlights stay inside each top face, below the bridges and visitors.
+ for(let i=0;i<3;i++){const drift=reduced?0:Math.sin(state.time*.7+t.q+i)*S*.09;const x=p.x+drift+(i-1)*S*.3*zoom,y=p.y+(i-1)*S*.17*zoom;line([[x-S*.12*zoom,y],[x+S*.12*zoom,y]],'#d9f2df75',1*zoom)}
+}
+function drawTerrain(){
+ const key=[W,H,S,zoom,pan.x,pan.y,density].join('|');
+ if(key!==terrainKey){
+  terrain.width=Math.round(W*density);terrain.height=Math.round(H*density);
+  terrainContext.setTransform(density,0,0,density,0,0);
+  terrainContext.lineCap='round';terrainContext.lineJoin='round';
+  const sceneContext=ctx;ctx=terrainContext;
+  try{
+   const center=project(0,0);ctx.save();ctx.filter='blur(15px)';ellipse(center.x,center.y+37*zoom,S*zoom*13.5,S*zoom*4.2,'#70896526');ctx.restore();
+   tiles.forEach(tile);
+  }finally{ctx=sceneContext}
+  terrainKey=key;
+ }
+ // Copy backing pixels directly so fractional CSS dimensions cannot resample the artwork.
+ ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(terrain,0,0);ctx.restore();
+ riverTiles.forEach(river);
 }
 function bridge(q,r){at(q,r,()=>{for(let y=-16;y<=16;y+=4){poly([[-18,y-2],[18,y-2],[18,y+1],[-18,y+1]],'#c8b590','#847d6155')}line([[-19,-17],[-19,17]],'#eee0b9',2);line([[19,-17],[19,17]],'#eee0b9',2)})}
 function tree(q,r,kind){at(q,r,()=>{
@@ -124,10 +148,10 @@ function backdrop(){
  // Soft cloud clusters drift beyond the island.
  for(let i=0;i<4;i++){const x=W*(.08+i*.29)+Math.sin((reduced?0:state.time)*.025+i)*12,y=H*(.23+(i%2)*.48);ellipse(x,y,31,8,'#d9edcd12');ellipse(x-11,y-5,15,8,'#d9edcd12');ellipse(x+8,y-4,17,9,'#d9edcd12')}
  for(let i=0;i<18;i++){const x=(hash(i,2)*W+Math.sin((reduced?0:state.time)*.1+i)*14),y=hash(i,5)*H+Math.cos((reduced?0:state.time)*.12+i)*10;ellipse(x,y,1.1,1.1,'#e8e7b03d')}
- const center=project(0,0);ctx.save();ctx.filter='blur(15px)';ellipse(center.x,center.y+37*zoom,S*zoom*13.5,S*zoom*4.2,'#70896526');ctx.restore();
 }
 function render(){
- ctx.clearRect(0,0,W,H);backdrop();tiles.forEach(tile);for(const t of tiles)if(Life.bridge(t.q,t.r))bridge(t.q,t.r);
+ drawnRain=rain.enabled;
+ ctx.clearRect(0,0,W,H);backdrop();drawTerrain();for(const t of tiles)if(Life.bridge(t.q,t.r))bridge(t.q,t.r);
  if(showRanges){ctx.save();ctx.setLineDash([4,5]);for(const t of state.towers){const p=project(t.q,t.r);ctx.beginPath();ctx.ellipse(p.x,p.y,4.4*Math.sqrt(3)*S*zoom,4.4*Math.sqrt(3)*S*.6*zoom,0,0,7);ctx.strokeStyle='#6d877354';ctx.lineWidth=1;ctx.stroke()}ctx.restore()}
  for(const tile of tiles)if(Life.farm(tile.q,tile.r)&&(tile.q!==0||tile.r!==0))crops(tile.q,tile.r);
  fence(false);
@@ -138,11 +162,11 @@ function render(){
  if(night){rect(0,0,W,H,'#12285845');for(const t of state.towers)torch(t)}
  else{const sunlight=ctx.createRadialGradient(W*.82,H*.12,0,W*.65,H*.2,W*.8);sunlight.addColorStop(0,'#ffe8a338');sunlight.addColorStop(.5,'#ffe9b014');sunlight.addColorStop(1,'#ffe9b000');rect(0,0,W,H,sunlight)}
 
- if(rain.enabled)rain.draw(ctx,W,H,state.time,{night,splashes:tiles.filter(t=>Life.river(t.q,t.r)).map(t=>project(t.q,t.r))});
+ if(rain.enabled)rain.draw(ctx,W,H,state.time,{night,splashes:riverTiles.map(t=>project(t.q,t.r))});
 }
-function resize(){const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;S=Math.min(W/(W<600?26:42),Math.max(12,(H-180)/17),42);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);render()}
-function note(message){$('#map-note').textContent=message;noteUntil=performance.now()+4200}
-function ui(){ saveTotals();$('#keep-storeys').textContent=`Central keep · ${state.storeys} ${state.storeys===1?'storey':'storeys'}`;$('#visitors').textContent=state.creatures.length;$('#shooed').textContent=state.shooed;$('#snacks').textContent=state.snacks;$('#crowd').disabled=state.creatures.length>=Life.LIMIT;$('#zoom-in').disabled=zoom>=2.3;$('#zoom-out').disabled=zoom<=.85;if(performance.now()>noteUntil)$('#map-note').textContent=paused?'The meadow is resting. Resume whenever you like.':`Tap a ${Life.TYPES[selected].aquatic?'river':'grass'} tile to invite ${Life.TYPES[selected].name}.`}
+function resize(){const r=canvas.getBoundingClientRect();density=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;S=Math.min(W/(W<600?26:42),Math.max(12,(H-180)/17),42);canvas.width=Math.round(W*density);canvas.height=Math.round(H*density);ctx.setTransform(density,0,0,density,0,0);render()}
+function note(message){textContent('#map-note',message);noteUntil=performance.now()+4200}
+function ui(){ saveTotals();textContent('#keep-storeys',`Central keep · ${state.storeys} ${state.storeys===1?'storey':'storeys'}`);textContent('#visitors',state.creatures.length);textContent('#shooed',state.shooed);textContent('#snacks',state.snacks);disabled('#crowd',state.creatures.length>=Life.LIMIT);disabled('#zoom-in',zoom>=2.3);disabled('#zoom-out',zoom<=.85);if(performance.now()>noteUntil){textContent('#map-note',paused?'The meadow is resting. Resume whenever you like.':`Tap a ${Life.TYPES[selected].aquatic?'river':'grass'} tile to invite ${Life.TYPES[selected].name}.`);noteUntil=0}}
 function invite(q,r){const result=Life.spawn(state,q,r,selected);note(result.ok?`${Life.TYPES[selected].name} is off to find a snack.`:result.reason);ui();render();return result}
 function crowd(count=3){const options=tiles.filter(t=>Life.habitat(t.q,t.r,selected));for(let i=0;i<count;i++){const tile=options[Math.floor(Math.random()*options.length)];Life.spawn(state,tile.q,tile.r,selected)}note('A little company for the carrot patch.');ui();render()}
 function point(event){const r=canvas.getBoundingClientRect();return{x:event.clientX-r.left,y:event.clientY-r.top}}
@@ -167,7 +191,7 @@ function syncLight(){document.body.dataset.night=String(night);$('#light-mode').
 $('#light-mode').onclick=()=>{night=!night;try{localStorage.setItem('spriggan.hex.moonlight',String(night))}catch{}syncLight()};syncLight();
 $('#crowd').onclick=()=>crowd();$('#pause').onclick=()=>{paused=!paused;$('#pause').setAttribute('aria-pressed',String(paused));$('#pause .control-label').textContent=paused?'Resume':'Pause';note(paused?'The meadow is resting.':'The carrot patrol is back on duty.');render()};$('#ranges').onclick=()=>{showRanges=!showRanges;$('#ranges').setAttribute('aria-pressed',String(showRanges));render()};$('#reset').onclick=()=>{const {shooed,snacks,storeys}=state;state=Object.assign(Life.create(),{shooed,snacks,storeys});note('A fresh meadow. Invite someone new.');ui();render()};
 $('#zoom-in').onclick=()=>{zoom=Math.min(2.3,zoom+.2);ui();render()};$('#zoom-out').onclick=()=>{zoom=Math.max(.85,zoom-.2);ui();render()};$('#recenter').onclick=()=>{zoom=1;pan={x:0,y:0};ui();render()};
-function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;if(document.hidden)return;if(!paused)Life.step(state,dt);ui();render()}
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;if(document.hidden)return;if(!paused){Life.step(state,dt);ui();render()}else{if(noteUntil&&now>noteUntil)ui();if(drawnRain!==rain.enabled)render()}}
 document.addEventListener('visibilitychange',()=>{last=performance.now()});new ResizeObserver(resize).observe(canvas);resize();
 // A short, mixed welcome party demonstrates the playground. Further visitors are user-invited.
 for(const [q,r,type] of [[-5,-2,'sprout'],[5,2,'mochi'],[-2,4,'truffle'],[4,-1,'sprout'],[0,-4,'mochi'],[-5,-4,'puddle'],[5,4,'puddle']])Life.spawn(state,q,r,type);

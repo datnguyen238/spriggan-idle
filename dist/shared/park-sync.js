@@ -40,6 +40,27 @@
     let state = {status:'idle',canPlay:false,dirty:false,user:null,revision:null};
     let user = null, meta = null, sourceMeta = null, candidate = null, choice = null;
     let timer = null, flight = null, flightFingerprint = null, generation = 0, active = false;
+    const supported = new Set(saves.SUPPORTED_KEYS || []), validated = new Map();
+    let cleanEntries = null, currentEntries = null, cachedBytes = 0;
+
+    function cacheEntry(key, raw) {
+      const previous = validated.get(key);
+      if (previous?.raw === raw || raw === null && !previous) return false;
+      const cost = raw === null ? 0 : saves.validateEntry(key,raw);
+      cachedBytes += cost - (previous?.cost || 0);
+      if (raw === null) {validated.delete(key);delete currentEntries[key];}
+      else {validated.set(key,{raw,cost});currentEntries[key] = raw;}
+      return true;
+    }
+    function cacheCurrent(entries) {
+      if (typeof saves.validateEntry !== 'function') return;
+      if (!currentEntries) currentEntries = {};
+      for (const key of supported) cacheEntry(key,Object.hasOwn(entries,key) ? entries[key] : null);
+    }
+    function matchesClean() {
+      return cleanEntries !== null && Object.keys(currentEntries).length === Object.keys(cleanEntries).length &&
+        Object.keys(currentEntries).every(key => currentEntries[key] === cleanEntries[key]);
+    }
 
     function publish(status,changes = {}) {
       state = Object.freeze({...state,status,error:null,reason:null,...changes});
@@ -53,6 +74,7 @@
     }
     function snapshot(backup = saves.exportBackup(storage)) {
       const summary = saves.inspectBackup(backup);
+      if (arguments.length === 0) cacheCurrent(summary.entries);
       return {backup,fingerprint:fingerprint(summary.entries),summary};
     }
     function empty() {
@@ -98,6 +120,7 @@
     function rememberPending(value) {
       assertSource();
       const pending = dirty(value);
+      if (!pending) cleanEntries = {...value.summary.entries};
       if (meta.pending !== pending) writeMeta({...meta,pending});
       return pending;
     }
@@ -122,7 +145,9 @@
         localWorlds:local.summary.worlds,cloudWorlds:remote ? snapshot(remote.backup).summary.worlds : [],cloudUpdatedAt:remote?.updatedAt || null});
     }
     function bindAndOpen(local,remoteBase,status = 'ready') {
-      replace(local,{revision:remoteBase?.revision ?? null,baseFingerprint:remoteBase ? snapshot(remoteBase.backup).fingerprint : null});
+      const base = remoteBase ? snapshot(remoteBase.backup) : null;
+      replace(local,{revision:remoteBase?.revision ?? null,baseFingerprint:base?.fingerprint ?? null});
+      cacheCurrent(local.summary.entries);cleanEntries = {...(base?.summary.entries || {})};
       choice = null;
       const pending = rememberPending(local);
       publish(pending && status === 'ready' ? 'pending' : status,{canPlay:true,dirty:pending,revision:meta.revision,cloudUpdatedAt:remoteBase?.updatedAt || null,hasCloud:!!remoteBase});
@@ -142,6 +167,7 @@
       clearTimer();const token = ++generation;active = true;
       if (!validId(nextUser?.id)) {active = false;return publish('error',{canPlay:false,error:problem('AUTH_REQUIRED','Sign in to open your park.'),reason:'AUTH_REQUIRED'});}
       user = {id:nextUser.id,email:nextUser.email || null,name:nextUser.name || null};meta = null;choice = null;
+      cleanEntries = null;currentEntries = null;cachedBytes = 0;validated.clear();
       publish('loading',{canPlay:false,dirty:false,user,revision:null});
       let local, localMeta = null, owned = false, unowned = false;
       try {
@@ -162,6 +188,7 @@
           stillCurrent(token);assertSource();
           if (owned && ['NETWORK','TIMEOUT'].includes(cause?.code)) {
             writeMeta({...localMeta,pending:local.fingerprint !== localMeta.baseFingerprint});
+            if (!meta.pending) cleanEntries = {...local.summary.entries};
             return publish('offline',{canPlay:true,dirty:meta.pending,revision:meta.revision,error:cause,reason:cause.code});
           }
           throw cause;
@@ -183,10 +210,21 @@
         return failure(cause,false);
       }
     }
-    function changed() {
+    function changed(key) {
       if (!active || !state.canPlay || !meta) return state;
       try {
-        const value = snapshot(), pending = rememberPending(value);
+        let pending;
+        if (typeof saves.validateEntry === 'function' && currentEntries && supported.has(key)) {
+          assertSource();
+          if (!cacheEntry(key,storage.getItem(key))) return state;
+          // The fixed envelope is under 512 bytes. Near the total limit use the
+          // authoritative full serializer rather than estimating acceptance.
+          if (cachedBytes + 512 > saves.MAX_BYTES) return changed();
+          pending = !matchesClean();
+          if (meta.pending !== pending) writeMeta({...meta,pending});
+        } else {
+          const value = snapshot();pending = rememberPending(value);
+        }
         if (!pending) {if (!flight) {clearTimer();publish('ready',{canPlay:true,dirty:false,revision:meta.revision});}return state;}
         if (!flight) publish(state.status === 'offline' ? 'offline' : 'pending',{canPlay:true,dirty:true,revision:meta.revision,error:state.status === 'offline' ? state.error : null});
         schedule();return state;
@@ -202,6 +240,7 @@
         const result = await client.write(value.backup,meta.revision,user.id);
         stillCurrent(token);assertSource();
         writeMeta({...meta,revision:result.revision,baseFingerprint:value.fingerprint,pending:snapshot().fingerprint !== value.fingerprint});
+        cleanEntries = {...value.summary.entries};
         return publish(meta.pending ? 'pending' : 'ready',{canPlay:true,dirty:meta.pending,revision:meta.revision,cloudUpdatedAt:result.updatedAt,hasCloud:true});
       } catch (cause) {
         if (token !== generation || !active) return state;
@@ -212,6 +251,7 @@
             // An earlier timed-out request may actually have reached the server.
             if (remote && snapshot(remote.backup).fingerprint === local.fingerprint) {
               writeMeta({...meta,revision:remote.revision,baseFingerprint:local.fingerprint,pending:false});
+              cleanEntries = {...local.summary.entries};
               return publish('ready',{canPlay:true,dirty:false,revision:meta.revision,cloudUpdatedAt:remote.updatedAt,hasCloud:true});
             }
             return decide(local,remote,'REMOTE_CHANGED');
@@ -257,6 +297,7 @@
         const local = snapshot(), cloud = remote ? snapshot(remote.backup) : null;
         if (cloud && cloud.fingerprint === local.fingerprint) {
           writeMeta({...meta,revision:remote.revision,baseFingerprint:local.fingerprint,pending:false});
+          cleanEntries = {...local.summary.entries};
           clearTimer();return publish('ready',{canPlay:true,dirty:false,revision:meta.revision,cloudUpdatedAt:remote.updatedAt,hasCloud:true});
         }
         if ((remote?.revision ?? null) !== meta.revision || cloud && cloud.fingerprint !== meta.baseFingerprint) return decide(local,remote,'REMOTE_CHANGED');

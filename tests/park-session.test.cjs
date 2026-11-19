@@ -15,9 +15,9 @@ const settle = () => new Promise(resolve => setImmediate(resolve));
 
 function setup(options={}) {
   const events = {document:new Map(),window:new Map()};
-  const ids = new Map(), activated = [], emitted = [], pendingScripts = [], timers = new Map(), intervals = new Map();
-  const calls = {create:[],initialize:0,signIn:0,signOut:0,start:[],changed:0,flush:0,check:0,stop:0,useCloud:0,keepLocal:0,fetch:[],replace:[],assign:[],reload:0,history:[],locks:[],released:0};
-  const state = {user:options.user === undefined ? A : options.user,syncState:options.syncState||READY,provider:options.provider !== false,start:options.start,flush:options.flush,check:options.check,fetch:options.fetch,signIn:options.signIn,signOut:options.signOut};
+  const ids = new Map(), activated = [], preloaded = [], emitted = [], pendingScripts = [], timers = new Map(), intervals = new Map();
+  const calls = {create:[],initialize:0,signIn:0,signOut:0,start:[],changed:0,changedKeys:[],flush:0,check:0,stop:0,useCloud:0,keepLocal:0,fetch:[],replace:[],assign:[],reload:0,history:[],locks:[],released:0};
+  const state = {user:options.user === undefined ? A : options.user,syncState:options.syncState||READY,provider:options.provider !== false,initialize:options.initialize,start:options.start,flush:options.flush,check:options.check,fetch:options.fetch,signIn:options.signIn,signOut:options.signOut};
   let document, syncOptions, authListener = () => {}, nextTimer=0;
   class Storage {
     constructor(initial={}) {this.values=new Map(Object.entries(initial));}
@@ -38,7 +38,7 @@ function setup(options={}) {
       get attributes(){return [...attrs].map(([name,value]) => ({name,value}));},
       getAttribute:name=>attrs.get(name)??null,hasAttribute:name=>attrs.has(name),setAttribute(name,value){attrs.set(name,String(value));},
       addEventListener:(type,listener)=>addEvent(listeners,type,listener),
-      append(...children){this.children.push(...children);},
+      append(...children){this.children.push(...children);if(tag==='head')preloaded.push(...children);},
       focus(){document.activeElement=this;this.focused=true;},
       async click(){if(this.disabled||this.hidden)return;for(const listener of listeners.get('click')||[])await listener({type:'click',target:this,currentTarget:this});},
       replaceWith(script) {
@@ -59,7 +59,7 @@ function setup(options={}) {
   for(const match of html.matchAll(/<([a-z][a-z0-9-]*)\b([^>]*\bid="([^"]+)"[^>]*)>/gi)) {
     node(match[1],{id:match[3],...(/\bhidden\b/.test(match[2])?{hidden:''}:{}),...(/\bdisabled\b/.test(match[2])?{disabled:''}:{})});
   }
-  const body=node('body');body.dataset.world=login?'login':options.world||'park';
+  const head=node('head'),body=node('body');body.dataset.world=login?'login':options.world||'park';
   const header=options.withHeader?node('header'):null;
   const headerBrand=header?node('a',{class:'brand'}):null;
   const headerNavigation=header?node(options.groupedHeader?'div':'a',{class:options.groupedHeader?'header-actions':'worlds'}):null;
@@ -72,20 +72,20 @@ function setup(options={}) {
   const location = {get href(){return href;},get pathname(){return new URL(href).pathname;},get origin(){return new URL(href).origin;},
     replace(url){calls.replace.push(url);},assign(url){calls.assign.push(url);},reload(){calls.reload++;}};
   const history={replaceState(first,second,url){calls.history.push(url);href=url;}};
-  document={readyState:options.loading?'loading':'complete',body,activeElement:body,hidden:false,
+  document={readyState:options.loading?'loading':'complete',head,body,activeElement:body,hidden:false,
     documentElement:{dataset:{parkAuth:'loading'}},currentScript:{src:options.scriptURL||'https://spriggan.test/shared/park-session.js'},
     getElementById:id=>ids.get(id)||null,createElement:tag=>node(tag),querySelector:selector=>selector==='body > header, main > header'?header:null,
-    querySelectorAll:selector=>selector==='script[type="application/x-spriggan"]'?sources:[],
+    querySelectorAll:selector=>selector==='script[type="application/x-spriggan"]'?sources:selector==='script[type="application/x-spriggan"][src]'?sources.filter(source=>source.hasAttribute('src')):[],
     addEventListener:(type,listener)=>addEvent(events.document,type,listener),
     dispatchEvent(event){emitted.push(event);fire(events.document,event);return true;}};
   const sync = {
     async start(user){calls.start.push(user);return state.start?state.start(user,{storage,onState:syncOptions.onState}):state.syncState;},
-    changed(){calls.changed++;},async flush(){calls.flush++;return state.flush?state.flush():state.syncState;},stop(){calls.stop++;},
+    changed(key){calls.changed++;calls.changedKeys.push(key);},async flush(){calls.flush++;return state.flush?state.flush():state.syncState;},stop(){calls.stop++;},
     async check(){calls.check++;return state.check?state.check():state.syncState;},
     async useCloud(){calls.useCloud++;return READY;},async keepLocal(){calls.keepLocal++;return READY;}
   };
   const client={
-    async initialize(){calls.initialize++;return state.user;},onAuthChange(listener){authListener=listener;return ()=>{};},
+    async initialize(){calls.initialize++;return state.initialize?state.initialize():state.user;},onAuthChange(listener){authListener=listener;return ()=>{};},
     getUser(){return state.user;},
     async signIn(){calls.signIn++;return state.signIn?.();},async signOut(){calls.signOut++;return state.signOut?.();}
   };
@@ -103,7 +103,7 @@ function setup(options={}) {
     setTimeout(callback,delay){timers.set(++nextTimer,{callback,delay});return nextTimer;},clearTimeout(id){timers.delete(id);},
     setInterval(callback,delay){intervals.set(++nextTimer,{callback,delay});return nextTimer;},clearInterval(id){intervals.delete(id);}});
   vm.runInContext(SOURCE,context);
-  return {calls,state,storage,sessionStorage,window,document,ids,activated,emitted,pendingScripts,sources,timers,intervals,header,headerBrand,headerNavigation,
+  return {calls,state,storage,sessionStorage,window,document,ids,activated,preloaded,emitted,pendingScripts,sources,timers,intervals,header,headerBrand,headerNavigation,
     get:id=>ids.get(id),click:id=>ids.get(id).click(),
     documentEvent(type,extra={}){fire(events.document,{type,...extra});},windowEvent(type,extra={}){fire(events.window,{type,...extra});},
     auth(user){state.user=user;authListener(user);},publish(value){state.syncState=value;syncOptions.onState(value);},remoteChange(){syncOptions.onRemoteChange();}};
@@ -136,6 +136,27 @@ test('world activation waits for authenticated park hydration, including its loc
   hydration.resolve();await settle();
   assert.equal(h.activated.length,1);assert.equal(h.get('park-gate').hidden,true);assert.equal(h.document.documentElement.dataset.parkAuth,undefined);
   assert.equal(h.calls.changed,1,'only the post-activation capture marks a change');
+});
+
+test('all external world scripts begin preloading together while auth and hydration remain pending',async()=>{
+  const identity=deferred(),hydration=deferred();
+  const h=setup({initialize:()=>identity.promise,start:()=>hydration.promise,scripts:[
+    {src:'./first.js',nonce:'nonce-1',integrity:'sha384-asset',crossorigin:'anonymous',referrerpolicy:'no-referrer',fetchpriority:'low'},
+    {text:'window.inlineStarted = true;'},
+    {src:'./last.js','data-park-type':'module',crossorigin:'use-credentials'}
+  ],holdScripts:[0]});
+  await settle();
+  assert.equal(h.calls.initialize,1);assert.equal(h.calls.start.length,0);assert.equal(h.activated.length,0);
+  assert.equal(h.preloaded.length,2,'both fetch hints are appended without waiting for either resource');
+  const [classic,module]=h.preloaded;
+  assert.equal(classic.tagName,'LINK');assert.equal(classic.getAttribute('rel'),'preload');assert.equal(classic.getAttribute('as'),'script');
+  assert.equal(classic.getAttribute('href'),'./first.js');
+  for(const [name,value] of Object.entries({nonce:'nonce-1',integrity:'sha384-asset',crossorigin:'anonymous',referrerpolicy:'no-referrer',fetchpriority:'low'}))assert.equal(classic.getAttribute(name),value);
+  assert.equal(module.getAttribute('rel'),'modulepreload');assert.equal(module.getAttribute('as'),null);
+  assert.equal(module.getAttribute('href'),'./last.js');assert.equal(module.getAttribute('crossorigin'),'use-credentials');
+  identity.resolve(A);await settle();assert.equal(h.calls.start.length,1);assert.equal(h.activated.length,0);
+  hydration.resolve(READY);await settle();assert.equal(h.activated.length,1,'preloading cannot bypass the ordered execution gate');
+  h.activated[0].onload();await settle();assert.equal(h.activated.length,3);assert.equal(h.get('park-gate').hidden,true);
 });
 
 test('identity changing during hydration cannot activate a park for the previous account',async()=>{
@@ -336,6 +357,7 @@ test('only supported game writes after activation mark progress dirty',async()=>
   for(const key of ['spriggan.cloud.garden.supabase.co.auth.v1','spriggan.sync.v1','spriggan.sync.park.account-a.v1','unrelated.preferences'])h.storage.setItem(key,'metadata');
   h.sessionStorage.setItem('spriggan.hex.moonlight','true');assert.equal(h.calls.changed,baseline+2);
   h.storage.clear();assert.equal(h.calls.changed,baseline+3);
+  assert.deepEqual(h.calls.changedKeys,[undefined,'spriggan.hex.moonlight','spriggan.hex.moonlight',undefined],'direct writes identify their key while capture and clear retain a full scan');
 });
 
 test('an account change pauses and redirects active gameplay instead of restoring into its running world',async()=>{

@@ -1,4 +1,4 @@
-import RAPIER from './vendor/rapier.mjs';
+import RAPIER from './vendor/rapier.mjs?v=perf-02dc6a4e2fffc013';
 const L=globalThis.ClawLife;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};

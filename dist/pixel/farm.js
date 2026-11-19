@@ -1,10 +1,12 @@
 (()=>{
 'use strict';
-const Life=FarmLife,Runtime=SprigganRuntime,canvas=document.querySelector('#farm'),ctx=canvas.getContext('2d',{alpha:false});
+const Life=FarmLife,Runtime=SprigganRuntime,canvas=document.querySelector('#farm');
+let ctx=canvas.getContext('2d',{alpha:false});
+const scenery=document.createElement('canvas'),sceneryContext=scenery.getContext('2d',{alpha:false});
 let state;try{state=Life.decode(localStorage.getItem(Life.KEY))}catch{}const returning=!!state;state||=Life.create();
 const seenCows=new Set(state.cows.map(c=>c.id));
 const animals=()=>[...state.birds,...state.cows];
-let W=400,H=240,sceneTop=0,sceneBottom=0,last=0,clock=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,selected=null,lastRules=0;
+let W=400,H=240,sceneTop=0,sceneBottom=0,last=0,clock=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,selected=null,lastRules=0,sceneDirty=true,drawnRain=false;
 let foxVisitor=null;
 const grain=[],walk=new Map(),hearts=[];const moment=document.querySelector('#moment'),card=document.querySelector('#bird-card');
 const musicButton=document.querySelector('#music');
@@ -12,6 +14,8 @@ const resumeAudioButton=document.querySelector('#resume-audio');
 const musicVolumeInput=document.querySelector('#music-volume');
 const musicVolumeValue=document.querySelector('#music-volume-value');
 const audioStatus=document.querySelector('#audio-status');
+function setProperty(el,key,value){if(el[key]!==value)el[key]=value}
+function textContent(selector,value){setProperty(document.querySelector(selector),'textContent',String(value))}
 
 const farmAudio=new FarmAudio(snapshot=>{
  musicButton.setAttribute('aria-pressed',String(snapshot.enabled));
@@ -50,16 +54,16 @@ document.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===
 
 const rain=new MapRain(document.querySelector('[data-map-rain]'),'spriggan.farm.rain.v1','pixel');
 let noticeUntil=Date.now()+7000;
-function notice(text){moment.textContent=text;noticeUntil=Date.now()+7000}
+function notice(text){setProperty(moment,'textContent',text);noticeUntil=Date.now()+7000}
 function receiveCow(){
  try{
   const incoming=Life.decode(localStorage.getItem(Life.KEY));
   for(const c of incoming?.cows||[])if(!seenCows.has(c.id)){
-   state.cows.push(c);seenCows.add(c.id);notice(`${c.name} has arrived from Golden Seed. A gentle new friend.`);
+   state.cows.push(c);seenCows.add(c.id);sceneDirty=true;notice(`${c.name} has arrived from Golden Seed. A gentle new friend.`);
   }
  }catch{}
 }
-function save(){try{receiveCow();localStorage.setItem(Life.KEY,JSON.stringify(state));document.querySelector('#save-status').textContent='Saved on this device'}catch{document.querySelector('#save-status').textContent='Storage unavailable — this visit only'}}
+function save(){try{receiveCow();localStorage.setItem(Life.KEY,JSON.stringify(state));textContent('#save-status','Saved on this device')}catch{textContent('#save-status','Storage unavailable — this visit only')}}
 function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
 function resize(){
  const r=canvas.getBoundingClientRect(),density=Math.min(devicePixelRatio||1,2);
@@ -68,7 +72,13 @@ function resize(){
  canvas.width=Math.round(r.width*density);canvas.height=Math.round(r.height*density);
  W=canvas.width/scale;sceneTop=r.width<600?130*density/scale:0;sceneBottom=r.width<600?145*density/scale:0;
  H=Math.max(80,canvas.height/scale-sceneTop-sceneBottom);
- ctx.setTransform(scale,0,0,scale,0,Math.round(sceneTop)*scale);ctx.imageSmoothingEnabled=false;draw();
+ const top=Math.round(sceneTop)*scale;
+ ctx.setTransform(scale,0,0,scale,0,top);ctx.imageSmoothingEnabled=false;
+ // Preserve the exact art-pixel grid, including the mobile margins, in backing pixels.
+ scenery.width=canvas.width;scenery.height=canvas.height;
+ sceneryContext.setTransform(scale,0,0,scale,0,top);sceneryContext.imageSmoothingEnabled=false;
+ const sceneContext=ctx;ctx=sceneryContext;try{background()}finally{ctx=sceneContext}
+ draw();
 }
 function tree(x,y,s=1){ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(s,s);rect(-3,-8,6,23,'#796445');rect(0,1,2,13,'#ad8a53');rect(-18,-24,35,24,'#365b49');rect(-13,-33,27,12,'#365b49');rect(-22,-20,41,13,'#365b49');rect(-16,-26,29,20,'#527c5d');rect(-10,-32,21,18,'#86a776');rect(-15,-20,8,5,'#abc49b');rect(5,-12,10,5,'#2f5143');ctx.restore()}
 function fence(x,y,width){rect(x,y+3,width,3,'#a88a54');rect(x,y+10,width,3,'#a88a54');for(let i=0;i<=width;i+=12){rect(x+i,y,3,18,'#d4bd7e');rect(x+i,y,2,2,'#efdaa1');rect(x+i+2,y+2,1,16,'#8e774c')}}
@@ -179,15 +189,15 @@ function fox(){
  }
  ctx.restore();
 }
-function draw(){background();for(const g of grain){rect(g.x*W,g.y*H,2,1,'#e5cc83');rect(g.x*W+1,g.y*H-1,1,1,'#fbdf96')}const objects=[...(foxVisitor?[{y:foxVisitor.y,draw:fox}]:[]),...animals().map(b=>({y:b.y,draw:()=>b.species==='cow'?cow(b):chicken(b)})),...state.eggs.map(e=>({y:e.y,draw:()=>egg(e)}))];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(const h of hearts){const x=h.x*W,y=h.y*H-(1-h.life)*15;ctx.globalAlpha=h.life;rect(x-2,y-1,2,2,'#bc7962');rect(x+1,y-1,2,2,'#bc7962');rect(x-1,y+1,3,2,'#bc7962');rect(x,y+3,1,1,'#bc7962');ctx.globalAlpha=1}if(rain.enabled)rain.draw(ctx,W,H,clock,{top:-sceneTop,bottom:H+sceneBottom,splashes:Array.from({length:12},(_,i)=>({x:W*(.2+(i*7%11)/18),y:H*(.43+(i*3%7)/20)}))})}
+function draw(){sceneDirty=false;drawnRain=rain.enabled;ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(scenery,0,0);ctx.restore();for(const g of grain){rect(g.x*W,g.y*H,2,1,'#e5cc83');rect(g.x*W+1,g.y*H-1,1,1,'#fbdf96')}const objects=[...(foxVisitor?[{y:foxVisitor.y,draw:fox}]:[]),...animals().map(b=>({y:b.y,draw:()=>b.species==='cow'?cow(b):chicken(b)})),...state.eggs.map(e=>({y:e.y,draw:()=>egg(e)}))];objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());for(const h of hearts){const x=h.x*W,y=h.y*H-(1-h.life)*15;ctx.globalAlpha=h.life;rect(x-2,y-1,2,2,'#bc7962');rect(x+1,y-1,2,2,'#bc7962');rect(x-1,y+1,3,2,'#bc7962');rect(x,y+3,1,1,'#bc7962');ctx.globalAlpha=1}if(rain.enabled)rain.draw(ctx,W,H,clock,{top:-sceneTop,bottom:H+sceneBottom,splashes:Array.from({length:12},(_,i)=>({x:W*(.2+(i*7%11)/18),y:H*(.43+(i*3%7)/20)}))})}
 function scatter(x=.5,y=.62){if(grain.length>=60)return notice('There is enough grain in the yard. Let them eat first.');for(let i=0;i<10&&grain.length<60;i++)grain.push({x:Math.max(.17,Math.min(.82,x+(Math.random()-.5)*.13)),y:Math.max(.4,Math.min(.82,y+(Math.random()-.5)*.1)),life:60});notice('Grain scattered. Watch them come over.');draw()}
-function inspect(){if(!selected)return;const b=animals().find(b=>b.id===selected),e=state.eggs.find(e=>e.id===selected);if(!b&&!e){card.hidden=true;selected=null;return}card.hidden=false;document.querySelector('#bird-name').textContent=b?b.name:'An egg';let detail;
+function inspect(){if(!selected)return;const b=animals().find(b=>b.id===selected),e=state.eggs.find(e=>e.id===selected);if(!b&&!e){setProperty(card,'hidden',true);selected=null;return}setProperty(card,'hidden',false);textContent('#bird-name',b?b.name:'An egg');let detail;
  if(e)detail=`Hatching in ${Math.max(1,Math.ceil((e.hatchesAt-Date.now())/1000))} seconds. A tiny life is on its way.`;
  else if(b.species==='cow')detail=`Cow · ${b.meals} meals shared. A Golden Seed friend, here to wander with your flock.`;
  else if(b.stage==='chick')detail=`Little chick · ${Math.min(Life.GROW_MEALS,b.meals)}/${Life.GROW_MEALS} meals to grow into an adult.`;
  else if(b.sex==='hen')detail=`Hen · ${b.layFood}/${Life.LAY_MEALS} meals for her next egg. ${state.birds.length+state.eggs.length>=Life.LIMIT?'The yard is full.':'Every grain she eats counts.'}`;
  else detail='Rooster · Hens need an adult rooster to lay eggs.';
- document.querySelector('#bird-detail').textContent=detail;document.querySelector('#remove-bird').hidden=!b;
+ textContent('#bird-detail',detail);setProperty(document.querySelector('#remove-bird'),'hidden',!b);
 }
 canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=((e.clientY-r.top)/r.height*(H+sceneTop+sceneBottom)-sceneTop)/H;let nearest=null,dist=14;for(const b of [...animals(),...state.eggs]){const d=Math.hypot((b.x-x)*W,(b.y-y)*H);if(d<dist){nearest=b;dist=d}}if(nearest){selected=nearest.id;inspect();draw()}else scatter(x,y)});
 document.querySelector('#feed').onclick=()=>scatter();document.querySelector('#close-card').onclick=()=>{selected=null;card.hidden=true;draw()};
@@ -207,9 +217,9 @@ restart.onclick=()=>{if(state.birds.length||state.eggs.length)return;state.birds
 function ui(){
  const signature=JSON.stringify(animals().map(b=>[b.id,b.name,b.stage,b.sex]));
  if(signature!==flockOptions){flockOptions=signature;picker.replaceChildren(new Option('Meet a farm friend…',''));for(const b of animals())picker.add(new Option(`${b.name} · ${b.stage==='chick'?'chick':b.sex}`,b.id))}
- picker.value=animals().some(b=>b.id===selected)?selected:'';picker.disabled=!animals().length;restart.hidden=!!(state.birds.length||state.eggs.length);
-document.querySelector('#adults').textContent=state.birds.filter(b=>b.stage==='adult').length;document.querySelector('#chicks').textContent=state.birds.filter(b=>b.stage==='chick').length;document.querySelector('#eggs').textContent=state.eggs.length;inspect();if(Date.now()>noticeUntil)moment.textContent=state.eggs.length?'An egg is getting ready to hatch.':state.birds.length+state.eggs.length>=Life.LIMIT?'Your farm is full: 16 chickens and eggs.':'Tap a chicken to check its growth.'}
-function tick(now){const events=Life.advance(state,now);if(events.length)notice(events.at(-1));ui();save()}
+ setProperty(picker,'value',animals().some(b=>b.id===selected)?selected:'');setProperty(picker,'disabled',!animals().length);setProperty(restart,'hidden',!!(state.birds.length||state.eggs.length));
+textContent('#adults',state.birds.filter(b=>b.stage==='adult').length);textContent('#chicks',state.birds.filter(b=>b.stage==='chick').length);textContent('#eggs',state.eggs.length);inspect();if(Date.now()>noticeUntil)setProperty(moment,'textContent',state.eggs.length?'An egg is getting ready to hatch.':state.birds.length+state.eggs.length>=Life.LIMIT?'Your farm is full: 16 chickens and eggs.':'Tap a chicken to check its growth.')}
+function tick(now){const events=Life.advance(state,now);if(events.length){sceneDirty=true;notice(events.at(-1))}ui();save()}
 function update(dt){
  if(!paused){
   // Predation counts only time spent visibly in the farm, never hidden/offline catch-up.
@@ -263,7 +273,7 @@ function frame(ts){
  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
  if(document.hidden)return;
  update(dt);
- if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}draw();
+ if(ts-lastRules>1000){lastRules=ts;tick(Date.now())}if(!paused||sceneDirty||drawnRain!==rain.enabled)draw();
 }
 window.addEventListener('storage',e=>{if(e.key===Life.KEY){receiveCow();ui();draw()}});
 document.addEventListener('spriggan:park-save-request',save);window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{last=performance.now();tick(Date.now())}});new ResizeObserver(resize).observe(canvas);tick(Date.now());if(returning)notice('Welcome back. Your flock is here.');resize();Runtime.runBackground(update,()=>{const now=performance.now();if(now-lastRules>1000){lastRules=now;tick(Date.now())}},()=>paused);requestAnimationFrame(frame);

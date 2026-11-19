@@ -3,6 +3,11 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const paths=require('../dist/landing-paths.js');
+function assertPreviewImage(value,filename){
+  const url=new URL(value,'https://spriggan.test/park/');
+  assert.equal(url.origin,'https://spriggan.test');assert.equal(url.pathname,'/park/previews/'+filename);
+  assert.match(url.search,/^\?v=perf-[a-f0-9]{16}$/);assert.equal(url.hash,'');
+}
 
 function setup(){
   const created=[],ids=new Map(),markers=new Map(),timers=new Map(),windowEvents=new Map(),documentEvents=new Map();
@@ -62,7 +67,7 @@ test('Fishing alone registers an actual map preview and opening the park does no
   assert.equal(fish.image,null);assert.equal(fish.preview,'./fishing/preview.html?v=river-preview-1');
   assert.equal(h.created.filter(node=>node.tagName==='IFRAME').length,0);
   h.select('pond');assert.equal(h.created.filter(node=>node.tagName==='IFRAME').length,0);
-  assert.equal(h.ids.get('destination-image').hidden,false);assert.equal(h.ids.get('destination-image').src,'./previews/pond.png');
+  assert.equal(h.ids.get('destination-image').hidden,false);assertPreviewImage(h.ids.get('destination-image').src,'pond.png');
 });
 
 test('selecting Fishing lazily embeds a decorative actual map and preserves its visit link',()=>{
@@ -100,7 +105,7 @@ test('close, Escape, and switching worlds unload the embedded scene and preserve
     assert.equal(frame.src,'about:blank');assert.equal(frame.removed,true);assert.equal(host.removed,true);
     assert.equal(h.frame(),undefined);assert.equal(h.timers.size,0);assert.equal(h.ids.get('destination').dataset.preview,undefined);
     h.message(frame,'ready');assert.equal(h.host(),null);
-    if(action==='switch'){assert.equal(h.ids.get('destination-image').hidden,false);assert.equal(h.ids.get('destination-image').src,'./previews/claw.png?v=little-places-1');assert.equal(h.ids.get('enter-world').href,'./claw/');}
+    if(action==='switch'){assert.equal(h.ids.get('destination-image').hidden,false);assertPreviewImage(h.ids.get('destination-image').src,'claw.png');assert.equal(h.ids.get('enter-world').href,'./claw/');}
   }
 });
 

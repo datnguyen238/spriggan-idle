@@ -1,5 +1,12 @@
 {
   "framework": null,
-  "buildCommand": "",
-  "outputDirectory": "dist"
+  "buildCommand": "node tools/version-assets.cjs",
+  "outputDirectory": "dist",
+  "headers": [
+    {
+      "source": "/((?!api/|auth/|private/).*)\\.(js|mjs|css|woff2?|ttf|otf|eot|png|jpe?g|gif|webp|avif|svg|ico|wav|mp3|ogg|m4a|aac|flac|opus)",
+      "has": [{"type":"query","key":"v","value":"^perf-[a-f0-9]{16}$"}],
+      "headers": [{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}]
+    }
+  ]
 }

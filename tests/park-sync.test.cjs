@@ -30,7 +30,7 @@ function setup(options = {}) {
       return {revision:current.revision,updatedAt:WHEN};
     }
   };
-  const engine = Sync.create({client,saves:Saves,storage,onState:state => states.push(state),onRemoteChange:() => changed++,
+  const engine = Sync.create({client,saves:options.saves || Saves,storage,onState:state => states.push(state),onRemoteChange:() => changed++,
     setTimeout(fn,delay) {timers.set(++nextTimer,{fn,delay});return nextTimer;},clearTimeout:id => timers.delete(id),now:() => Date.parse(WHEN)});
   return {engine,client,storage,timers,states,writes,reads,
     setRemote(value) {current = value;},getRemote:() => current,setReadError(value) {readError = value;},setWriteError(value) {writeError = value;},
@@ -39,6 +39,97 @@ function setup(options = {}) {
 }
 const localHeight = h => JSON.parse(h.storage.getItem(KEY)).storeys;
 const uploadedHeight = value => JSON.parse(JSON.parse(value).entries[KEY]).storeys;
+
+test('a keyed save validates only its changed entry and still validates the full park before upload',async () => {
+  const checks=[],reads=[],source=memory(),originalRead=source.getItem;
+  source.getItem=key=>{reads.push(key);return originalRead(key);};
+  let exports=0,inspections=0;
+  const saves={...Saves,validateEntry(key,value){checks.push(key);return Saves.validateEntry(key,value);},
+    exportBackup(storage){exports++;return Saves.exportBackup(storage);},inspectBackup(text){inspections++;return Saves.inspectBackup(text);}};
+  const h=setup({storage:source,saves});await h.engine.start(USER_A);
+  checks.length=0;reads.length=0;exports=0;inspections=0;
+  source.setItem(KEY,raw(9));assert.equal(h.engine.changed(KEY).status,'pending');
+  assert.deepEqual(checks,[KEY]);assert.deepEqual(reads,[Sync.META_KEY,KEY]);
+  assert.equal(exports,0);assert.equal(inspections,0);assert.equal(h.writes.length,0);
+  await h.engine.flush();assert(exports>0);assert(inspections>0);assert.equal(uploadedHeight(h.writes[0].backup),9);
+});
+
+test('an unchanged keyed write reuses validation and does not notify or schedule work',async () => {
+  let validations=0;
+  const h=setup({saves:{...Saves,validateEntry(key,value){validations++;return Saves.validateEntry(key,value);}}});
+  await h.engine.start(USER_A);const before=validations,states=h.states.length;
+  h.engine.changed(KEY);h.engine.changed(KEY);
+  assert.equal(validations,before);assert.equal(h.states.length,states);assert.equal(h.timers.size,0);
+});
+
+test('undoing a keyed change to the accepted cloud value clears pending work',async () => {
+  const h=setup();await h.engine.start(USER_A);
+  h.storage.setItem(KEY,raw(8));h.engine.changed(KEY);assert.equal(h.engine.getState().dirty,true);
+  h.storage.setItem(KEY,raw(3));h.engine.changed(KEY);
+  assert.equal(h.engine.getState().dirty,false);assert.equal(h.timers.size,0);
+  await h.engine.flush();assert.equal(h.writes.length,0);
+});
+
+test('keyed deletion is uploaded as an absent world, and invalid keyed data is blocked',async () => {
+  const h=setup();await h.engine.start(USER_A);h.storage.removeItem(KEY);h.engine.changed(KEY);await h.engine.flush();
+  assert.equal(Saves.inspectBackup(h.writes[0].backup).entries[KEY],undefined);
+  const bad=setup();await bad.engine.start(USER_A);bad.storage.setItem(KEY,'not json');
+  assert.equal(bad.engine.changed(KEY).canPlay,false);assert.equal(bad.writes.length,0);
+});
+
+test('full upload validation catches an unreported invalid change outside the keyed cache',async () => {
+  const h=setup();await h.engine.start(USER_A);
+  h.storage.setItem('spriggan.pond.v1','invalid');h.storage.setItem(KEY,raw(9));h.engine.changed(KEY);
+  assert.equal(h.engine.getState().status,'pending');
+  const result=await h.engine.flush();assert.equal(result.status,'error');assert.equal(h.writes.length,0);
+});
+
+test('keyed cache is invalidated on account changes and checks ownership before using cached bytes',async () => {
+  const h=setup();await h.engine.start(USER_A);h.storage.setItem(KEY,raw(8));h.engine.changed(KEY);h.engine.stop();
+  h.setRemote(remote(20));await h.engine.start(USER_B);
+  h.storage.setItem(KEY,raw(21));h.engine.changed(KEY);await h.engine.flush();
+  assert.equal(h.writes.at(-1).expectedUserId,USER_B.id);assert.equal(uploadedHeight(h.writes.at(-1).backup),21);
+  const meta=JSON.parse(h.storage.getItem(Sync.META_KEY));h.storage.setItem(Sync.META_KEY,JSON.stringify({...meta,userId:USER_A.id}));
+  assert.equal(h.engine.changed(KEY).canPlay,false);
+});
+
+test('changes during an upload remain pending when mutation notifications use the cache',async () => {
+  const pending=deferred(),h=setup({write:()=>pending.promise});await h.engine.start(USER_A);
+  h.storage.setItem(KEY,raw(8));h.engine.changed(KEY);const uploading=h.engine.flush();
+  h.storage.setItem(KEY,raw(9));h.engine.changed(KEY);pending.resolve({revision:2,updatedAt:WHEN});await uploading;
+  assert.equal(h.engine.getState().dirty,true);assert.equal(h.engine.getState().revision,2);
+  h.storage.setItem(KEY,raw(8));h.engine.changed(KEY);
+  assert.equal(h.engine.getState().dirty,false,'accepted upload is the new comparison base');
+});
+
+test('older save adapters use the full validation path for keyed notifications',async () => {
+  const {validateEntry,...legacy}=Saves;
+  const h=setup({saves:legacy});await h.engine.start(USER_A);
+  h.storage.setItem(KEY,raw(9));h.engine.changed(KEY);await h.engine.flush();
+  assert.equal(uploadedHeight(h.writes[0].backup),9);
+});
+
+test('periodic full checks recover valid writes made outside the notification wrapper',async () => {
+  const h=setup();await h.engine.start(USER_A);
+  h.storage.setItem('spriggan.hex.moonlight','true');
+  h.storage.setItem(KEY,raw(9));h.engine.changed(KEY);h.storage.setItem(KEY,raw(3));h.engine.changed(KEY);
+  await h.engine.check();assert.equal(h.engine.getState().dirty,true);await h.engine.flush();
+  assert.equal(Saves.inspectBackup(h.writes[0].backup).entries['spriggan.hex.moonlight'],'true');
+});
+
+test('the keyed cache defers to the full size limit near the snapshot boundary',async () => {
+  let limit=Infinity;
+  const saves={...Saves,get MAX_BYTES(){return limit;},exportBackup(storage){
+    const value=Saves.exportBackup(storage);
+    if(Buffer.byteLength(value)>limit)throw error('FILE_SIZE');
+    return value;
+  }};
+  const h=setup({saves});await h.engine.start(USER_A);
+  limit=Buffer.byteLength(Saves.exportBackup(h.storage))+5;
+  h.storage.setItem('spriggan.hex.moonlight','true');
+  const result=h.engine.changed('spriggan.hex.moonlight');
+  assert.equal(result.status,'error');assert.equal(result.reason,'FILE_SIZE');assert.equal(h.writes.length,0);
+});
 
 test('a fresh browser loads the signed-in cloud park before permitting play',async () => {
   const h = setup();const result = await h.engine.start(USER_A);

@@ -1,7 +1,7 @@
 /* Rain uses a continuous decoded loop; crickets use native audio; music is synthesized. */
 (()=>{
   'use strict';
-  const FILES={rain:'rain-seamless.wav',ambient:'mixkit-night-crickets-near-the-swamp-1782.wav'};
+  const FILES={rain:'rain-seamless.wav?v=perf-a90c9232079b3bab',ambient:'mixkit-night-crickets-near-the-swamp-1782.wav?v=perf-dbbcc6f74e7fbbb1'};
   class PondAudio{
     constructor(onChange,onError,onPlayback=()=>{}){
       this.onChange=onChange;this.onError=onError;this.onPlayback=onPlayback;

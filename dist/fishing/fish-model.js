@@ -1,4 +1,4 @@
-import * as THREE from '../claw/vendor/three.module.min.js';
+import * as THREE from '../claw/vendor/three.module.min.js?v=perf-e2b5ee6bccd38fd6';
 
 const PI = Math.PI;
 const V = (x, y, z) => new THREE.Vector3(x, y, z);

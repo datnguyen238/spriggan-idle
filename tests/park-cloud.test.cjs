@@ -15,6 +15,11 @@ const backup = () => JSON.stringify({format:'spriggan-park',version:1,exportedAt
 const row = () => ({payload:JSON.parse(backup()),revision:3,updated_at:WHEN});
 const deferred = () => {let resolve,reject;const promise=new Promise((ok,no)=>{resolve=ok;reject=no;});return {promise,resolve,reject};};
 const turn = () => new Promise(resolve => setTimeout(resolve,5));
+function cloudWithClock(now) {
+  const context=vm.createContext({URL,atob,Date:{now,parse:Date.parse},setTimeout,clearTimeout,AbortController});
+  vm.runInContext(fs.readFileSync(require.resolve('../dist/shared/park-cloud.js'),'utf8'),context);
+  return context.SprigganCloud;
+}
 function setup(options={}) {
   const data = new Map([['spriggan.pond.v1','keep this local park'],['unrelated.token','keep this too']]);
   const writes = [], calls = {sessions:0,users:[],reads:[],rpcs:[],oauth:[],signout:[],requests:[]};
@@ -32,14 +37,14 @@ function setup(options={}) {
     return builder;
   }
   const sdk={auth:{
-    async getSession(){calls.sessions++;if(options.getSession)return options.getSession(state,calls);return {data:{session:state.session},error:null};},
+    async getSession(){calls.sessions++;if(options.getSession)return options.getSession(state,calls,emit);return {data:{session:state.session},error:null};},
     async getUser(token){calls.users.push(token);if(options.getUser)return options.getUser(state,calls,emit);return {data:{user:state.session?.user||null},error:state.userError};},
     async signInWithOAuth(params){calls.oauth.push(params);return options.oauthResponse||{data:{url:'https://accounts.google.com/'},error:null};},
     async signOut(params){calls.signout.push(params);if(state.signOut)return state.signOut(params,emit);emit('SIGNED_OUT',null);return options.signOutResponse||{error:null};},
     onAuthStateChange(callback){authCallback=callback;return {data:{subscription:{unsubscribe(){unsubscribed=true;}}}};}
   },from(table){calls.reads.push(table);return query('read',{table});},rpc(name,params){calls.rpcs.push({name,params});return query('write',{name,params});}};
   const createClient=(url,key,settings)=>{sdkOptions={url,key,...settings};return sdk;};
-  const client=Cloud.create(CONFIG,{createClient,saves:Saves,storage,redirectTo:'https://spriggan.test/',timeoutMs:options.timeoutMs||100});
+  const client=(options.cloud||Cloud).create(CONFIG,{createClient,saves:Saves,storage,redirectTo:'https://spriggan.test/',timeoutMs:options.timeoutMs||100});
   return {client,state,calls,storage,writes,data,emit,sdkOptions:()=>sdkOptions,unsubscribed:()=>unsubscribed};
 }
 
@@ -77,6 +82,75 @@ test('initialization verifies the session and exposes only sanitized display ide
 test('a normal initial auth event during verification does not make initialization look like an account switch',async()=>{
   const h=setup({getUser(state,calls,emit){if(calls.users.length===1)emit('INITIAL_SESSION',SESSION_A);return {data:{user:state.session.user},error:null};}});
   assert.equal((await h.client.initialize()).id,'user-a');h.client.dispose();
+});
+
+test('only the first immediate park read reuses the network-verified initial identity',async()=>{
+  const h=setup();await h.client.initialize();assert.equal(h.calls.users.length,1);
+  const sessions=h.calls.sessions;await h.client.read(USER_A.id);
+  assert.equal(h.calls.users.length,1,'initialization and first hydration need one Auth network lookup');
+  assert.equal(h.calls.sessions,sessions+1,'the exact current SDK session is still checked');
+  assert.equal(h.calls.requests[0].headers.Authorization,'Bearer verified-token-a');
+  await h.client.read(USER_A.id);assert.equal(h.calls.users.length,2,'the handoff is consumed once');h.client.dispose();
+});
+
+test('the initial identity handoff expires after five seconds and never survives a backwards clock',async()=>{
+  for(const elapsed of [5000,10000,-1]) {
+    let now=10000;const h=setup({cloud:cloudWithClock(()=>now)});await h.client.initialize();now+=elapsed;
+    await h.client.read();assert.equal(h.calls.users.length,2,`elapsed ${elapsed}ms must verify again`);h.client.dispose();
+  }
+  let now=10000;const h=setup({cloud:cloudWithClock(()=>now)});await h.client.initialize();now+=4999;
+  await h.client.read();assert.equal(h.calls.users.length,1);h.client.dispose();
+});
+
+test('writes always reverify and discard any unused initial read handoff',async()=>{
+  const h=setup();await h.client.initialize();await h.client.write(backup(),3,USER_A.id);
+  assert.equal(h.calls.users.length,2);await h.client.read();assert.equal(h.calls.users.length,3);h.client.dispose();
+});
+
+test('a changed token or same-account Auth event invalidates the initial read handoff',async()=>{
+  for(const event of [null,'TOKEN_REFRESHED','USER_UPDATED','INITIAL_SESSION']) {
+    const h=setup();await h.client.initialize();
+    const session=event==='USER_UPDATED'||event==='INITIAL_SESSION'?SESSION_A:{...SESSION_A,access_token:'refreshed-token-a'};
+    if(event)h.emit(event,session);else h.state.session=session;
+    await h.client.read(USER_A.id);assert.equal(h.calls.users.length,2,event||'silent token change');
+    assert.equal(h.calls.requests[0].headers.Authorization,`Bearer ${session.access_token}`);h.client.dispose();
+  }
+});
+
+test('an Auth callback between fast promise continuations cannot reuse the old verification',async()=>{
+  let callback;const h=setup({cloud:cloudWithClock(()=>{if(callback){const fire=callback;callback=null;queueMicrotask(fire);}return 10000;})});
+  await h.client.initialize();callback=()=>h.emit('USER_UPDATED',SESSION_A);
+  await h.client.read(USER_A.id);
+  assert.equal(h.calls.users.length,2,'the callback after cache selection forces a fresh network verification');
+  assert.equal(h.calls.requests.length,1);h.client.dispose();
+});
+
+test('a revoked token rejected by the first park read clears the in-memory identity',async()=>{
+  const h=setup();await h.client.initialize();h.state.readResponse={data:null,error:{status:401,message:'private token detail'}};
+  await assert.rejects(h.client.read(USER_A.id),{code:'AUTH_REQUIRED'});
+  assert.equal(h.calls.users.length,1);assert.equal(h.calls.requests.length,1);assert.equal(h.client.getUser(),null);
+  await assert.rejects(h.client.read(),{code:'AUTH_REQUIRED'});assert.equal(h.writes.length,0);h.client.dispose();
+});
+
+test('a same-account token refresh during the first park response preserves the new session',async()=>{
+  for(const revoked of [false,true]) {
+    const h=setup();await h.client.initialize();
+    h.state.readResponse=()=>{
+      h.emit('TOKEN_REFRESHED',{...SESSION_A,access_token:'refreshed-token-a'});
+      return revoked?{data:null,error:{status:401}}:{data:row(),error:null};
+    };
+    if(revoked)await assert.rejects(h.client.read(USER_A.id),{code:'AUTH_REQUIRED'});
+    else assert.equal((await h.client.read(USER_A.id)).revision,3);
+    assert.equal(h.client.getUser().id,USER_A.id,'an older token response cannot clear its refreshed account');
+    h.state.readResponse={data:row(),error:null};await h.client.read(USER_A.id);
+    assert.equal(h.calls.users.at(-1),'refreshed-token-a');h.client.dispose();
+  }
+});
+
+test('a failed first park read cannot keep its initial identity handoff for a retry',async()=>{
+  const h=setup();await h.client.initialize();h.state.readResponse={data:null,error:{status:503}};
+  await assert.rejects(h.client.read(),{code:'NETWORK'});h.state.readResponse={data:row(),error:null};
+  await h.client.read();assert.equal(h.calls.users.length,2);h.client.dispose();
 });
 
 test('guest initialization is quiet and remote operations require sign-in',async()=>{
@@ -201,7 +275,7 @@ test('an account change during a request cannot leak A’s data into B’s reque
 });
 
 test('expired verification clears only the stale cached account and never accesses the database',async()=>{
-  const h=setup();await h.client.initialize();h.state.userError={name:'AuthSessionMissingError',message:'private details'};
+  const h=setup();await h.client.initialize();h.emit('TOKEN_REFRESHED',SESSION_A);h.state.userError={name:'AuthSessionMissingError',message:'private details'};
   await assert.rejects(h.client.read(),{code:'AUTH_REQUIRED'});assert.equal(h.client.getUser(),null);assert.equal(h.calls.requests.length,0);
   assert.equal(h.data.get('spriggan.pond.v1'),'keep this local park');h.client.dispose();
 });

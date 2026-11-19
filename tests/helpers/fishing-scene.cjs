@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'../..');
 const threeURL=pathToFileURL(path.join(root,'dist/claw/vendor/three.module.min.js')).href;
 const dataURL=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
 const modelURL=dataURL(fs.readFileSync(path.join(root,'dist/fishing/fish-model.js'),'utf8')
-  .replace("'../claw/vendor/three.module.min.js'",JSON.stringify(threeURL)));
+  .replace(/(['"])\.\.\/claw\/vendor\/three\.module\.min\.js(?:\?v=perf-[a-f0-9]{16})?\1/,JSON.stringify(threeURL)));
 const source=fs.readFileSync(path.join(root,'dist/fishing/fishing-scene.js'),'utf8');
 const modules=new Map();
 const rendererURL=dataURL(`
@@ -34,8 +34,8 @@ async function setupScene(width=1440,height=900){
       const ResizeObserver=class{observe(){}disconnect(){}};
       const CustomEvent=class{constructor(type,options={}){this.type=type;this.detail=options.detail;}};
     `;
-    const code=browser+source.replace("'../claw/vendor/three.module.min.js'",JSON.stringify(rendererURL))
-      .replace("'./fish-model.js'",JSON.stringify(modelURL));
+    const code=browser+source.replace(/(['"])\.\.\/claw\/vendor\/three\.module\.min\.js(?:\?v=perf-[a-f0-9]{16})?\1/,JSON.stringify(rendererURL))
+      .replace(/(['"])\.\/fish-model\.js(?:\?v=perf-[a-f0-9]{16})?\1/,JSON.stringify(modelURL));
     modules.set(width,import(dataURL(code)));
   }
   const [{FishingScene},THREE]=await Promise.all([modules.get(width),import(threeURL)]);

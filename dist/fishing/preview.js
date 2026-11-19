@@ -1,4 +1,4 @@
-import { FishingScene } from './fishing-scene.js?v=fish-approach-1';
+import { FishingScene } from './fishing-scene.js?v=perf-f419ab8365f29917';
 
 // Render the game scenery without loading its controls, audio, timer, or saves.
 const host=document.querySelector('#map-preview');

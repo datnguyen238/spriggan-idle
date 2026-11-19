@@ -1,6 +1,6 @@
 /* Shared rain controls and artwork; both maps reuse the pond's seamless audio file. */
 (()=>{'use strict';
- const rainURL=new URL('../pond/rain-seamless.wav',document.currentScript.src).href;
+ const rainURL=new URL('../pond/rain-seamless.wav?v=perf-a90c9232079b3bab',document.currentScript.src).href;
  const fract=n=>n-Math.floor(n),random=n=>fract(Math.sin(n*127.1+311.7)*43758.5453);
  class MapRain{
   constructor(root,key,style){

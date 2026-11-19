@@ -1,5 +1,5 @@
-import * as T from '../claw/vendor/three.module.min.js';
-import {FishingScene, createFishModel} from './fishing-scene.js?v=fish-approach-1';
+import * as T from '../claw/vendor/three.module.min.js?v=perf-e2b5ee6bccd38fd6';
+import {FishingScene, createFishModel} from './fishing-scene.js?v=perf-f419ab8365f29917';
 
 const Life = window.FishingLife;
 const $ = selector => document.querySelector(selector);
@@ -49,8 +49,8 @@ function pondAudio(){
   audioMessage=message.replace(/Tap its button to retry\./,'Tap Resume nature sounds to retry.');syncAudioStatus();
  },()=>syncAudioStatus());
  // PondAudio's default filenames are relative to its page. Remap before any play().
- audio.player('ambient').src=new URL('../pond/mixkit-night-crickets-near-the-swamp-1782.wav',import.meta.url).href;
- audio.player('rain').src=new URL('../pond/rain-seamless.wav',import.meta.url).href;
+ audio.player('ambient').src=new URL('../pond/mixkit-night-crickets-near-the-swamp-1782.wav?v=perf-dbbcc6f74e7fbbb1',import.meta.url).href;
+ audio.player('rain').src=new URL('../pond/rain-seamless.wav?v=perf-a90c9232079b3bab',import.meta.url).href;
  audio.setVolume(40);riverAudio=audio;return audio;
 }
 async function syncSound(userGesture=false){
