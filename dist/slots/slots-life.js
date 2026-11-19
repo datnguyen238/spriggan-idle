@@ -2,6 +2,7 @@
 (()=>{
 'use strict';
 const KEY='spriggan.slots.v1',COST=10,START=200,REFILL=50,PAIR_PAYOUT=20;
+const JACKPOT_CHANCE=1/50,PAIR_CHANCE=5/12;
 const GOLDEN_FISH_ID='spriggan-golden-seed-koi',COW_ID='spriggan-golden-seed-cow';
 const SYMBOLS=Object.freeze(['leaf','flower','moon','star','seed','friend'].map(id=>Object.freeze({id,label:{leaf:'Leaf',flower:'Blossom',moon:'Moon',star:'Star',seed:'Seed',friend:'Friend'}[id],weight:1})));
 // Add playable reward destinations here; the selector and reward details follow this registry.
@@ -28,6 +29,15 @@ function setReward(s,id,r){
 // A queued frame can carry a timestamp just before the spin's performance.now().
 function reelSymbols(elapsed){const frame=Math.floor((Number.isFinite(elapsed)?Math.max(0,elapsed):0)/110);return Array.from({length:3},(_,i)=>SYMBOLS[(frame+i*2)%SYMBOLS.length].id)}
 function evaluate(symbols){const [a,b,c]=symbols;if(a===b&&b===c)return{kind:'triple',payout:0};if(a===b||a===c||b===c)return{kind:'pair',payout:PAIR_PAYOUT};return{kind:'miss',payout:0}}
+// Weight the outcome, then choose uniformly among its visible reel patterns.
+// This lowers triples to 1/50 while retaining the original 5/12 pair chance.
+const patterns={triple:[],pair:[],miss:[]};
+for(const a of SYMBOLS)for(const b of SYMBOLS)for(const c of SYMBOLS){
+ const symbols=Object.freeze([a.id,b.id,c.id]);patterns[evaluate(symbols).kind].push(symbols);
+}
+for(const values of Object.values(patterns))Object.freeze(values);
+Object.freeze(patterns);
+function randomValue(random){const value=random();if(!Number.isFinite(value)||value<0||value>1)throw RangeError('Random value must be between 0 and 1');return value}
 function decode(raw,now=Date.now()){
  try{const s=JSON.parse(raw);if(!s||![1,2,3].includes(s.version)||!whole(s.balance)||!whole(s.spins))return null;
  const n=create(now);n.balance=s.version<3?Math.max(START,s.balance):s.balance;n.spins=s.spins;if(s.kitchenCredits!==undefined){if(!s.kitchenCredits||typeof s.kitchenCredits!=='object'||Array.isArray(s.kitchenCredits))return null;for(const [id,total] of Object.entries(s.kitchenCredits)){if(!/^[a-zA-Z0-9-]{1,80}$/.test(id)||!whole(total))return null;n.kitchenCredits[id]=total}}n.selectedMap=destination(s.selectedMap).id;
@@ -58,7 +68,8 @@ function refill(s,now=Date.now()){
 }
 function spin(s,random=Math.random,now=Date.now()){
  refill(s,now);if(s.balance<COST)return null;
- const symbols=Array.from({length:3},()=>{const r=random();if(!Number.isFinite(r)||r<0||r>1)throw RangeError('Random value must be between 0 and 1');return SYMBOLS[Math.min(SYMBOLS.length-1,Math.floor(r*SYMBOLS.length))].id});
+ const roll=randomValue(random),kind=roll<JACKPOT_CHANCE?'triple':roll<JACKPOT_CHANCE+PAIR_CHANCE?'pair':'miss',pool=patterns[kind];
+ const symbols=[...pool[Math.min(pool.length-1,Math.floor(randomValue(random)*pool.length))]];
  const outcome=evaluate(symbols),map=destination(s.selectedMap).id;
  const result={symbols,...outcome,net:outcome.payout-COST,map,newReward:outcome.kind==='triple'};
  if(outcome.kind==='triple'){const r=reward(s,map);r.won++;setReward(s,map,r)}
@@ -121,6 +132,6 @@ function claimPrize(state,storage,MapLife,map,now=Date.now()){
 }
 function claimGolden(state,storage,PondLife,now=Date.now()){return claimPrize(state,storage,PondLife,'pond',now)}
 function claimCow(state,storage,FarmLife,now=Date.now()){return claimPrize(state,storage,FarmLife,'farm',now)}
-const api={reelSymbols,kitchenWallet,buyKitchenSeeds,KEY,COST,START,REFILL,PAIR_PAYOUT,GOLDEN_FISH_ID,COW_ID,SYMBOLS,DESTINATIONS,destination,reward,create,decode,evaluate,spin,refill,day,tomorrow,claimGolden,claimCow};
+const api={reelSymbols,kitchenWallet,buyKitchenSeeds,KEY,COST,START,REFILL,PAIR_PAYOUT,JACKPOT_CHANCE,PAIR_CHANCE,GOLDEN_FISH_ID,COW_ID,SYMBOLS,DESTINATIONS,destination,reward,create,decode,evaluate,spin,refill,day,tomorrow,claimGolden,claimCow};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else globalThis.SlotsLife=api;
 })();

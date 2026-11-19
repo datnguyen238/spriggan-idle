@@ -16,7 +16,7 @@ test('a real sale earns three coins without automatically adding seeds',()=>{
 });
 test('buying seeds uses the latest spent wallet and preserves prizes, settings and destination',()=>{
  const {storage,s}=setup(24);s.selectedMap='farm';s.settings.sound=true;s.rewards.farm={won:3,claimed:1};storage.setItem(S.KEY,JSON.stringify(s));buy(storage);
- const latest=wallet(storage);const rolls=[0,.2,.4];S.spin(latest,()=>rolls.shift(),now);storage.setItem(S.KEY,JSON.stringify(latest));buy(storage);
+ const latest=wallet(storage);const rolls=[.9,.4];S.spin(latest,()=>rolls.shift(),now);storage.setItem(S.KEY,JSON.stringify(latest));buy(storage);
  const after=wallet(storage);assert.equal(after.balance,210);assert.equal(shop(storage).coins,4);assert.deepEqual(after.rewards.farm,{won:3,claimed:1});assert.equal(after.selectedMap,'farm');assert.equal(after.settings.sound,true);assert.equal(after.spins,1);
 });
 test('a failed purchase spends no coins and adds no seeds; retry is safe',()=>{

@@ -1,9 +1,17 @@
-/* The park stays in view; a small notebook holds memories and saved copies. */
-body[data-world=park] .park-memory-toggle {
-  position:fixed;top:calc(16px + env(safe-area-inset-top,0px));right:max(32px,env(safe-area-inset-right,0px));bottom:auto;left:auto;z-index:8;display:flex;align-items:center;gap:9px;
-  min-height:48px;padding:11px 16px;border:0;border-radius:10px;background:var(--panel,#faf5e9);
-  color:var(--ink,#294b3e);box-shadow:0 5px 22px #243d3024;font:700 13px var(--sg-ui);cursor:pointer;
+/* Account controls and a direct journal link stay within reach of the park. */
+body[data-world=park] .park-navigation {
+  position:fixed;top:calc(16px + env(safe-area-inset-top,0px));right:max(32px,env(safe-area-inset-right,0px));
+  z-index:8;display:flex;align-items:center;gap:8px;
 }
+body[data-world=park] :is(.park-memory-toggle,.park-journal-link) {
+  display:flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:11px 16px;
+  border:0;border-radius:10px;background:var(--panel,#faf5e9);color:var(--ink,#294b3e);
+  box-shadow:0 5px 22px #243d3024;font:700 13px var(--sg-ui);cursor:pointer;text-decoration:none;
+}
+body[data-world=park] .park-memory-toggle {position:static;}
+body[data-world=park] .park-journal-link {min-width:78px;}
+body[data-world=park] .park-journal-link:hover {background:#edf0dc;text-decoration:underline;text-underline-offset:4px;}
+body[data-world=park] .park-navigation :is(button,a):focus-visible {outline:2px solid #8e692c;outline-offset:3px;}
 .park-memory-toggle svg {width:20px;height:20px;flex:none;}
 body[data-world=park] .park-memory-toggle:hover {background:#edf0dc;}
 body[data-world=park] .park-memory-toggle[aria-expanded=true] {background:#294b3e;color:#faf5e9;}
@@ -28,16 +36,6 @@ body[data-world=park] .park-memory[hidden],.park-memory [hidden] {display:none;}
 .park-memory-resume {display:flex;flex-direction:column;gap:2px;margin-top:20px;padding:12px 0;text-decoration:none;border-block:1px solid #c4c7b6;color:#294b3e;min-height:48px;}
 .park-memory-resume span {font-weight:400;color:#53664f;font-size:12px;}
 .park-memory-resume:hover strong {text-decoration:underline;text-underline-offset:4px;}
-.park-memory-journal {margin-top:24px;}
-.park-memory-list {list-style:none;padding:0;margin:0;}
-.park-memory-list li {padding:12px 0;border-bottom:1px solid #d9dacb;}
-.park-memory-list li:last-child {border-bottom:0;}
-.park-memory-list a {display:block;color:#294b3e;text-decoration:none;min-height:44px;overflow-wrap:anywhere;}
-.park-memory-list a:hover {text-decoration:underline;text-underline-offset:4px;}
-.park-memory-list time {display:block;font:400 12px/1.5 var(--sg-ui);color:#53664f;margin-top:4px;}
-.park-memory-journal-link {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;margin-top:8px;padding:10px 0;color:var(--ink,#294b3e);text-decoration:none;}
-.park-memory-journal-link svg {width:18px;height:18px;flex:none;}
-.park-memory-journal-link:hover span {text-decoration:underline;text-underline-offset:4px;}
 .park-account-actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
 .park-memory .park-memory-button {display:inline-flex;justify-content:center;align-items:center;min-height:44px;padding:10px 12px;border:1px solid #8a9a7c;border-radius:6px;background:transparent;color:#294b3e;}
 .park-memory .park-memory-button:hover {background:#e4e5d5;}
@@ -47,7 +45,7 @@ body[data-world=park] .park-memory[hidden],.park-memory [hidden] {display:none;}
 .park-memory :is(button,a):focus-visible {outline:2px solid #8e692c;outline-offset:3px;}
 .park-memory .park-memory-status {font-size:12px;}
 .park-memory-status:empty {display:none;}
-.park-account {margin-top:24px;padding-bottom:20px;border-bottom:1px solid #c4c7b6;}
+.park-account {margin-top:24px;}
 .park-account-profile {display:flex;align-items:center;gap:12px;min-width:0;}
 .park-account-avatar {display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:50%;background:#e4e5d5;color:#304a40;}
 .park-account-avatar svg {width:23px;height:23px;}
@@ -71,8 +69,17 @@ body[data-world=park] .park-memory[hidden],.park-memory [hidden] {display:none;}
 .park-memory #park-account-retry,.park-memory .park-account-recovery {margin-top:12px;}
 @keyframes park-notebook-open {from {clip-path:inset(0 0 12px 0 round 14px);}to {clip-path:inset(0 round 14px);}}
 @media(max-width:760px) {
-  body[data-world=park] .park-memory-toggle {top:calc(12px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));font-size:12px;padding:11px 14px;}
+  body[data-world=park] .park-navigation {top:calc(12px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));}
+  body[data-world=park] :is(.park-memory-toggle,.park-journal-link) {font-size:12px;padding:11px 14px;}
   body[data-world=park] .park-memory {top:calc(76px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right));left:auto;bottom:auto;width:min(360px,calc(100vw - 32px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)));max-width:360px;max-height:calc(100dvh - 220px - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:20px;}
+}
+@media(max-width:520px) {
+  body[data-world=park] :is(.park-memory-toggle,.park-journal-link) {padding-inline:10px;min-width:0;}
+  body[data-world=park] .park-memory-toggle svg {display:none;}
+}
+@media(max-width:359px) {
+  body[data-world=park] .park-navigation {right:max(12px,env(safe-area-inset-right,0px));gap:6px;}
+  body[data-world=park] :is(.park-memory-toggle,.park-journal-link) {padding-inline:8px;}
 }
 @media(max-height:540px) and (orientation:landscape) {
   body[data-world=park] .park-memory {top:calc(80px + env(safe-area-inset-top,0px));left:auto;width:min(360px,calc(100vw - 190px));max-height:calc(100dvh - 96px - env(safe-area-inset-top) - env(safe-area-inset-bottom));}

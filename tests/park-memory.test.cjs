@@ -23,7 +23,7 @@ function setup({world='park',data={},blocked=false,hidden=false}={}) {
   }
   const body=node('body');body.dataset={world};
   if(world==='park') {
-    for(const id of ['park-memory-toggle','park-memory','park-memory-status','park-memory-resume','park-memory-list','park-memory-empty','park-memory-close','park-memory-heading','toggle-guide','destination','close-destination'])node('div',id);
+    for(const id of ['park-memory-toggle','park-memory','park-memory-status','park-memory-resume','park-memory-close','park-memory-heading','toggle-guide','destination','close-destination'])node('div',id);
     ids.get('park-memory').hidden=true;ids.get('destination').hidden=true;
     ids.get('park-memory-toggle').setAttribute('aria-expanded','false');ids.get('toggle-guide').setAttribute('aria-expanded','false');
     ids.get('toggle-guide').addEventListener('click',()=>{const guide=ids.get('toggle-guide');guide.setAttribute('aria-expanded',guide.getAttribute('aria-expanded')!=='true');});
@@ -58,7 +58,8 @@ test('a world visit tracks milestones without changing gameplay saves and park v
   assert.equal(park.meta().lastWorld,'fishing');
   assert.equal(park.ids.get('park-memory-resume').href,'https://spriggan.test/garden/fishing/');
   assert.match(park.ids.get('park-memory-resume').querySelector('strong').textContent,/Fishing Dock/);
-  assert.equal(park.ids.get('park-memory-list').children.length,1);
+  assert.equal(park.ids.has('park-memory-list'),false);
+  assert.equal(park.meta().memories.length,1,'the full diary still retains the milestone');
 });
 
 test('an open world observes again after back-forward cache restoration without claiming a new visit during polling',async()=>{
@@ -142,31 +143,32 @@ test('background tabs do not become the last visit until shown and reactivating 
   await h.documentEvent('visibilitychange');assert.equal(h.meta().lastWorld,'fishing');
 });
 
-test('periodic refresh keeps the same memory link and adding a new memory preserves existing nodes',()=>{
-  const old=journal.updateJournal(null,journal.readSnapshot({getItem:()=>null}),{now:1});
+test('refresh keeps the resume link focused while new milestones remain in the separate journal',()=>{
+  const old=journal.updateJournal(null,journal.readSnapshot({getItem:()=>null}),{world:'fishing',now:1});
   const current=journal.updateJournal(old,{fishing:{records:{'willow-minnow':minnow}}},{now:2});
   const h=setup({data:{[journal.KEY]:JSON.stringify(current),'spriggan.fishing.guide.v1':fishing({'willow-minnow':minnow})}});
-  const link=h.ids.get('park-memory-list').children[0].children[0];link.focus();h.tick();
-  assert.equal(h.ids.get('park-memory-list').children[0].children[0],link);
+  const link=h.ids.get('park-memory-resume');link.focus();h.tick();
+  assert.equal(h.ids.get('park-memory-resume'),link);assert.equal(link.focused,true);
   h.storage.setItem('spriggan.fishing.guide.v1',fishing({'willow-minnow':{count:2,bestLength:10}}));h.tick();
-  assert.equal(h.ids.get('park-memory-list').children.length,2);
-  assert.equal(h.ids.get('park-memory-list').children[1].children[0],link);
+  assert.equal(h.meta().memories.length,2);
+  assert.equal(h.ids.get('park-memory-resume'),link);assert.equal(link.focused,true);
+  assert.equal(h.ids.has('park-memory-list'),false);
 });
 
-test('the park preview shows the two newest memories while retaining the full journal',()=>{
+test('the main park links directly to the diary without rendering or trimming its history',()=>{
   const memories=Array.from({length:journal.MAX_MEMORIES},(_,i)=>({id:'memory-'+i,world:'hex',text:`Clover Keep grew to ${journal.MAX_MEMORIES-i} storeys.`,at:1000-i}));
   const metadata={version:1,lastWorld:'fishing',lastVisitedAt:500,snapshot:{},memories};
   const h=setup({data:{[journal.KEY]:JSON.stringify(metadata)}});
-  const list=h.ids.get('park-memory-list'),first=list.children[0].children[0];
-  assert.equal(list.children.length,2);
-  assert.deepEqual(list.children.map(item=>item.children[0].children[0].textContent),memories.slice(0,2).map(memory=>memory.text));
-  assert.equal(h.ids.get('park-memory-empty').hidden,true);
-  assert.deepEqual(h.meta().memories,memories,'preview truncation must not erase older saved memories');
-  first.focus();h.tick();
-  assert.equal(list.children[0].children[0],first,'polling retains the focused preview link');
-  assert.deepEqual(h.meta().memories,memories);
+  assert.equal(h.ids.has('park-memory-list'),false);assert.equal(h.ids.has('park-memory-empty'),false);
+  assert.deepEqual(h.meta().memories,memories,'removing the inline display must keep all saved milestones');
+  h.tick();assert.deepEqual(h.meta().memories,memories);
   const html=fs.readFileSync(require.resolve('../dist/index.html'),'utf8');
-  assert.match(html,/<a\b[^>]*id="park-memory-open-journal"[^>]*class="[^"]*\bworld\b[^"]*"[^>]*href="\.\/journal\/"[^>]*><span>Open journal<\/span>/);
+  assert(!/park-memory-(?:journal|list|empty|open-journal)/.test(html),'the old inline journal must be removed, not hidden');
+  const navigation=html.match(/<nav\b[^>]*class="park-navigation"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+  assert(navigation,'the park must offer a distinct navigation group');
+  assert.match(navigation,/<a\b[^>]*id="park-journal-link"[^>]*class="[^"]*\bworld\b[^"]*"[^>]*href="\.\/journal\/"[^>]*>Journal<\/a>/);
+  assert(navigation.includes('id="park-memory-toggle"'),'account controls stay beside the diary link');
+  assert(html.indexOf('id="park-journal-link"')<html.indexOf('<aside id="park-memory"'),'the diary is reachable without opening account controls');
 });
 
 test('a whole-park restore cannot resurrect the previous journal when the imported copy has no journal',async()=>{
@@ -186,5 +188,5 @@ test('a cloud-restored journal keeps its own memories and establishes a fresh ga
   h.storage.setItem('spriggan.fishing.guide.v1',fishing({'willow-minnow':minnow}));
   await h.documentEvent('spriggan:park-restored');h.tick();
   assert.equal(h.meta().lastWorld,'pond');assert.deepEqual(h.meta().memories,imported.memories);
-  assert.equal(h.ids.get('park-memory-list').children.length,1);
+  assert.equal(h.ids.has('park-memory-list'),false);
 });

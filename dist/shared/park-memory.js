@@ -1,4 +1,4 @@
-/* Observe saved facts without changing the worlds. The notebook lives only in the park. */
+/* Observe saved facts without changing the worlds; the park keeps account and resume controls. */
 (() => {
   'use strict';
   function mount() {
@@ -38,16 +38,10 @@
     const panel = document.querySelector('#park-memory');
     const status = document.querySelector('#park-memory-status');
     const resume = document.querySelector('#park-memory-resume');
-    const list = document.querySelector('#park-memory-list');
-    const empty = document.querySelector('#park-memory-empty');
-    const memoryNodes = new Map();
     const names = {pond:'Stillwater Pond',pixel:'Sunny Side Farm',hex:'Clover Keep',dumplings:'Little Folds',claw:'Little Arcade',slots:'Golden Seed',fishing:'The Fishing Dock'};
     const homeURL = new URL(isPark ? './' : '../', document.baseURI);
     const worldURL = id => new URL(`${id}/`, homeURL).href;
     const say = message => { if (status) status.textContent = message; };
-    function dateLabel(at) {
-      return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric'}).format(new Date(at));
-    }
     function render() {
       if (!panel) return;
       const last = metadata?.lastWorld;
@@ -56,31 +50,6 @@
         resume.href = worldURL(last);
         resume.querySelector('strong').textContent = `Return to ${names[last]}`;
       }
-      const memories = (metadata?.memories || []).slice(0,2);
-      empty.hidden = memories.length > 0;
-      const retained = new Set();
-      let position = 0;
-      for (const memory of memories) {
-        if (!knownWorlds.has(memory.world)) continue;
-        retained.add(memory.id);
-        let row = memoryNodes.get(memory.id);
-        if (!row) {
-          const item = document.createElement('li'), link = document.createElement('a');
-          const text = document.createElement('span'), time = document.createElement('time');
-          link.className = 'world'; link.append(text,time); item.append(link);
-          row = {item,link,text,time}; memoryNodes.set(memory.id,row);
-        }
-        const {item,link,text,time} = row;
-        link.href = worldURL(memory.world); link.className = 'world';
-        if (text.textContent !== memory.text) text.textContent = memory.text;
-        time.dateTime = new Date(memory.at).toISOString();
-        const stamp = `${names[memory.world]} · ${dateLabel(memory.at)}`;
-        if (time.textContent !== stamp) time.textContent = stamp;
-        // Insert only changed rows. Refreshing saved facts must not remove a focused link.
-        if (list.children[position] !== item) list.insertBefore(item,list.children[position] || null);
-        position++;
-      }
-      for (const [id,row] of memoryNodes) if (!retained.has(id)) {row.item.remove();memoryNodes.delete(id);}
       if (storageFailed) say('This browser can’t save your journal right now. Allow site storage, then try again.');
     }
     function setOpen(open, focusBack = false) {
