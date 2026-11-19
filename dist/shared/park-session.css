@@ -11,13 +11,9 @@ html[data-park-auth=loading] body > :not(#park-gate) {visibility:hidden!importan
 .park-gate [hidden] {display:none;}
 .park-gate :focus-visible {outline:2px solid #a98535;outline-offset:4px;}
 .park-gate ::selection {background:#d5ba79;color:#304a40;}
-.park-session-link {display:grid;place-items:center;flex:none;width:44px;height:44px;min-width:44px;padding:10px;border:1px solid currentColor;border-radius:6px;color:inherit;pointer-events:auto;}
-.park-session-link svg {width:20px;height:20px;}
-.park-session-link:hover {background:#748f791a;}
 .park-session-summary {display:block;font:400 12px/1.4 var(--sg-ui,'Nunito Sans',sans-serif);opacity:.85;}
 .park-memory .park-account-note {font-size:14px;line-height:1.6;}
 .park-memory .park-account-identity {font-size:14px;}
 .park-memory .park-account-status {font-size:14px;}
 .park-memory .park-account-signout {font-size:14px;}
-@media(max-width:760px) {.park-session-link {display:none;}}
 @media(prefers-reduced-motion:reduce) {.park-gate * {animation:none!important;transition:none!important;}}

@@ -60,6 +60,10 @@ function setup(options={}) {
     node(match[1],{id:match[3],...(/\bhidden\b/.test(match[2])?{hidden:''}:{}),...(/\bdisabled\b/.test(match[2])?{disabled:''}:{})});
   }
   const body=node('body');body.dataset.world=login?'login':options.world||'park';
+  const header=options.withHeader?node('header'):null;
+  const headerBrand=header?node('a',{class:'brand'}):null;
+  const headerNavigation=header?node(options.groupedHeader?'div':'a',{class:options.groupedHeader?'header-actions':'worlds'}):null;
+  if(header) {header.append(headerBrand,headerNavigation);body.append(header);}
   const sources=(options.scripts||[{src:'./world.js',nonce:'test-nonce'}]).map(spec=>{
     const {text='',...attributes}=spec;
     const result=node('script',{type:'application/x-spriggan',...attributes});result.textContent=text;return result;
@@ -70,7 +74,7 @@ function setup(options={}) {
   const history={replaceState(first,second,url){calls.history.push(url);href=url;}};
   document={readyState:options.loading?'loading':'complete',body,activeElement:body,hidden:false,
     documentElement:{dataset:{parkAuth:'loading'}},currentScript:{src:options.scriptURL||'https://spriggan.test/shared/park-session.js'},
-    getElementById:id=>ids.get(id)||null,createElement:tag=>node(tag),querySelector:()=>null,
+    getElementById:id=>ids.get(id)||null,createElement:tag=>node(tag),querySelector:selector=>selector==='body > header, main > header'?header:null,
     querySelectorAll:selector=>selector==='script[type="application/x-spriggan"]'?sources:[],
     addEventListener:(type,listener)=>addEvent(events.document,type,listener),
     dispatchEvent(event){emitted.push(event);fire(events.document,event);return true;}};
@@ -99,11 +103,23 @@ function setup(options={}) {
     setTimeout(callback,delay){timers.set(++nextTimer,{callback,delay});return nextTimer;},clearTimeout(id){timers.delete(id);},
     setInterval(callback,delay){intervals.set(++nextTimer,{callback,delay});return nextTimer;},clearInterval(id){intervals.delete(id);}});
   vm.runInContext(SOURCE,context);
-  return {calls,state,storage,sessionStorage,window,document,ids,activated,emitted,pendingScripts,sources,timers,intervals,
+  return {calls,state,storage,sessionStorage,window,document,ids,activated,emitted,pendingScripts,sources,timers,intervals,header,headerBrand,headerNavigation,
     get:id=>ids.get(id),click:id=>ids.get(id).click(),
     documentEvent(type,extra={}){fire(events.document,{type,...extra});},windowEvent(type,extra={}){fire(events.window,{type,...extra});},
     auth(user){state.user=user;authListener(user);},publish(value){state.syncState=value;syncOptions.onState(value);},remoteChange(){syncOptions.onRemoteChange();}};
 }
+
+test('starting a signed-in world keeps navigation as the rightmost header item',async()=>{
+  for(const [world,path,groupedHeader] of [
+    ['pond','pond',true],['farm','pixel',false],['hex','hex',false],
+    ['kitchen','dumplings',false],['claw','claw',false],['slots','slots',true],['fishing','fishing',true]
+  ]) {
+    const h=setup({world,href:`https://spriggan.test/${path}/`,withHeader:true,groupedHeader});await settle();
+    assert.equal(h.activated.length,1,`${world} starts normally`);
+    assert.equal(h.header.children.length,2,`${world} keeps a brand and one navigation group`);
+    assert.equal(h.header.children.at(-1),h.headerNavigation,`${world} navigation remains at the right edge`);
+  }
+});
 
 test('an unauthenticated protected route redirects without hydrating or executing world scripts',async()=>{
   const h=setup({user:null,href:'https://spriggan.test/pond/'});await settle();
